@@ -1,0 +1,10 @@
+Reimplementing the marmalade-repo with Elnode.
+
+marmalade is written in node.js right now.  It's also a bit of a mess.
+
+I want to reimplement marmalade using [[http://elnode.org|Elnode]].
+
+marmalade uses mongo-db as a data store.
+
+This code is an attempt to reimplement marmalade-repo with an Elnode
+layer on top of the existing mongo database.
