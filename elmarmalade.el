@@ -28,7 +28,7 @@
 ;;; Code:
 
 (require 'elnode)
-(require 'monogo-elnode)
+(require 'mongo-elnode)
 
 (defvar elmarmalade--packages-db
   (elnode-db-make
