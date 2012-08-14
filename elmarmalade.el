@@ -3,6 +3,7 @@
 ;; Copyright (C) 2012  Nic Ferrier
 
 ;; Author: Nic Ferrier <nferrier@ferrier.me.uk>
+;; Package-Requires: ((dotassoc "0.0.1")(mongo-elnode "0.0.1"))
 ;; Keywords: hypermedia, lisp, tools
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -27,8 +28,10 @@
 
 ;;; Code:
 
+(require 'cl)
 (require 'elnode)
 (require 'monogo-elnode)
+(require 'dotassoc)
 
 (defvar elmarmalade--packages-db
   (elnode-db-make
@@ -37,15 +40,42 @@
    :collection "marmalade.packages")
   "The Mongo packages database.")
 
-(defun elmarmalade-package-list (httpcon)
-  "List the packages in marmalade."
-  (let ((search-term (elnode-http-param httpcon 'search)))
-    (elnode-db-map
-     (lambda (res)
-       (assoc "_name" res))
-     elmarmalade--packages-db
-     (list
-      (cons "_name" search_term)))))
+(defun elmarmalade--package-record (data)
+  "Produce a package record from a marmalade db record.
+
+DATA is a marmalade db record.  An example is in
+`testrecord.json'."
+  (let ((name (dotassoc '_name data))
+        ;; this could be _latestVersion.version but that's a vector?
+        (version (coerce (dotassoc '_latestVersion.version data) 'list))
+        (type (dotassoc '_latestVersion.type data))
+        (desc (dotassoc '_latestVersion.description data)))
+    (cons (intern name) `[,version nil ,desc ,(intern type)])))
+
+(ert-deftest elmarmalade--package-record ()
+  "Test the package record construction."
+  (let ((data (json-read-file
+               (expand-file-name
+                "~/work/marmalade/elmarmalade/testrecord.json"))))
+    (should
+     (equal
+      (elmarmalade--package-record data)
+      (cons
+       'org-email
+       [(0 6)
+        nil
+        "use org for an email database -*- lexical-binding: t -*-"
+        single])))))
+
+(defun elmarmalade-package-archives (httpcon)
+  "Produce the archive for Emacs package.el."
+  (let ((package-list
+         (elnode-db-map
+          'elmarmalade--package-record
+          elmarmalade--packages-db
+          (list
+           (cons "_name" search_term)))))
+    (elnode-send-html httpcon "<html>should be a list of repos</html>")))
 
 (defun elmarmalade-package (httpcon)
   "Show a single package from marmalade."
@@ -65,7 +95,7 @@
   "The top level handler for marmalade."
   (elnode-hostpath-dispatcher
    httpcon
-   '(("^.*//packages/" . 'elmarmalade-package-list)
+   '(("^.*//packages/archive-contents" . 'elmarmalade-package-archives)
      ("^.*//package/\\(.*\\)" . 'elmarmalade-package))))
 
 (provide 'elmarmalade)
