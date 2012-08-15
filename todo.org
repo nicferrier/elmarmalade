@@ -1,0 +1,20 @@
+
+
+* elmarmalade-package-archives
+** needs an ALL query
+*** needs to be everything
+** needs rendering to what archive-contents looks like
+** what's the correct mime type to send
+*** ngrep a transaction
+
+* elmarmalade-package
+** abstract elnode-docroot-for over elnode db?
+** what does the package download look like?
+
+* elmarmalade-handler
+** add the user facing front end stuff
+*** login
+*** register
+*** upload
+**** this should be particularly simple
+**** is there a standard for this in package-x or something?
