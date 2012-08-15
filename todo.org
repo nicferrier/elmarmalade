@@ -7,6 +7,16 @@
 ** what's the correct mime type to send
 *** ngrep a transaction
 
+* elmarmalade--package-list
+** could write a test to construct the list and start a real emacs using it
+*** emacs can have a package-archive which is local
+*** it needs the archive file still
+*** so
+**** make the archive content
+**** save it to a file
+**** start an emacs with the package-archives pointing at it
+**** do something to assert it's correct
+
 * elmarmalade-package
 ** abstract elnode-docroot-for over elnode db?
 ** what does the package download look like?
