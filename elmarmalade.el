@@ -30,8 +30,9 @@
 
 (require 'cl)
 (require 'elnode)
-(require 'monogo-elnode)
+(require 'mongo-elnode)
 (require 'dotassoc)
+
 
 (defvar elmarmalade--packages-db
   (elnode-db-make
