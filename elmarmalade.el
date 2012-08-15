@@ -46,27 +46,21 @@
 
 DATA is a marmalade db record.  An example is in
 `testrecord.json'."
-  (let ((name (dotassoc '_name data))
+  (let ((name (dotassoc "_name" data))
         ;; this could be _latestVersion.version but that's a vector?
-        (version (coerce (dotassoc '_latestVersion.version data) 'list))
-        (type (dotassoc '_latestVersion.type data))
-        (desc (dotassoc '_latestVersion.description data)))
-    (cons (intern name) `[,version nil ,desc ,(intern type)])))
+        (version (coerce (dotassoc "_latestVersion.version" data) 'list))
+        (type (dotassoc "_latestVersion.type" data))
+        (desc (dotassoc "_latestVersion.description" data)))
+    (when (and name version type desc)
+      (cons (intern name) `[,version nil ,desc ,(intern type)]))))
 
-(ert-deftest elmarmalade--package-record ()
-  "Test the package record construction."
-  (let ((data (json-read-file
-               (expand-file-name
-                "~/work/marmalade/elmarmalade/testrecord.json"))))
-    (should
-     (equal
-      (elmarmalade--package-record data)
-      (cons
-       'org-email
-       [(0 6)
-        nil
-        "use org for an email database -*- lexical-binding: t -*-"
-        single])))))
+(defun elmarmalade--package-list ()
+  "Make a list of everything in the package list."
+  (let ((package-list
+         (elnode-db-map
+          'elmarmalade--package-record
+          elmarmalade--packages-db)))
+    package-list))
 
 (defun elmarmalade-package-archives (httpcon)
   "Produce the archive for Emacs package.el."
