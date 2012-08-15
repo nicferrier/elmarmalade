@@ -36,9 +36,9 @@
 
 (defvar elmarmalade--packages-db
   (elnode-db-make
-   'mongo
-   :host "localhost"
-   :collection "marmalade.packages")
+   '(mongo
+     :host "localhost"
+     :collection "marmalade.packages"))
   "The Mongo packages database.")
 
 (defun elmarmalade--package-record (data)
