@@ -3,7 +3,7 @@
 ;; Copyright (C) 2012  Nic Ferrier
 
 ;; Author: Nic Ferrier <nferrier@ferrier.me.uk>
-;; Package-Requires: ((dotassoc "0.0.1")(mongo-elnode "0.0.1"))
+;; Package-Requires: ((dotassoc "0.0.1")(mongo-elnode "0.0.3"))
 ;; Keywords: hypermedia, lisp, tools
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,6 @@
 (require 'elnode)
 (require 'mongo-elnode)
 (require 'dotassoc)
-
 
 (defvar elmarmalade--packages-db
   (elnode-db-make
@@ -65,12 +64,9 @@ DATA is a marmalade db record.  An example is in
 (defun elmarmalade-package-archives (httpcon)
   "Produce the archive for Emacs package.el."
   (let ((package-list
-         (elnode-db-map
-          'elmarmalade--package-record
-          elmarmalade--packages-db
-          (list
-           (cons "_name" search_term)))))
-    (elnode-send-html httpcon "<html>should be a list of repos</html>")))
+         (elmarmalade--package-list)))
+    (elnode-http-start httpcon 200)
+    (elnode-http-return httpcon (format "%S" package-list))))
 
 (defun elmarmalade-package (httpcon)
   "Show a single package from marmalade."
@@ -90,8 +86,8 @@ DATA is a marmalade db record.  An example is in
   "The top level handler for marmalade."
   (elnode-hostpath-dispatcher
    httpcon
-   '(("^.*//packages/archive-contents" . 'elmarmalade-package-archives)
-     ("^.*//package/\\(.*\\)" . 'elmarmalade-package))))
+   '(("^.*//packages/archive-contents" . elmarmalade-package-archives)
+     ("^.*//package/\\(.*\\)" . elmarmalade-package))))
 
 (provide 'elmarmalade)
 
