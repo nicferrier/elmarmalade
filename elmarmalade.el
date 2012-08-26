@@ -75,9 +75,6 @@ DATA is a marmalade db record.  An example is in
           'elmarmalade--package-list-record
           elmarmalade--packages-db)))
     (cons 1 package-list)))
-(setq nic-demo-archive (elmarmalade--package-list))
-
-
 
 (defun elmarmalade-package-archives (httpcon)
   "Produce the archive for Emacs package.el."
