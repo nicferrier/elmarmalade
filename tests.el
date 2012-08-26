@@ -16,4 +16,11 @@
         "use org for an email database -*- lexical-binding: t -*-"
         single])))))
 
+(ert-deftest elmarmalade--package-filename ()
+  "Test the transformation of a filename."
+  (should
+   (equal
+    "haml-mode.el/0.3.1"
+    (elmarmalade--package-filename "haml-mode-0.3.1.el"))))
+
 ;; End
