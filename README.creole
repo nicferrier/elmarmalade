@@ -6,5 +6,18 @@ I want to reimplement marmalade using [[http://elnode.org|Elnode]].
 
 marmalade uses mongo-db as a data store.
 
-This code is an attempt to reimplement marmalade-repo with an Elnode
-layer on top of the existing mongo database.
+This code is an attempt to reimplement marmalade-repo as a pretty
+basic file server.
+
+There are also conversion tools from the existing mongodb database to
+the file layout needed.
+
+These are the things marmalade should do:
+
+* construct an archive file from the package directory structure
+* allow the archive to be updated with uploads
+* provide the ELPA {{{/package/}}} HTTP API for downloading packages
+* provide HTML front end to the {{{/package/}}} HTTP API
+* provide EmacsLisp front end to the {{{/package/}}} HTTP API
+** this will likely be a separate project
+* provide an HTML front end to the package archives with some discovery
