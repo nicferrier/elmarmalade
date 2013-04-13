@@ -2,10 +2,6 @@
 
 ;; Copyright (C) 2013  Nic Ferrier
 
-;; Author: Nic Ferrier <nferrier@ferrier.me.uk>
-;; Package-Requires: ((elnode "0.9.9.6.8"))
-;; Keywords: hypermedia, lisp, tools
-
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or

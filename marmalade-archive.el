@@ -4,6 +4,9 @@
 
 ;; Makes package archives from a source tree of marmalade packages.
 
+;; The functions in marmalade-mongo define a way of turning the
+;; marmalade v1 mongo-db into a list of files.
+
 ;; This is how marmalade manages it's packages, in a file system of
 ;; package files. We read the packages from the filesystem into a
 ;; hashtable and then present the hashtable.
@@ -183,7 +186,7 @@ Re-caches the package cache from the files on disc if necessary."
   ;; FIXME - fix this test to check a file and load it or make the
   ;; file and save it
   (when marmalade-archive-do-cache-fill
-    (marmalade/archive-cache-fill marmalade-package-store-dir))
+`    (marmalade/archive-cache-fill marmalade-package-store-dir))
   (cons 1 (marmalade/cache->package-archive)))
 
 ;; FIXME - should we make this conditional on elnode somehow?
