@@ -1,3 +1,5 @@
+= The Marmalade Service - A package repository in EmacsLisp =
+
 Reimplementing the marmalade-repo with Elnode.
 
 marmalade is written in node.js right now.  It's also a bit of a mess.
