@@ -75,6 +75,6 @@ transformation of the filename."
      ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
      ("^[^/]+//packages/\\(.*\\)" . marmalade/downloader))))
 
-(provide 'marmalade-s)
+(provide 'marmalade-service)
 
 ;;; marmalade-s.el ends here

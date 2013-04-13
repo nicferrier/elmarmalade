@@ -52,3 +52,28 @@ mongorestore $DIRECTORY
 
 the {{{$DIRECTORY}}} should be an individual full-dump directory.
 
+=== Turning the mongodb into a file system ===
+
+Presuming you have a mongodb with the database imported you can use
+this script to turn stuff into the filesystem:
+
+{{{
+(setq package-user-dir (concat default-directory "elpa"))
+(setq package-archives
+      '(("gnu" . "http://elpa.gnu.org/packages/")
+        ("marmalade" . "http://marmalade-repo.org/packages/")))
+(package-initialize)
+(package-refresh-contents)
+(customize-set-variable 'marmalade-package-store-dir "~/work/marmalade/demo/packages")
+(package-install 'marmalade-service)
+(marmalade-mongo-main)
+}}}
+
+I put it in a file {{{demo.el}}} and the run it like this:
+
+{{{
+rm -rf elpa ; rm -rf demo ; emacs -Q -nw -l demo.el
+}}}
+
+To delete the {{{elpa}}} and {{{demo}}} directory created by the
+script before recreating them.

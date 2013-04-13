@@ -1,4 +1,4 @@
-(marmalade
+(marmalade-service
  :version "2.0.1"
  :doc "The Marmalade package store service."
  :requires 
@@ -6,5 +6,5 @@
   (elnode "0.9.9.6.8"))
  :files
  ("marmalade-archive.el"
-  "marmalase-s.el"
+  "marmalade-service.el"
   "marmalade-mongo.el"))

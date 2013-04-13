@@ -101,12 +101,15 @@
              (marmalade-mongo/buf->list mongo-buf))
             target-root)))))))
 
+;;;###autoload
 (defun marmalade-mongo-main ()
   "Main function for calling directly."
   (interactive)
   (destructuring-bind (&optional directory)
       command-line-args-left
-    (let ((dir (or directory "~/marmalade/packages")))
+    (let ((dir (or directory
+                   marmalade-package-store-dir
+                   "~/marmalade/packages")))
       (marmalade-mongo/make-filelist dir))))
 
 (provide 'marmalade-mongo)
