@@ -1,4 +1,3 @@
-:;exec emacs -nw -Q -l "$0" -f marmalade-mongo-main "$@"
 ;;; marmalade-mongo.el --- convert the marmalade db
 
 ;; Copyright (C) 2013  Nic Ferrier
