@@ -1,5 +1,5 @@
 :;exec emacs -nw -Q -l "$0" -f marmalade-mongo-main "$@"
-;;; marmalade-mongo.el --- convert the marmalade db -*- lexical-binding: t -*-
+;;; marmalade-mongo.el --- convert the marmalade db
 
 ;; Copyright (C) 2013  Nic Ferrier
 
@@ -25,7 +25,7 @@
 
 ;; The marmalade database is a mongo db thing.  This converts it to
 ;; emacs-db where we can put it into files or postgres or whatever we
-;; like,
+;; like.
 
 ;;; Code:
 
@@ -116,5 +116,9 @@
       (marmalade-mongo/make-filelist dir))))
 
 (provide 'marmalade-mongo)
+
+;; Local Variables:
+;; lexical-binding: t
+;; End:
 
 ;;; marmalade-mongo.el ends here
