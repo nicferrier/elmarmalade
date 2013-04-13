@@ -1,22 +1,22 @@
 = The Marmalade Service - A package repository in EmacsLisp =
 
-Reimplementing the marmalade-repo with Elnode.
+This is an EmacsLisp package to reimplement
+the [[http://marmalade-repo.org|marmalade-repo]] with Elnode. Nathan
+Weizenbaum wrote the
+original [[http://marmalade-repo.org|marmalade-repo]] with node.js and
+mongodb.
 
-marmalade is written in node.js right now.  It's also a bit of a mess.
+This reimplementation uses an [[http://elnode.org|Elnode]] application
+dealing with a filesystem of all packages. It's basically a file
+server app.
 
-I want to reimplement marmalade using [[http://elnode.org|Elnode]].
-
-marmalade uses mongo-db as a data store.
-
-This code is an attempt to reimplement marmalade-repo as a pretty
-basic file server.
-
-There are also conversion tools from the existing mongodb database to
-the file layout needed.
+This packages includes conversion tools from the mongodb to the
+filesystem.
 
 These are the things marmalade should do:
 
-* construct an archive file from the package directory structure
+* construct the package archive file from the package directory structure
+** the package archive is an index of all the packages in the repository.
 * allow the archive to be updated with uploads
 * provide the ELPA {{{/package/}}} HTTP API for downloading packages
 * provide HTML front end to the {{{/package/}}} HTTP API
