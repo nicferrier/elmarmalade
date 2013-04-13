@@ -24,6 +24,7 @@
 ;;; Code:
 
 (require 'dash)
+(require 'cl)
 
 (defun marmalade-mongo/target-file (target-root package-name version type)
   (format
