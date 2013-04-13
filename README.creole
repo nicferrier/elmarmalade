@@ -21,3 +21,34 @@ These are the things marmalade should do:
 * provide EmacsLisp front end to the {{{/package/}}} HTTP API
 ** this will likely be a separate project
 * provide an HTML front end to the package archives with some discovery
+
+
+== Admin tasks ==
+
+=== Syncing the mongodb dump from Marmalade v1 ===
+
+Here's the cron I run to keep a local copy of marmalade:
+
+{{{
+rsync --bwlimit=20 -av \
+      --files-from=<(ssh $MARMALADE_HOST find seville-marmalade/mongodump -cmin -60) \
+      -e ssh $MARMALADE_HOST:. $DESTINATION_DIR
+}}}
+
+The dump is pretty big so I'm not getting the latest of
+everything. Just the last hour and I run it twice a day.
+
+=== Importing a mongodb dump from Marmalade v1 ===
+
+Marmalade v1 dumps it's mongodb to a file every hour. I pull those
+files to my house and then use them to setup a local copy of the
+marmalade database that I use to generate the marmalade v2 filesystem.
+
+How to restore the database:
+
+{{{
+mongorestore $DIRECTORY
+}}}
+
+the {{{$DIRECTORY}}} should be an individual full-dump directory.
+
