@@ -55,8 +55,13 @@
                proc
                (lambda (proc status)
                  (when (equal status "finished\n")
-                   (rename-file temp-file target-file)
-                   (marmalade-mongo/make-files files target-root))))))))))
+                   (condition-case err
+                       (progn
+                         (rename-file temp-file target-file)
+                         (marmalade-mongo/make-files files target-root))
+                     (file-error
+                      (message "marmalade-mongo %s to %s got %S"
+                               temp-file target-file err))))))))))))
 
 (defun marmalade-mongo/buf->list (buffer)
   "Converts the buffer listing of the files in mongo to a proper list."
