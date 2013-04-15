@@ -32,7 +32,16 @@
    target-root package-name version
    (concat package-name "-" version "." type)))
 
+(defun marmalade-mongo-done ()
+  "Called at the end of the conversion."
+  (message "marmalade-mongo all done"))
+
 (defun marmalade-mongo/make-files (files target-root)
+  "Recursive package to package-file maker.
+
+Use mongofiles to grab a file from the database and put it on the
+file system.  Recurs around the FILES and calls
+`marmalade-mongo-done' when it's finished."
   (when files
     (destructuring-bind (file-entry &rest files) files
       (destructuring-bind (filename package-name type version) file-entry
@@ -56,12 +65,14 @@
                (lambda (proc status)
                  (when (equal status "finished\n")
                    (condition-case err
-                       (progn
-                         (rename-file temp-file target-file)
-                         (marmalade-mongo/make-files files target-root))
+                       (rename-file temp-file target-file)
                      (file-error
                       (message "marmalade-mongo %s to %s got %S"
-                               temp-file target-file err))))))))))))
+                               temp-file target-file err)))
+                   (if files
+                       (marmalade-mongo/make-files files target-root)
+                       ;; Call the end function if we're done
+                       (marmalade-mongo-done)))))))))))
 
 (defun marmalade-mongo/buf->list (buffer)
   "Converts the buffer listing of the files in mongo to a proper list."
