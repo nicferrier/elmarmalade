@@ -32,6 +32,14 @@
   :group 'marmalade-archive
   :type 'directory)
 
+(defcustom marmalade-archive-index-filename nil
+  "The location of the package index file.
+
+The package index file is a cached index of the state of the
+package archive."
+  :group 'marmalade
+  :type 'filename)
+
 
 ;; Directory root mangling code
 
@@ -178,6 +186,35 @@ kills it."
   (marmalade/packages-list->archive-list
    (kvalist->values
     (kvhash->alist marmalade/archive-cache))))
+
+(defun marmalade/package-store-modtime ()
+  (let ((modtime 5))
+    (elt
+     (file-attributes
+      marmalade-package-store-dir) modtime)))
+
+(defun marmalade/archive-index-modtime ()
+  (let ((modtime 5))
+    (elt
+     (file-attributes
+      marmalade-archive-index-filename) modtime)))
+
+(defun marmalade/archive-index-exists-p ()
+  (and
+   (stringp marmalade-archive-index-filename)
+   (file-exists-p
+    marmalade-archive-index-filename)))
+
+(defun marmalade-cache-test ()
+  "The implementation of the cache test.
+
+Return `t' if the `marmalade/archive-cache-fill' should be
+executed on the `marmalade-package-store-dir'."
+  (or
+   (not (marmalade/archive-index-exists-p))
+   (let* ((last-store-change (marmalade/package-store-modtime))
+          (cached-change-time (marmalade/archive-index-modtime)))
+     (time-less-p cached-change-time last-store-change))))
 
 (defun marmalade/package-archive ()
   "Make the package archive from package cache.
