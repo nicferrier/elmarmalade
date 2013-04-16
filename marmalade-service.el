@@ -27,9 +27,6 @@
 (elnode-app marmalade-dir 
   marmalade-archive)
 
-(defconst marmalade-package-store-dir "~/marmalade/packages"
-  "Where the package files are kept.")
-
 (defun marmalade/explode-package-string (package-name)
   (string-match
    "\\(.+\\)-\\([0-9.]+\\)+\\.\\(el\\|tar\\)"
