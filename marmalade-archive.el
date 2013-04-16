@@ -32,13 +32,13 @@
   :group 'marmalade-archive
   :type 'directory)
 
-(defcustom marmalade-archive-index-filename nil
+(defcustom marmalade-archive-index-filename ""
   "The location of the package index file.
 
 The package index file is a cached index of the state of the
 package archive."
-  :group 'marmalade
-  :type 'filename)
+  :group 'marmalade-archive
+  :type 'file)
 
 
 ;; Directory root mangling code
@@ -178,9 +178,6 @@ kills it."
                package-name (cons type package)
                marmalade/archive-cache)))))
 
-(defvar marmalade-archive-do-cache-fill nil
-  "Whether to regenerate the package-archive or use the cache.")
-
 (defun marmalade/cache->package-archive ()
   "Turn the cache into the package-archive."
   (marmalade/packages-list->archive-list
@@ -216,14 +213,41 @@ executed on the `marmalade-package-store-dir'."
           (cached-change-time (marmalade/archive-index-modtime)))
      (time-less-p cached-change-time last-store-change))))
 
+(defun marmalade/archive-load ()
+  "Load the archive from `marmalade-archive-index-filename'."
+  (setq marmalade/archive-cache
+        (catch 'return
+          (load-file
+           (concat
+            marmalade-archive-index-filename ".el")))))
+
+(defun marmalade/archive-save ()
+  "Save the archive to `marmalade-archive-index-filename'."
+  (let ((archive-file
+         (concat marmalade-archive-index-filename ".el")))
+    (when (and
+           (stringp marmalade-archive-index-filename)
+           (not (equal marmalade-archive-index-filename ""))
+           (file-writable-p archive-file))
+      (with-temp-buffer
+        (insert
+         (format "(throw 'return %S)" marmalade/archive-cache))
+        (write-file archive-file)))))
+
 (defun marmalade/package-archive ()
   "Make the package archive from package cache.
 
-Re-caches the package cache from the files on disc if necessary."
-  ;; FIXME - fix this test to check a file and load it or make the
-  ;; file and save it
-  (when marmalade-archive-do-cache-fill
-`    (marmalade/archive-cache-fill marmalade-package-store-dir))
+Re-caches the package cache from the files on disc if the call to
+`marmalade-cache-test' returns `t'."
+  (interactive)
+  ;; Possibly rebuild the cache file
+  (when (< (hash-table-size marmalade/archive-cache) 1)
+    (if (not (marmalade-cache-test))
+        (marmalade/archive-load)
+        ;; Else rebuild the cache
+        (marmalade/archive-cache-fill marmalade-package-store-dir)
+        (marmalade/archive-save)))
+  ;; Return the archive
   (cons 1 (marmalade/cache->package-archive)))
 
 ;; FIXME - should we make this conditional on elnode somehow?
