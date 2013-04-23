@@ -7,4 +7,11 @@
  :files
  ("marmalade-archive.el"
   "marmalade-service.el"
-  "marmalade-mongo.el"))
+  "marmalade-mongo.el")
+ :test
+ (:requires
+  ((fakir "0.0.16")
+   (s "1.4.0"))
+  :files
+  ("marmalade-test.el"
+   "elnode-0.9.9.6.9.tar")))

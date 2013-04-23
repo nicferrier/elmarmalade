@@ -24,8 +24,14 @@
 
 ;;; Code:
 
-(elnode-app marmalade-dir 
-  marmalade-archive)
+(elnode-app marmalade-dir marmalade-archive)
+
+(defconst marmalade-cookie-name "marmalade-user"
+  "The name of the cookie we use for auth.")
+
+(elnode-defauth 'marmalade-auth
+  :auth-test 'marmalade-auth-func
+  :cookie-name marmalade-cookie-name)
 
 (defun marmalade/explode-package-string (package-name)
   (string-match
@@ -60,9 +66,65 @@ transformation of the filename."
         with target-package
         on httpcon
         do
-        (with-current-buffer (find-file-noselect target-package)
+        (with-current-buffer
+            (let ((enable-local-variables nil))
+              (find-file-noselect target-package))
           (elnode-http-start httpcon 200 '("Content-type" . "text/elisp"))
           (elnode-http-return httpcon (buffer-string))))))
+
+(defun marmalade/package-handle (package-file)
+  "Return package-info on the package."
+  (cond
+    ((string-match "\\.el$" package-file)
+     (with-temp-buffer
+       (insert-file-contents-literally package-file)
+       (buffer-string) ; leave it in so it's easy to debug
+       (package-buffer-info)))
+    ((string-match "\\.tar$" package-file)
+     (package-tar-file-info package-file))
+    (t (error "Unrecognized extension `%s'"
+              (file-name-extension package-file)))))
+
+(defun marmalade/upload (httpcon)
+  "Handle uploaded packages."
+  ;; FIXME Need to check we have auth here
+  (with-elnode-auth httpcon 'marmalade-auth
+    (let* ((upload-file (elnode-http-param httpcon "file"))
+           (upload-file-name
+            (get-text-property 0 :elnode-filename upload-file))
+           (package-file-name
+            (concat
+             (file-name-as-directory
+              marmalade-package-store-dir) "/"
+              (file-name-nondirectory upload-file-name))))
+      ;; We need to parse the file for version and stuff.
+      (condition-case err
+          (let ((package-info
+                 (progn
+                   (with-temp-file package-file-name (insert upload-file))
+                   (marmalade/package-handle package-file-name))))
+            (elnode-send-json httpcon '("Ok")))
+        (error (progn
+                 (message "marmalade/upload ERROR!")
+                 (elnode-send-400
+                  httpcon
+                  "something went wrong uploading the package")))))))
+
+(defun marmalade-auth-func (username)
+  "What is the token for the USERNAME?"
+  (let ((user (db-get username marmalade/user-db)))
+    (when user
+      (aget user token))))
+
+(defun marmalade/package-handler (httpcon)
+  "Dispatch to the appropriate handler on method."
+  (elnode-method httpcon
+    (GET (marmalade/downloader httpcon))
+    (POST (marmalade/upload httpcon))))
+
+(defun marmalade/packages-index (httpcon)
+  "Show a package index in HTML or JSON?"
+  (elnode-send-html httpcon "<H1>marmalade repo</H1>"))
 
 (defun marmalade-router (httpcon)
   (elnode-hostpath-dispatcher
@@ -70,7 +132,10 @@ transformation of the filename."
    '(("^[^/]+//packages/archive-contents" . marmalade-archive-handler)
      ;; We don't really want to send 404's for these if we have them
      ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
-     ("^[^/]+//packages/\\(.*\\)" . marmalade/downloader))))
+     ("^[^/]+//packages/\\(.*\\)\\.\\(el\\|tar\\)" . marmalade/package-handler)
+     ("^[^/]+//packages/" . marmalade/packages-index))
+   :log-name "marmalade"
+   :auth-test marmalade-auth))
 
 (provide 'marmalade-service)
 
