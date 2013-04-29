@@ -1,4 +1,4 @@
-;;; elmarmalade.el --- the marmalade repository in emacs-lisp
+;;; elmarmalade.el --- the marmalade repository in emacs-lisp -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2013  Nic Ferrier
 
@@ -85,6 +85,16 @@ transformation of the filename."
     (t (error "Unrecognized extension `%s'"
               (file-name-extension package-file)))))
 
+(defun marmalade/package-path (package-file)
+  (let* ((info (marmalade/package-handle package-file))
+         (version (elt info 3))
+         (package-dir marmalade-package-store-dir)
+         (file-name (file-name-base package-file))
+         (file-name-dir (file-name-directory package-file))
+         (file-name-type (file-name-extension package-file)))
+    (s-lex-format
+     "${package-dir}/${file-name}/${version}/${file-name}-${version}.${file-name-type}")))
+
 (defun marmalade/upload (httpcon)
   "Handle uploaded packages."
   ;; FIXME Need to check we have auth here
@@ -100,9 +110,7 @@ transformation of the filename."
       ;; We need to parse the file for version and stuff.
       (condition-case err
           (let ((package-info
-                 (progn
-                   (with-temp-file package-file-name (insert upload-file))
-                   (marmalade/package-handle package-file-name))))
+                 (marmalade/package-handle package-file-name)))
             (elnode-send-json httpcon '("Ok")))
         (error (progn
                  (message "marmalade/upload ERROR!")

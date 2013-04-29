@@ -1,7 +1,7 @@
-;;; tests for marmalade
+;;; tests for marmalade  -*- lexical-binding: t -*-
 
 (require 'ert)
-(require 'marmalade-s)
+(require 'marmalade-service)
 (require 'fakir)
 (require 's)
 
@@ -54,46 +54,37 @@
               (seconds-to-time 60))))
       (should (marmalade-cache-test)))))
 
-(defmacro with-sformat-lex (&rest body)
-  (declare (debug (&rest form))
-           (indent 0))
-  `(flet ((lex-val (var) (symbol-value (intern var)))
-          (lisp-val (var) (format "%S" (lex-val var))))
-     ,@body))
+(defun marmalade/make-requires (depends)
+  "Make a requires string."
+  (if depends
+      (let ((s-lex-value-as-lisp t))
+        (s-lex-format ";; Package-Requires: ${depends}"))
+      ""))
 
 (defun marmalade/make-header (depends version)
   "Make a package header."
   ;; Expects the lex-val and lisp-val functions to have been fletted.
-  (with-sformat-lex
-    (let* ((requires
-            (if (not depends)
-                ""
-                (s-format ";; Package-Requires: ${depends}" 'lisp-val)))
-           (decl
-            (s-format ";; Author: Some Person <person@example.com>
+  (let ((requires (marmalade/make-requires depends)))
+    (s-lex-format ";; Author: Some Person <person@example.com>
 ;; Maintainer: Other Person <other@example.com>
-;; URL: http://git.example.com/place
 ;; Version: ${version}
+;; URL: http://git.example.com/place
 ${requires}
 ;; Keywords: lisp, tools
-" 'lex-val)))
-      decl)))
+")))
 
 (defun marmalade/make-test-pkg (name depends desc version commentary)
   "Make contents of a test pakage."
-  (with-sformat-lex
-    (let* ((decl (marmalade/make-header depends version))
-           (copy ";; Copyright (C) 2013 Some Person")
-           (defn
-            '(defun dummy-package ()
-              (interactive)
-              (message "ha")))
-           (defn-code
-            (s-format "${defn}\n\n" 'lisp-val))
-           (prvide '(provide (quote dummy-package)))
-           (prvide-code
-            (s-format "${prvide}\n\n" 'lisp-val)))
-      (s-format ";;; ${name}.el --- ${desc}
+  (let* ((decl (marmalade/make-header depends version))
+         (copy ";; Copyright (C) 2013 Some Person")
+         (defn
+          '(defun dummy-package ()
+            (interactive)
+            (message "ha")))
+         (defn-code (s-lex-format "${defn}\n\n"))
+         (prvide '(provide (quote dummy-package)))
+         (prvide-code (s-lex-format "${prvide}\n\n")))
+    (s-lex-format ";;; ${name}.el --- ${desc}
 
 ${copy}
 
@@ -108,36 +99,62 @@ ${commentary}
 ${defn-code}
 
 ${prvide-code}
-;;; ${name}.el ends here\n" 'lex-val))))
+;;; ${name}.el ends here
+")))
 
+(defun marmalade/package-requirify (src-list)
+  "Transform package depends.
+
+From: ((package-name \"0.1\"))
+To ((package-name (0 1))).
+
+This is code that is in `package-buffer-info'."
+  (mapcar
+   (lambda (elt)
+     (list (car elt)
+           (version-to-list (car (cdr elt)))))
+   src-list))
+
+(defmacro* marmalade/package-file
+    (&key (pkg-name "dummy-package")
+          (pkg-desc "a fake package for the marmalade test suite")
+          (pkg-depends '((timeclock "2.6.1")))
+          (pkg-version "0.0.1")
+          (pkg-commentary ";; This doesn't do anything.
+;; it's just a fake package for Marmalade.")
+          code)
+  "Make a fake package file called: /tmp/dummy-package.el.
+
+Executes the CODE parameter as a body of lisp."
+  `(let ((package-name ,pkg-name)
+         (package-desc ,pkg-desc)
+         (package-depends (quote ,pkg-depends))
+         (package-version ,pkg-version)
+         (package-commentary ,pkg-commentary))
+     (fakir-mock-file (make-fakir-file
+                       :filename (concat package-name ".el")
+                       :directory "/tmp/"
+                       :content (marmalade/make-test-pkg
+                                 package-name 
+                                 package-depends
+                                 package-desc
+                                 package-version
+                                 package-commentary))
+       ,code)))
 
 (ert-deftest marmalade/package-handle ()
   "Tests for the file handling stuff."
-  (let* ((pkg-commentary ";; This doesn't do anything.
-;; it's just a fake package for Marmalade.")
-         (pkg-name "dummy-package")
-         (pkg-desc "a fake package for the marmalade test suite")
-         (pkg-depends '((timeclock "2.6.1")))
-         (pkg-version "0.0.1")
-         (content (marmalade/make-test-pkg
-                   pkg-name pkg-depends pkg-desc
-                   pkg-version pkg-commentary))
-         (file (make-fakir-file
-                :filename (concat pkg-name ".el")
-                :directory "/tmp/"
-                :content content)))
-    (fakir-mock-file file
-        (should
-         (equal
-          (marmalade/package-handle "/tmp/dummy-package.el")
-          (vector pkg-name
-                  (mapcar
-                   (lambda (elt)
-                     (list (car elt)
-                           (version-to-list (car (cdr elt)))))
-                   pkg-depends)
-                  pkg-desc pkg-version
-                  (concat ";;; Commentary:\n\n" pkg-commentary "\n\n"))))))
+  (marmalade/package-file
+   :code
+   (should
+    (equal
+     (marmalade/package-handle "/tmp/dummy-package.el")
+     (vector
+      package-name
+      (marmalade/package-requirify package-depends)
+      package-desc
+      package-version
+      (concat ";;; Commentary:\n\n" package-commentary "\n\n")))))
   ;; A tar package
   (should
    (equal
@@ -152,6 +169,15 @@ ${prvide-code}
       (kv (0 0 15)))
      "The Emacs webserver."
      "0.9.9.6.9" nil])))
+
+(ert-deftest marmalade/package-path ()
+  (marmalade/package-file
+   :code
+   (should
+    (equal
+     (let ((marmalade-package-store-dir "/tmp"))
+       (marmalade/package-path "/tmp/dummy-package.el"))
+     "/tmp/dummy-package/0.0.1/dummy-package-0.0.1.el"))))
 
 (provide 'marmalade-tests)
 ;;; marmalade-tests.el ends here
