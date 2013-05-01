@@ -150,9 +150,9 @@ If the target package already exists a `file-error' is produced."
             (get-text-property 0 :elnode-filename upload-file))
            (base-file-name (file-name-nondirectory upload-file-name)))
       (condition-case err
-          (progn
-            (marmalade/save-package upload-file base-file-name)
-            (elnode-send-json httpcon '("Ok")))        
+          (let ((package-file-name
+                 (marmalade/save-package upload-file base-file-name)))
+            (elnode-send-redirect httpcon package-file-name 201))
         (error (progn
                  (message "marmalade/upload ERROR!")
                  (elnode-send-400
