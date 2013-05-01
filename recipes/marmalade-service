@@ -3,6 +3,7 @@
  :doc "The Marmalade package store service."
  :requires 
  ((dash "1.0.3")
+  (s "1.4.1") ; this is wrong so far
   (elnode "0.9.9.6.8"))
  :files
  ("marmalade-archive.el"

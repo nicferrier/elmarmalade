@@ -24,7 +24,7 @@
 
 ;;; Code:
 
-(elnode-app marmalade-dir marmalade-archive)
+(elnode-app marmalade-dir marmalade-archive s)
 
 (defconst marmalade-cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
