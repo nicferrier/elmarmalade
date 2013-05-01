@@ -117,38 +117,44 @@ This is code that is in `package-buffer-info'."
 
 (defmacro* marmalade/package-file
     (&key (pkg-name "dummy-package")
+          pkg-file-name ; can override the filename
           (pkg-desc "a fake package for the marmalade test suite")
           (pkg-depends '((timeclock "2.6.1")))
           (pkg-version "0.0.1")
           (pkg-commentary ";; This doesn't do anything.
 ;; it's just a fake package for Marmalade.")
           code)
-  "Make a fake package file called: /tmp/dummy-package.el.
+  "Make a fake package file.
 
 Executes the CODE parameter as a body of lisp."
-  `(let ((package-name ,pkg-name)
-         (package-desc ,pkg-desc)
-         (package-depends (quote ,pkg-depends))
-         (package-version ,pkg-version)
-         (package-commentary ,pkg-commentary))
-     (fakir-mock-file (make-fakir-file
-                       :filename (concat package-name ".el")
-                       :directory "/tmp/"
-                       :content (marmalade/make-test-pkg
-                                 package-name 
-                                 package-depends
-                                 package-desc
-                                 package-version
-                                 package-commentary))
+  `(let* ((package-name ,pkg-name)
+          (package-desc ,pkg-desc)
+          (package-depends (quote ,pkg-depends))
+          (package-version ,pkg-version)
+          (package-commentary ,pkg-commentary)
+          (package-file-name (or ,pkg-file-name package-name))
+          (package-content-string
+           (marmalade/make-test-pkg
+            package-name 
+            package-depends
+            package-desc
+            package-version
+            package-commentary))
+          (package-file
+           (make-fakir-file
+            :filename (concat package-file-name ".el")
+            :directory "/tmp/"
+            :content package-content-string)))
+     (fakir-mock-file package-file
        ,code)))
 
-(ert-deftest marmalade/package-handle ()
+(ert-deftest marmalade/package-info ()
   "Tests for the file handling stuff."
   (marmalade/package-file
    :code
    (should
     (equal
-     (marmalade/package-handle "/tmp/dummy-package.el")
+     (marmalade/package-info "/tmp/dummy-package.el")
      (vector
       package-name
       (marmalade/package-requirify package-depends)
@@ -158,7 +164,7 @@ Executes the CODE parameter as a body of lisp."
   ;; A tar package
   (should
    (equal
-    (marmalade/package-handle
+    (marmalade/package-info
      (expand-file-name
       (concat marmalade-dir "elnode-0.9.9.6.9.tar")))
     ["elnode"
@@ -172,12 +178,43 @@ Executes the CODE parameter as a body of lisp."
 
 (ert-deftest marmalade/package-path ()
   (marmalade/package-file
+   :pkg-file-name "test546.el"
    :code
    (should
     (equal
      (let ((marmalade-package-store-dir "/tmp"))
-       (marmalade/package-path "/tmp/dummy-package.el"))
+       (marmalade/package-path "/tmp/test546.el"))
      "/tmp/dummy-package/0.0.1/dummy-package-0.0.1.el"))))
 
+(ert-deftest marmalade/temp-file ()
+  "Test that we make the temp file in the right way."
+  (unwind-protect 
+       (flet ((make-temp-name (prefix)
+                (concat prefix "2345")))
+         (should
+          (equal
+           (marmalade/temp-file "blah.el")
+           "/tmp/marmalade-upload2345.el")))
+    (delete-file "/tmp/marmalade-upload2345.el")))
+
+(ert-deftest marmalade/save-package ()
+  "Test the save package stuff."
+  (let ((marmalade-package-store-dir "/tmp/test-marmalade-dir"))
+    (marmalade/package-file
+     :code
+     (let ((expected
+            "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"))
+       (should
+        (equal
+         (marmalade/save-package
+          package-content-string
+          "dummy-package.el")
+         expected))
+       (should
+        (equal
+         (fakir-file-path package-file)
+         expected))))))
+
 (provide 'marmalade-tests)
+
 ;;; marmalade-tests.el ends here

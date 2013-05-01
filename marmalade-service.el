@@ -72,8 +72,11 @@ transformation of the filename."
           (elnode-http-start httpcon 200 '("Content-type" . "text/elisp"))
           (elnode-http-return httpcon (buffer-string))))))
 
-(defun marmalade/package-handle (package-file)
-  "Return package-info on the package."
+(defun marmalade/package-info (package-file)
+  "Return the package-info on the PACKAGE-FILE.
+
+PACKAGE-FILE is either an ELISP or a TAR file to be uploaded to
+the package repository."
   (cond
     ((string-match "\\.el$" package-file)
      (with-temp-buffer
@@ -86,14 +89,57 @@ transformation of the filename."
               (file-name-extension package-file)))))
 
 (defun marmalade/package-path (package-file)
-  (let* ((info (marmalade/package-handle package-file))
+  "Turn PACKAGE-FILE into a repository package path."
+  (let* ((info (marmalade/package-info package-file))
          (version (elt info 3))
          (package-dir marmalade-package-store-dir)
+         (package-name (elt info 0))
          (file-name (file-name-base package-file))
          (file-name-dir (file-name-directory package-file))
          (file-name-type (file-name-extension package-file)))
     (s-lex-format
-     "${package-dir}/${file-name}/${version}/${file-name}-${version}.${file-name-type}")))
+     "${package-dir}/${package-name}/${version}/${package-name}-${version}.${file-name-type}")))
+
+(defun marmalade/temp-file (base-package-file-name)
+  "Make a temp file for storing a package in."
+  (make-temp-file
+   "marmalade-upload" nil
+   (concat "." (file-name-extension
+                base-package-file-name))))
+
+(defun marmalade/save-package (package-data package-file-name)
+  "Save PACKAGE-DATA as PACKAGE-FILE-NAME in the package store.
+
+PACKAGE-FILE-NAME is used as the basis of a temporary file name
+and then the package info is computed and the target package path
+name is computed.
+
+The file is moved from the temp name to the target name.
+
+If the target package already exists a `file-error' is produced."
+  ;; TODO: if we collect the temp files into a single upload directory
+  ;; we could treat that as a sort of queue... anything not moved
+  ;; could just be replayed through the package-info stuff because
+  ;; temp file nmes don't matter, except the extension, which we
+  ;; record.
+  (let* ((temp-package-file
+          (marmalade/temp-file package-file-name))
+         (package-path
+          (progn
+            ;; First save the uploaded data to a temp package file
+            (with-temp-file temp-package-file
+              (insert-string
+               (substring-no-properties package-data)))
+            ;; Now get the real path
+            (marmalade/package-path temp-package-file))))
+    ;; Try to move the file to the target path
+    (when (file-exists-p package-path)
+      (signal 'file-error
+              (list
+               package-path "existing package")))
+    (rename-file temp-package-file package-path)
+    ;; And return the package-path
+    package-path))
 
 (defun marmalade/upload (httpcon)
   "Handle uploaded packages."
@@ -102,16 +148,11 @@ transformation of the filename."
     (let* ((upload-file (elnode-http-param httpcon "file"))
            (upload-file-name
             (get-text-property 0 :elnode-filename upload-file))
-           (package-file-name
-            (concat
-             (file-name-as-directory
-              marmalade-package-store-dir) "/"
-              (file-name-nondirectory upload-file-name))))
-      ;; We need to parse the file for version and stuff.
+           (base-file-name (file-name-nondirectory upload-file-name)))
       (condition-case err
-          (let ((package-info
-                 (marmalade/package-handle package-file-name)))
-            (elnode-send-json httpcon '("Ok")))
+          (progn
+            (marmalade/save-package upload-file base-file-name)
+            (elnode-send-json httpcon '("Ok")))        
         (error (progn
                  (message "marmalade/upload ERROR!")
                  (elnode-send-400
