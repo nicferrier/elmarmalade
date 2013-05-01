@@ -14,7 +14,7 @@
       (should (equal version "3.1"))
       (should (equal type "el")))))
 
-(ert-deftest marmalade-package-name->filename ()
+(ert-deftest marmalade/package-name->filename ()
   "Convert package name to a filename."
   (let ((file "ascii-3.1.el")
         (marmalade-package-store-dir "/packages"))
