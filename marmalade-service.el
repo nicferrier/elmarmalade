@@ -59,23 +59,6 @@ transformation of the filename."
      version
      name version type)))
 
-(defun marmalade/downloader (httpcon)
-  "Download a specific package."
-  (flet ((elnode-http-mapping (httpcon which)
-           (let* ((package (elnode--http-mapping-impl httpcon which))
-                  (file (marmalade/package-name->filename package)))
-             file)))
-    (elnode-docroot-for
-        marmalade-package-store-dir
-        with target-package
-        on httpcon
-        do
-        (with-current-buffer
-            (let ((enable-local-variables nil))
-              (find-file-noselect target-package))
-          (elnode-http-start httpcon 200 '("Content-type" . "text/elisp"))
-          (elnode-http-return httpcon (buffer-string))))))
-
 (defun marmalade/package-info (package-file)
   "Return the package-info on the PACKAGE-FILE.
 
@@ -162,6 +145,23 @@ If the target package already exists a `file-error' is produced."
                  (elnode-send-400
                   httpcon
                   "something went wrong uploading the package")))))))
+
+(defun marmalade/downloader (httpcon)
+  "Download a specific package."
+  (flet ((elnode-http-mapping (httpcon which)
+           (let* ((package (elnode--http-mapping-impl httpcon which))
+                  (file (marmalade/package-name->filename package)))
+             file)))
+    (elnode-docroot-for
+        marmalade-package-store-dir
+        with target-package
+        on httpcon
+        do
+        (with-current-buffer
+            (let ((enable-local-variables nil))
+              (find-file-noselect target-package))
+          (elnode-http-start httpcon 200 '("Content-type" . "text/elisp"))
+          (elnode-http-return httpcon (buffer-string))))))
 
 (defun marmalade-auth-func (username)
   "What is the token for the USERNAME?"
