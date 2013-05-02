@@ -138,7 +138,7 @@ If the target package already exists a `file-error' is produced."
               (list
                package-path "existing package")))
     (rename-file temp-package-file package-path)
-    ;; And return the package-path
+    ;; Return the new path
     package-path))
 
 (defun marmalade/upload (httpcon)
