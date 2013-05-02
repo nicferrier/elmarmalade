@@ -210,7 +210,7 @@ The full path including the package root is returned."
   (save-match-data
     (mapconcat
      'identity
-     (cdr
+     (cdr ; first line is a "\n" so drop that
       (-keep 
        (lambda (line)
          (when (not (string-match-p "^;+ Commentary:.*" line))
