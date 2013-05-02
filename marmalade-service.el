@@ -24,7 +24,7 @@
 
 ;;; Code:
 
-(elnode-app marmalade-dir marmalade-archive db s rx)
+(elnode-app marmalade-dir marmalade-archive db s rx lisp-mnt)
 
 (defconst marmalade-cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
@@ -86,6 +86,15 @@ the package repository."
          (file-name-type (file-name-extension package-file)))
     (s-lex-format
      "${package-dir}/${package-name}/${version}/${package-name}-${version}.${file-name-type}")))
+
+
+(defun marmalade/package-meta (package-file)
+  (with-current-buffer (find-file-noselect package-file)
+    (list
+     (lm-header "Author")
+     (lm-header "Maintainer")
+     (lm-header "URL")
+     (lm-header "Keywords"))))
 
 (defun marmalade/temp-file (base-package-file-name)
   "Make a temp file for storing a package in."
@@ -192,7 +201,7 @@ The full path including the package root is returned."
   (let* ((pkg-dir (file-name-as-directory package-dir))
          (versions
               (directory-files pkg-dir nil "[^.].*"))
-         (top-version (car versions)))
+         (top-version (car (reverse versions))))
     (car
      (directory-files
       (concat pkg-dir top-version) t "[^.].*"))))
@@ -236,12 +245,15 @@ The full path including the package root is returned."
         (destructuring-bind
               (name depends description version commentary)
             (mapcar 'identity info)
-          (let ((about (marmalade/commentary->about commentary)))
-            (elnode-http-start httpcon 200 '(Content-type . "text/html"))
-            (elnode-http-return
-             httpcon
-             (s-lex-format
-              "<html>
+          (destructuring-bind
+                (author maintainer url keywords)
+              (marmalade/package-meta package-file)
+            (let ((about (marmalade/commentary->about commentary)))
+              (elnode-http-start httpcon 200 '(Content-type . "text/html"))
+              (elnode-http-return
+               httpcon
+               (s-lex-format
+                "<html>
 <head>
 <link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
 <title>${package-name} @ Marmalade</title>
@@ -249,10 +261,11 @@ The full path including the package root is returned."
 <body>
 <h1>${package-name} - ${version}</h1>
 <p class=\"description\">${description}</p>
+<p class=\"author\">${author}</p>
 <a href=\"${package-download}\">download ${package-name}</a>
 <pre>${about}</pre>
 </body>
-<html>")))))))
+<html>"))))))))
 
 ;; The authentication scheme.
 (elnode-defauth 'marmalade-auth
