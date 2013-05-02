@@ -24,7 +24,7 @@
 
 ;;; Code:
 
-(elnode-app marmalade-dir marmalade-archive s)
+(elnode-app marmalade-dir marmalade-archive db s rx)
 
 (defconst marmalade-cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
@@ -32,6 +32,10 @@
 (elnode-defauth 'marmalade-auth
   :auth-test 'marmalade-auth-func
   :cookie-name marmalade-cookie-name)
+
+(defconst marmalade/user-db
+  (db-make `(db-hash :filename ,(concat marmalade-dir "user")))
+  "The user database.")
 
 (defun marmalade/explode-package-string (package-name)
   (string-match
@@ -175,16 +179,100 @@ If the target package already exists a `file-error' is produced."
   "Show a package index in HTML or JSON?"
   (elnode-send-html httpcon "<H1>marmalade repo</H1>"))
 
+(defun marmalade/top-version (package-dir)
+  "Return the path to the newest version in PACKAGE-DIR.
+
+PACKAGE-DIR is the top level package directory:
+
+  package-root/package-name
+
+The full path including the package root is returned."
+  (let* ((pkg-dir (file-name-as-directory package-dir))
+         (versions
+              (directory-files pkg-dir nil "[^.].*"))
+         (top-version (car versions)))
+    (car
+     (directory-files
+      (concat pkg-dir top-version) t "[^.].*"))))
+
+(defun marmalade/relativize (path root) ; not actually using this right now
+  "Return the part of PATH under ROOT or `nil'."
+  (save-match-data
+    (let ((pt 
+           (string-match
+            (rx-to-string `(: bos ,root (group (+ anything))))
+            path)))
+      (when pt
+        (match-string 1 path)))))
+
+(defun marmalade/commentary->about (commentary)
+  "Transform the COMMENTARY to something we can display."
+  (save-match-data
+    (mapconcat
+     'identity
+     (cdr
+      (-keep 
+       (lambda (line)
+         (when (not (string-match-p "^;+ Commentary:.*" line))
+           (if (string-match "^;* \\(.*\\)" line)
+               (match-string 1 line)
+               line)))
+       (split-string commentary "\n")))
+     "\n")))
+
+(defun marmalade/package-blurb (httpcon)
+  "Provide an informative description of the package."
+  (elnode-docroot-for
+      marmalade-package-store-dir
+      with target-package
+      on httpcon
+      do
+      (let* ((package-name (elnode-http-mapping httpcon 1))
+             (package-file (marmalade/top-version target-package))
+             (package-download (file-name-nondirectory package-file))
+             (info (marmalade/package-info package-file)))
+        (destructuring-bind
+              (name depends description version commentary)
+            (mapcar 'identity info)
+          (let ((about (marmalade/commentary->about commentary)))
+            (elnode-http-start httpcon 200 '(Content-type . "text/html"))
+            (elnode-http-return
+             httpcon
+             (s-lex-format
+              "<html>
+<head>
+<link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
+<title>${package-name} @ Marmalade</title>
+</head>
+<body>
+<h1>${package-name}</h1>
+<p class=\"description\">${description}</p>
+<a href=\"${package-download}\">download ${package-name}</a>
+<pre>${about}</pre>
+</body>
+<html>")))))))
+
+;; The authentication scheme.
+(elnode-defauth 'marmalade-auth
+  :auth-test 'marmalade-auth-func
+  :cookie-name marmalade-cookie-name)
+
+(defconst marmalade/webserver
+  (elnode-webserver-handler-maker (concat marmalade-dir "static"))
+  "The webserver for marmalade.")
+
 (defun marmalade-router (httpcon)
   (elnode-hostpath-dispatcher
    httpcon
-   '(("^[^/]+//packages/archive-contents" . marmalade-archive-handler)
+   `(("^[^/]*//-/\\(.*\\)$" . ,marmalade/webserver)
+     ("^[^/]+//packages/archive-contents" . marmalade-archive-handler)
      ;; We don't really want to send 404's for these if we have them
+     ("^[^/]+//packages/\\([^/]+\\)" . marmalade/package-blurb)
      ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
      ("^[^/]+//packages/\\(.*\\)\\.\\(el\\|tar\\)" . marmalade/package-handler)
      ("^[^/]+//packages/" . marmalade/packages-index))
    :log-name "marmalade"
-   :auth-test marmalade-auth))
+   :auth-scheme 'marmalade-auth))
 
 (provide 'marmalade-service)
 

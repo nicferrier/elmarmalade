@@ -215,6 +215,32 @@ Executes the CODE parameter as a body of lisp."
          (fakir-file-path package-file)
          expected))))))
 
+(ert-deftest marmalade/relativize ()
+  (should
+   (equal
+    (marmalade/relativize "/tmp/blah/blah" "/tmp/")
+    "blah/blah"))
+  (should
+   (equal
+    (marmalade/relativize "/tmp/blah/blah/more" "/tmp/")
+    "blah/blah/more"))
+  (should
+   (equal
+    (marmalade/relativize "/tmp/blah/blah/more" "/var/")
+    nil)))
+
+(ert-deftest marmalade/commentary->about ()
+  (should
+   (equal
+    (marmalade/commentary->about ";;; Commentary:
+
+;; this is a test of the function.
+
+;; It should result in something without colons.")
+    "this is a test of the function.
+
+It should result in something without colons.")))
+
 (provide 'marmalade-tests)
 
 ;;; marmalade-tests.el ends here
