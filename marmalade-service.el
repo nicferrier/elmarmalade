@@ -149,7 +149,9 @@ If the target package already exists a `file-error' is produced."
 (defun marmalade/downloader (httpcon)
   "Download a specific package."
   (flet ((elnode-http-mapping (httpcon which)
-           (let* ((package (elnode--http-mapping-impl httpcon which))
+           (let* ((package
+                   (elnode--http-mapping-implementation
+                    httpcon which))
                   (file (marmalade/package-name->filename package)))
              file)))
     (elnode-docroot-for
@@ -245,7 +247,7 @@ The full path including the package root is returned."
 <title>${package-name} @ Marmalade</title>
 </head>
 <body>
-<h1>${package-name}</h1>
+<h1>${package-name} - ${version}</h1>
 <p class=\"description\">${description}</p>
 <a href=\"${package-download}\">download ${package-name}</a>
 <pre>${about}</pre>
@@ -267,10 +269,10 @@ The full path including the package root is returned."
    `(("^[^/]*//-/\\(.*\\)$" . ,marmalade/webserver)
      ("^[^/]+//packages/archive-contents" . marmalade-archive-handler)
      ;; We don't really want to send 404's for these if we have them
-     ("^[^/]+//packages/\\([^/]+\\)" . marmalade/package-blurb)
      ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
-     ("^[^/]+//packages/\\(.*\\)\\.\\(el\\|tar\\)" . marmalade/package-handler)
-     ("^[^/]+//packages/" . marmalade/packages-index))
+     ("^[^/]+//packages/\\(.*\\.\\(el\\|tar\\)\\)" . marmalade/package-handler)
+     ("^[^/]+//packages/\\([^/]+\\)" . marmalade/package-blurb)
+     ("^[^/]+//packages/$" . marmalade/packages-index))
    :log-name "marmalade"
    :auth-scheme 'marmalade-auth))
 
