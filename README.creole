@@ -25,6 +25,35 @@ These are the things marmalade should do:
 * provide an HTML front end to the package archives with some discovery
 
 
+== Current problems ==
+
+=== Handling errors better ===
+
+Here is [[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-service.el#L150|the upload function]]
+
+which calls
+this
+[[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-service.el#L121|the save package function]]
+
+which makes a temp file and puts the package data in it and then
+uses
+[[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-service.el#L121|this]]
+
+which
+uses
+[[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-service.el#L67|this]]
+to get the meta data of the existing (temp) package file.
+
+And that, I think, is where a lot of error checking needs to be done
+and reported from.
+
+Currently we
+have
+[[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-tests.el#L200|this]]
+which tests the package save. It doesn't test much about it though. We
+need a lot of invalid packages to be tested.
+
+
 == Admin tasks ==
 
 === Syncing the mongodb dump from Marmalade v1 ===
