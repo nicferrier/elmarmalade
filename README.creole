@@ -29,20 +29,62 @@ These are the things marmalade should do:
 
 === Handling errors better ===
 
-Here is [[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-service.el#L150|the upload function]]
+Here
+is
+[[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-service.el#L150|the upload function]]
+
+{{{
+(let ((package-file-name
+       (marmalade/save-package upload-file base-file-name)))
+  (elnode-send-redirect httpcon package-file-name 201))
+}}}
 
 which calls
 this
 [[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-service.el#L121|the save package function]]
 
+{{{
+(with-temp-file temp-package-file
+  (insert-string
+   (substring-no-properties package-data)))
+;; Now get the real path
+(marmalade/package-path temp-package-file))))
+}}}
+
 which makes a temp file and puts the package data in it and then
 uses
 [[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-service.el#L121|this]]
+
+{{{
+(defun marmalade/package-path (package-file)
+  "Turn PACKAGE-FILE into a repository package path."
+  (let* ((info (marmalade/package-info package-file))
+         (version (elt info 3))
+}}}
 
 which
 uses
 [[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-service.el#L67|this]]
 to get the meta data of the existing (temp) package file.
+
+
+{{{
+(defun marmalade/package-info (package-file)
+  "Return the package-info on the PACKAGE-FILE.
+
+PACKAGE-FILE is either an ELISP or a TAR file to be uploaded to
+the package repository."
+  (cond
+    ((string-match "\\.el$" package-file)
+     (with-temp-buffer
+       (insert-file-contents-literally package-file)
+       (buffer-string) ; leave it in so it's easy to debug
+       (package-buffer-info)))
+    ((string-match "\\.tar$" package-file)
+     (package-tar-file-info package-file))
+    (t (error "Unrecognized extension `%s'"
+              (file-name-extension package-file)))))
+}}}
 
 And that, I think, is where a lot of error checking needs to be done
 and reported from.
@@ -50,8 +92,31 @@ and reported from.
 Currently we
 have
 [[https://github.com/nicferrier/elmarmalade/blob/master/marmalade-tests.el#L200|this]]
-which tests the package save. It doesn't test much about it though. We
-need a lot of invalid packages to be tested.
+which tests the package save:
+
+
+{{{
+(ert-deftest marmalade/save-package ()
+  "Test the save package stuff."
+  (let ((marmalade-package-store-dir "/tmp/test-marmalade-dir"))
+    (marmalade/package-file
+     :code
+     (let ((expected
+            "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"))
+       (should
+        (equal
+         (marmalade/save-package
+          package-content-string
+          "dummy-package.el")
+         expected))
+       (should
+        (equal
+         (fakir-file-path package-file)
+         expected))))))
+}}}
+
+It doesn't test much about it though. We need a lot of invalid
+packages to be tested.
 
 
 == Admin tasks ==
