@@ -65,12 +65,12 @@ transformation of the filename."
 PACKAGE-FILE is either an ELISP or a TAR file to be uploaded to
 the package repository."
   (cond
-    ((string-match "\\.el$" package-file)
+    ((string-match-p "\\.el$" package-file)
      (with-temp-buffer
        (insert-file-contents-literally package-file)
        (buffer-string) ; leave it in so it's easy to debug
        (package-buffer-info)))
-    ((string-match "\\.tar$" package-file)
+    ((string-match-p "\\.tar$" package-file)
      (package-tar-file-info package-file))
     (t (error "Unrecognized extension `%s'"
               (file-name-extension package-file)))))
