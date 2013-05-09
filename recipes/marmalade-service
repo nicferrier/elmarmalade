@@ -14,5 +14,5 @@
   ((fakir "0.0.16")
    (s "1.4.0"))
   :files
-  ("marmalade-test.el"
+  ("marmalade-tests.el"
    "elnode-0.9.9.6.9.tar")))
