@@ -30,6 +30,9 @@
 (defcustom marmalade-package-store-dir nil
   "The location of the package files."
   :group 'marmalade-archive
+  :type '(choice
+          (const :tag "Default" nil)
+          (directory "~/marmalade-packages"))
   :type 'directory)
 
 (defcustom marmalade-archive-index-filename ""
