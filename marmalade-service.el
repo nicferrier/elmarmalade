@@ -188,12 +188,58 @@ If the target package already exists a `file-error' is produced."
     (GET (marmalade/downloader httpcon))
     (POST (marmalade/upload httpcon))))
 
+(defun* marmalade/package-list (&key
+                                sorted
+                                take)
+  "Return the list of packages in the archive.
+
+SORTED is a `file-attributes' field to sort on specified as a
+number as per the `file-attributes' help.  If not specified no
+sorting is done.
+
+TAKE specifies how many entries to return."
+  (let ((sorter
+         (lambda (a b)
+           (funcall
+            (case sorted
+              ((4 5 6) 'time-less-p)
+              ((1 2 3 7) 'cmp)
+              (t (error "cannot compare %s" sorted)))
+            (elt a (+ 1 sorted))
+            (elt b (+ 1 sorted)))))
+        (packages 
+         (loop for e in
+              (directory-files
+               marmalade-package-store-dir
+               nil "^[^.].*")
+            collect
+              (cons
+               e
+               (file-attributes
+                (concat marmalade-package-store-dir e))))))
+    (when sorted
+      (setq packages (reverse (sort packages sorter))))
+    (if take
+        (-take take packages)
+        packages)))
+
 (defun marmalade/packages-index (httpcon)
   "Show a package index in HTML or JSON?"
-  (elnode-send-html httpcon "<H1>marmalade repo</H1>"))
+  (let* ((latest (marmalade/package-list :sorted 5 :take 10))
+         (latest-html
+          (loop for (name . rest) in latest
+             collect
+               (s-format
+                "<li><a href=\"/packages/${name}\">${name}</a></li>"
+                'aget `(("name" . ,name))))))
+    (elnode-send-html
+     httpcon
+     (format
+      "<H1>marmalade repo</H1><ul>%s</ul>"
+      (mapconcat 'identity latest-html "\n")))))
 
 (defun marmalade/top-version (package-dir)
-  "Return the path to the newest version in PACKAGE-DIR.
+  "Return the path to the newest version of a package in PACKAGE-DIR.
 
 PACKAGE-DIR is the top level package directory:
 
