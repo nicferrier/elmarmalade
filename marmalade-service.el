@@ -127,7 +127,8 @@ If the target package already exists a `file-error' is produced."
             (with-temp-file temp-package-file
               (insert-string
                (substring-no-properties package-data)))
-            ;; Now get the real path
+            ;; Now read the file contents to get the real path
+            ;; - this part could be done on the consumer side of a queue
             (marmalade/package-path temp-package-file))))
     ;; Try to move the file to the target path
     (when (file-exists-p package-path)
