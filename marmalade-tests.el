@@ -143,10 +143,11 @@ Executes the CODE parameter as a body of lisp."
             package-version
             package-commentary))
           (package-file
-           (make-fakir-file
-            :filename (concat package-file-name ".el")
+           (fakir-file
+            :filename package-file-name
             :directory "/tmp/"
-            :content package-content-string)))
+            :content package-content-string))
+          (fakir--home-root "/home/marmalade"))
      (fakir-mock-file package-file
        ,code)))
 
