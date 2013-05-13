@@ -132,7 +132,9 @@ Executes the CODE parameter as a body of lisp."
           (package-depends (quote ,pkg-depends))
           (package-version ,pkg-version)
           (package-commentary ,pkg-commentary)
-          (package-file-name (or ,pkg-file-name package-name))
+          (package-file-name
+           (or ,pkg-file-name
+               (concat package-name ".el")))
           (package-content-string
            (marmalade/make-test-pkg
             package-name 
