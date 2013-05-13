@@ -115,18 +115,20 @@ This is code that is in `package-buffer-info'."
            (version-to-list (car (cdr elt)))))
    src-list))
 
-(defmacro* marmalade/package-file
-    (&key (pkg-name "dummy-package")
-          pkg-file-name ; can override the filename
-          (pkg-desc "a fake package for the marmalade test suite")
-          (pkg-depends '((timeclock "2.6.1")))
-          (pkg-version "0.0.1")
-          (pkg-commentary ";; This doesn't do anything.
-;; it's just a fake package for Marmalade.")
-          code)
+(defmacro* marmalade/package-file (&key (pkg-name "dummy-package")
+                                        pkg-file-name ; can override the filename
+                                        (pkg-desc "a fake package for the marmalade test suite")
+                                        (pkg-depends '((timeclock "2.6.1")))
+                                        (pkg-version "0.0.1")
+                                        (pkg-commentary ";; This doesn't do anything.\n;; it's just a fake package for Marmalade.")
+                                        code)
   "Make a fake package file.
 
-Executes the CODE parameter as a body of lisp."
+Everything is faked by default but can be over-ridden by using
+the parameters.
+
+Evaluates CODE with the package file made using
+`fakir-mock-file'."
   `(let* ((package-name ,pkg-name)
           (package-desc ,pkg-desc)
           (package-depends (quote ,pkg-depends))
@@ -201,22 +203,33 @@ Executes the CODE parameter as a body of lisp."
     (delete-file "/tmp/marmalade-upload2345.el")))
 
 (ert-deftest marmalade/save-package ()
-  "Test the save package stuff."
-  (let ((marmalade-package-store-dir "/tmp/test-marmalade-dir"))
-    (marmalade/package-file
-     :code
-     (let ((expected
-            "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"))
-       (should
-        (equal
-         (marmalade/save-package
-          package-content-string
-          "dummy-package.el")
-         expected))
-       (should
-        (equal
-         (fakir-file-path package-file)
-         expected))))))
+  "Test the save package stuff.
+
+Probably the most complicated bit, it tests that an uploaded file
+can be created from some content and a filename and then moved to
+the package store."
+  ;; Have to fake the temp file making stuff
+  (flet ((make-temp-name (prefix) (concat prefix "2345")))
+    (let ((marmalade-package-store-dir "/tmp/test-marmalade-dir")
+          (temp-file (fakir-file
+                      :directory "/tmp/"
+                      :filename "marmalade-upload2345.el")))
+      (marmalade/package-file
+       :code
+       ;; Check that the saved file is in the package store
+       (let ((expected
+              "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"))
+         (fakir-mock-file temp-file
+           (should
+            (equal
+             (marmalade/save-package
+              package-content-string "dummy-package.el")
+             expected)))
+         ;; Check that the temp file has been renamed
+         (should
+          (equal
+           (fakir-file-path temp-file)
+           expected)))))))
 
 (ert-deftest marmalade/relativize ()
   (should
