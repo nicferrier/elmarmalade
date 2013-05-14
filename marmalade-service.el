@@ -136,6 +136,8 @@ If the target package already exists a `file-error' is produced."
       (signal 'file-error
               (list
                package-path "existing package")))
+    ;; Really creates a directory for now. Not ideal.
+    (make-directory (file-name-directory package-path) t)
     (rename-file temp-package-file package-path)
     ;; Return the new path
     package-path))
