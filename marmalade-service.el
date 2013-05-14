@@ -224,30 +224,6 @@ TAKE specifies how many entries to return."
         (-take take packages)
         packages)))
 
-(defconst marmalade/front-page "<html>
-<head>
-<link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
-<title>marmalade-repo - for all your EmacsLisp needs</title>
-</head>
-<body>
-<h1>marmalade-repo</h1>
-<ul>${latest-html}</ul>
-</body>
-</html>")
-
-(defun marmalade/packages-index (httpcon)
-  "Show a package index in HTML or JSON?"
-  (let* ((latest (marmalade/package-list :sorted 5 :take 10))
-         (latest-html-lst
-          (loop for (name . rest) in latest
-             collect
-               (s-format
-                "<li><a href=\"/packages/${name}\">${name}</a></li>"
-                'aget `(("name" . ,name)))))
-         (latest-html 
-          (mapconcat 'identity latest-html-lst "\n")))
-    (elnode-send-html httpcon (s-lex-format marmalade/front-page))))
-
 (defun marmalade/top-version (package-dir)
   "Return the path to the newest version of a package in PACKAGE-DIR.
 
@@ -362,6 +338,30 @@ is grabbed."
                               about-text)))))
               (elnode-http-start httpcon 200 '(Content-type . "text/html"))
               (elnode-http-return httpcon page)))))))
+
+(defconst marmalade/front-page "<html>
+<head>
+<link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
+<title>marmalade-repo - for all your EmacsLisp needs</title>
+</head>
+<body>
+<h1>marmalade-repo</h1>
+<ul>${latest-html}</ul>
+</body>
+</html>")
+
+(defun marmalade/packages-index (httpcon)
+  "Show a package index in HTML or JSON?"
+  (let* ((latest (marmalade/package-list :sorted 5 :take 10))
+         (latest-html-lst
+          (loop for (name . rest) in latest
+             collect
+               (s-format
+                "<li><a href=\"/packages/${name}\">${name}</a></li>"
+                'aget `(("name" . ,name)))))
+         (latest-html 
+          (mapconcat 'identity latest-html-lst "\n")))
+    (elnode-send-html httpcon (s-lex-format marmalade/front-page))))
 
 ;; The authentication scheme.
 (elnode-defauth 'marmalade-auth
