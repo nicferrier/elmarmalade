@@ -246,16 +246,29 @@ the package store."
     nil)))
 
 (ert-deftest marmalade/commentary->about ()
-  (should
-   (equal
-    (marmalade/commentary->about ";;; Commentary:
+  (let ((about-result "this is a test of the function.\n\nIt should result in something without colons.\n\n"))
+    ;; Test with a "Code:"" ending marker
+    (should
+     (equal
+      (marmalade/commentary->about ";;; Commentary:
 
 ;; this is a test of the function.
 
-;; It should result in something without colons.")
-    "this is a test of the function.
+;; It should result in something without colons.
 
-It should result in something without colons.")))
+;;; Code:")
+      about-result))
+    ;; Test without a Code: ending marker
+    (should
+     (equal
+      (marmalade/commentary->about ";;; Commentary:
+
+;; this is a test of the function.
+
+;; It should result in something without colons.
+
+(require 'something)")
+      about-result))))
 
 (provide 'marmalade-tests)
 

@@ -274,20 +274,66 @@ The full path including the package root is returned."
       (when pt
         (match-string 1 path)))))
 
+(defun marmalade/uncomment (str)
+  "Remove comments from lines in STR."
+  (mapconcat
+   (lambda (line)
+     (if (string-match "^;* \\(.*\\)" line)
+         (match-string 1 line)
+         line))
+   (split-string str "\n")
+   "\n"))
+
+(defun marmalade/commentary-grab (buffer)
+  "Grab commentary from BUFFER."
+  (with-current-buffer buffer
+    (save-excursion
+      (goto-char (point-min))
+      (let ((start-pos
+             (when (re-search-forward "^;+ Commentary:" nil t)
+               (re-search-forward "^;+" nil t)
+               (line-beginning-position))))
+        (if (not start-pos) ""
+            ;; Else we do have a commentary
+            (let* ((end-pos
+                    (progn
+                      (or
+                       (re-search-forward "^;+ Code:" nil t)
+                       ;; if we don't have code we should look for the start of the code
+                       (re-search-forward "^(" nil t))
+                      (line-beginning-position)))
+                   (str (buffer-substring-no-properties
+                         start-pos end-pos))
+                   (fmted-str (marmalade/uncomment str)))
+              (htmlize-protect-string fmted-str)))))))
+
 (defun marmalade/commentary->about (commentary)
-  "Transform the COMMENTARY to something we can display."
-  (save-match-data
-    (mapconcat
-     'identity
-     (cdr ; first line is a "\n" so drop that
-      (-keep 
-       (lambda (line)
-         (when (not (string-match-p "^;+ Commentary:.*" line))
-           (if (string-match "^;* \\(.*\\)" line)
-               (match-string 1 line)
-               line)))
-       (split-string commentary "\n")))
-     "\n")))
+  "Transform the COMMENTARY to something we can display.
+
+If COMMENTARY is `nil' the empty string is returned.
+
+See `marmalade/commentary-grab' for details of how the commentary
+is grabbed."
+  (if commentary
+      (save-match-data
+        (with-temp-buffer
+          (insert commentary)
+          (marmalade/commentary-grab (current-buffer))))
+      ""))
+
+(defconst marmalade/package-blurb-page "<html>
+<head>
+<link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
+<title>${package-name} @ Marmalade</title>
+</head>
+<body>
+<h1>${package-name} - ${version}</h1>
+<p class=\"description\">${description}</p>
+<p class=\"author\">${author}</p>
+<a href=\"${package-download}\">download ${package-name}</a>
+<pre>${about-text}</pre>
+</body>
+<html>")
 
 (defun marmalade/package-blurb (httpcon)
   "Provide an informative description of the package."
@@ -306,24 +352,16 @@ The full path including the package root is returned."
           (destructuring-bind
                 (author maintainer url keywords)
               (marmalade/package-meta package-file)
-            (let ((about (marmalade/commentary->about commentary)))
+            (let* ((about-text (marmalade/commentary->about commentary))
+                   (page
+                    (condition-case err
+                        (s-lex-format marmalade/package-blurb-page)
+                      (error (format
+                              "<html>error: %S<br/><pre>%S</pre></html>"
+                              (cdr err)
+                              about-text)))))
               (elnode-http-start httpcon 200 '(Content-type . "text/html"))
-              (elnode-http-return
-               httpcon
-               (s-lex-format
-                "<html>
-<head>
-<link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
-<title>${package-name} @ Marmalade</title>
-</head>
-<body>
-<h1>${package-name} - ${version}</h1>
-<p class=\"description\">${description}</p>
-<p class=\"author\">${author}</p>
-<a href=\"${package-download}\">download ${package-name}</a>
-<pre>${about}</pre>
-</body>
-<html>"))))))))
+              (elnode-http-return httpcon page)))))))
 
 ;; The authentication scheme.
 (elnode-defauth 'marmalade-auth
