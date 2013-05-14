@@ -25,7 +25,7 @@
 ;;; Code:
 
 (elnode-app marmalade-dir
-  marmalade-archive db s dash rx lisp-mnt outline)
+  marmalade-archive htmlize db s dash rx lisp-mnt outline)
 
 (defconst marmalade-cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
