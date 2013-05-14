@@ -146,10 +146,12 @@ If the target package already exists a `file-error' is produced."
   "Handle uploaded packages."
   ;; FIXME Need to check we have auth here
   (with-elnode-auth httpcon 'marmalade-auth
-    (let* ((upload-file (elnode-http-param httpcon "file"))
+    (let* ((upload-file
+            (elnode-http-param httpcon "package-file"))
            (upload-file-name
             (get-text-property 0 :elnode-filename upload-file))
-           (base-file-name (file-name-nondirectory upload-file-name)))
+           (base-file-name
+            (file-name-nondirectory upload-file-name)))
       (condition-case err
           (let ((package-file-name
                  (marmalade/save-package upload-file base-file-name)))
