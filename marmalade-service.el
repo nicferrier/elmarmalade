@@ -187,9 +187,7 @@ If the target package already exists a `file-error' is produced."
 
 (defun marmalade/package-handler (httpcon)
   "Dispatch to the appropriate handler on method."
-  (elnode-method httpcon
-    (GET (marmalade/downloader httpcon))
-    (POST (marmalade/upload httpcon))))
+  (marmalade/downloader httpcon))
 
 (defun* marmalade/package-list (&key
                                 sorted
@@ -349,21 +347,33 @@ is grabbed."
 <body>
 <h1>marmalade-repo</h1>
 <ul>${latest-html}</ul>
+<form name=\"upload\" method=\"POST\" action=\"\" enctype=\"multipart/form-data\">
+<input type=\"file\" name=\"package-file\"/><br/>
+<input type=\"submit\" name=\"upload\"/>
+</form>
 </body>
-</html>")
+</html>"
+  "Template for the front page.")
+
+(defconst marmalade/package-item
+  "<li><a href=\"/packages/${name}\">${name}</a></li>"
+  "Template for package items.")
 
 (defun marmalade/packages-index (httpcon)
-  "Show a package index in HTML or JSON?"
-  (let* ((latest (marmalade/package-list :sorted 5 :take 10))
-         (latest-html-lst
-          (loop for (name . rest) in latest
-             collect
-               (s-format
-                "<li><a href=\"/packages/${name}\">${name}</a></li>"
-                'aget `(("name" . ,name)))))
-         (latest-html 
-          (mapconcat 'identity latest-html-lst "\n")))
-    (elnode-send-html httpcon (s-lex-format marmalade/front-page))))
+  "Upload a package of show a package index in HTML."
+  (elnode-method httpcon
+    (GET
+     (let* ((latest (marmalade/package-list :sorted 5 :take 10))
+            (latest-html-lst
+             (loop for (name . rest) in latest
+                collect
+                  (s-lex-format marmalade/package-item)))
+            (latest-html 
+             (mapconcat 'identity latest-html-lst "\n")))
+       (elnode-send-html httpcon (s-lex-format
+                                  marmalade/front-page))))
+    ;; Or we need to upload
+    (POST (marmalade/upload httpcon))))
 
 ;; The authentication scheme.
 (elnode-defauth 'marmalade-auth
