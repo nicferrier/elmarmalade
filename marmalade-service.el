@@ -409,7 +409,9 @@ file."
      ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
      ("^[^/]+//packages/\\(.*\\.\\(el\\|tar\\)\\)" . marmalade/package-handler)
      ("^[^/]+//packages/\\([^/]+\\)" . marmalade/package-blurb)
-     ("^[^/]+//packages/$" . marmalade/packages-index))
+     ;; we have GET /packages/ and / be the same right now - probably not right
+     ("^[^/]+//packages/$" . marmalade/packages-index)
+     ("^[^/]+//$" . marmalade/packages-index))
    :log-name "marmalade"
    :auth-scheme 'marmalade-auth))
 
