@@ -1,16 +1,71 @@
+/*
+  styles for the marmalade repository
+ */
+
 body {
     font-family: sans-serif;
+    color: #895221;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+h1,h4 {
+    color: DarkOrange;
+}
+
+h1 {
+    font-size: 450%;
+}
+
+h4 {
+    font-size: 150%;
+}
+
+
+a:link {
+    color: #895221;
+}
+
+a:visited {
+    color: #893221;
+}
+
+#blurb {
+    width: 45%;
 }
 
 p.description {
     font-style: italic;
 }
 
-form {
+#login-panel {
+    float: right;
+}
+
+#panel {
+    clear: both;
+    float: right;
+    width: 40%;
+}
+
+form[name=upload] {
     margin-top: 3em;
     border: thin solid;
-    width: 25%;
+    width: 90%;
     text-align: right;
     padding: 1em;
 }
 
+form input[type=file] {
+    border: thin solid;
+}
+
+label {
+    display: block;
+    float: left;
+    width: 80px;
+}
+
+/*
+  end of marmalade styles
+  */

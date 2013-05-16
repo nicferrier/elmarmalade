@@ -27,12 +27,8 @@
 (elnode-app marmalade-dir
   marmalade-archive htmlize db s dash rx lisp-mnt outline)
 
-(defconst marmalade-cookie-name "marmalade-user"
+(defconst marmalade/cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
-
-(elnode-defauth 'marmalade-auth
-  :auth-test 'marmalade-auth-func
-  :cookie-name marmalade-cookie-name)
 
 (defconst marmalade/user-db
   (db-make `(db-hash :filename ,(concat marmalade-dir "user")))
@@ -180,12 +176,6 @@ If the target package already exists a `file-error' is produced."
               (find-file-noselect target-package))
           (elnode-http-start httpcon 200 '("Content-type" . "text/elisp"))
           (elnode-http-return httpcon (buffer-string))))))
-
-(defun marmalade-auth-func (username)
-  "What is the token for the USERNAME?"
-  (let ((user (db-get username marmalade/user-db)))
-    (when user
-      (aget user token))))
 
 (defun marmalade/package-handler (httpcon)
   "Dispatch to the appropriate handler on method."
@@ -341,46 +331,50 @@ is grabbed."
               (elnode-http-start httpcon 200 '(Content-type . "text/html"))
               (elnode-http-return httpcon page)))))))
 
-(defconst marmalade/front-page "<html>
-<head>
-<link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
-<title>marmalade-repo - for all your EmacsLisp needs</title>
-</head>
-<body>
-<h1>marmalade-repo</h1>
-<ul>${latest-html}</ul>
-<form name=\"upload\" method=\"POST\" action=\"\" enctype=\"multipart/form-data\">
-<input type=\"file\" name=\"package-file\"/><br/>
-<input type=\"submit\" name=\"upload\"/>
-</form>
-</body>
-</html>"
-  "Template for the front page.")
-
 (defconst marmalade/package-item
   "<li><a href=\"/packages/${name}\">${name}</a></li>"
   "Template for package items.")
+
+(defconst marmalade/login-panel
+  "<div id=\"login-panel\">logged in: <span id=\"username\">${username}</span></div>")
+
+(defun marmalade/login (httpcon)
+  (let* ((auth-cookie-cons (elnode-auth-get-cookie-value
+                            httpcon :cookie-name marmalade/cookie-name))
+         (username (if (consp auth-cookie-cons) (car auth-cookie-cons) "")))
+    (s-lex-format marmalade/login-panel)))
 
 (defun marmalade/packages-index (httpcon)
   "Upload a package of show a package index in HTML."
   (elnode-method httpcon
     (GET
-     (let* ((latest (marmalade/package-list :sorted 5 :take 10))
+     (let* ((login-panel (marmalade/login httpcon))
+            (latest (marmalade/package-list :sorted 5 :take 10))
             (latest-html-lst
              (loop for (name . rest) in latest
                 collect
                   (s-lex-format marmalade/package-item)))
             (latest-html 
-             (mapconcat 'identity latest-html-lst "\n")))
-       (elnode-send-html httpcon (s-lex-format
-                                  marmalade/front-page))))
+             (mapconcat 'identity latest-html-lst "\n"))
+            (page-file (concat marmalade-dir "front-page.html"))
+            (buf (let ((revert-without-query (list page-file)))
+                   (find-file-noselect page-file))))
+       (elnode-send-html httpcon (with-current-buffer
+                                     (s-buffer-lex-format buf)
+                                   (buffer-string)))))
     ;; Or we need to upload
     (POST (marmalade/upload httpcon))))
 
+(defun marmalade/login-sender (httpcon target redirect)
+  "Send the login page."
+  (let ((page-file (concat marmalade-dir "login-page.html")))
+    (elnode-send-file httpcon page-file)))
+
 ;; The authentication scheme.
 (elnode-defauth 'marmalade-auth
-  :auth-test 'marmalade-auth-func
-  :cookie-name marmalade-cookie-name)
+  :cookie-name marmalade/cookie-name
+  :auth-db marmalade/user-db
+  :sender 'marmalade/login-sender)
 
 (defconst marmalade/webserver
   (elnode-webserver-handler-maker (concat marmalade-dir "static"))
