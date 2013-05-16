@@ -81,9 +81,13 @@ the package repository."
          (file-name (file-name-base package-file))
          (file-name-dir (file-name-directory package-file))
          (file-name-type (file-name-extension package-file)))
-    (s-lex-format
-     "${package-dir}/${package-name}/${version}/${package-name}-${version}.${file-name-type}")))
-
+    (list
+     :info info
+     :version version
+     :package-name package-name
+     :package-path
+     (s-lex-format
+      "${package-dir}/${package-name}/${version}/${package-name}-${version}.${file-name-type}"))))
 
 (defun marmalade/package-meta (package-file)
   (with-current-buffer (find-file-noselect package-file)
@@ -117,30 +121,29 @@ If the target package already exists a `file-error' is produced."
   ;; temp file nmes don't matter, except the extension, which we
   ;; record.
   (let* ((temp-package-file
-          (marmalade/temp-file package-file-name))
-         (package-path
-          (progn
-            ;; First save the uploaded data to a temp package file
-            (with-temp-file temp-package-file
-              (insert-string
-               (substring-no-properties package-data)))
-            ;; Now read the file contents to get the real path
-            ;; - this part could be done on the consumer side of a queue
-            (marmalade/package-path temp-package-file))))
-    ;; Try to move the file to the target path
-    (when (file-exists-p package-path)
-      (signal 'file-error
-              (list
-               package-path "existing package")))
-    ;; Really creates a directory for now. Not ideal.
-    (make-directory (file-name-directory package-path) t)
-    (rename-file temp-package-file package-path)
-    ;; Return the new path
-    package-path))
+          (marmalade/temp-file package-file-name)))
+    ;; First save the uploaded data to a temp package file
+    (with-temp-file temp-package-file
+      (insert-string
+       (substring-no-properties package-data)))
+    ;; Now read the file contents to get the real path
+    ;; - this part could be done on the consumer side of a queue
+    (destructuring-bind
+          (&key info version package-name package-path)
+        (marmalade/package-path temp-package-file)
+      ;; Try to move the file to the target path
+      (when (file-exists-p package-path)
+        (signal 'file-error
+                (list
+                 package-path "existing package")))
+      ;; Really creates a directory for now. Not ideal.
+      (make-directory (file-name-directory package-path) t)
+      (rename-file temp-package-file package-path)
+      ;; Return the package name, possibly return the version too?
+      package-name)))
 
 (defun marmalade/upload (httpcon)
   "Handle uploaded packages."
-  ;; FIXME Need to check we have auth here
   (with-elnode-auth httpcon 'marmalade-auth
     (let* ((upload-file
             (elnode-http-param httpcon "package-file"))
@@ -149,14 +152,18 @@ If the target package already exists a `file-error' is produced."
            (base-file-name
             (file-name-nondirectory upload-file-name)))
       (condition-case err
-          (let ((package-file-name
-                 (marmalade/save-package upload-file base-file-name)))
-            (elnode-send-redirect httpcon package-file-name 201))
-        (error (progn
-                 (message "marmalade/upload ERROR!")
-                 (elnode-send-400
-                  httpcon
-                  "something went wrong uploading the package")))))))
+          (let* ((package-name
+                 (marmalade/save-package
+                  upload-file base-file-name))
+                 (package-url
+                  (concat
+                   "/packages/"
+                   (file-name-sans-extension
+                    (file-name-nondirectory package-file-name)))))
+            (elnode-send-redirect httpcon package-url 201))
+        (error (elnode-send-400
+                 httpcon
+                 "something went wrong uploading the package"))))))
 
 (defun marmalade/downloader (httpcon)
   "Download a specific package."
