@@ -352,22 +352,26 @@ is grabbed."
          (username (if (consp auth-cookie-cons) (car auth-cookie-cons) "")))
     (s-lex-format marmalade/login-panel)))
 
-(defmacro with-transient-file (buffer-var on file-name &rest code)
-  "Load FILE-NAME into BUFFER-VAR and eval CODE.
+(defmacro with-transient-file (file-name &rest code)
+  "Load FILE-NAME into a buffer and eval CODE.
 
 Then dispose of the buffer.
 
 File loading errors may be generated as by any call to visit a
 file."
   (declare (indent 2))
-  (let ((fvn (make-symbol "fv")))
+  (let ((fvn (make-symbol "fv"))
+        (bvn (make-symbol "bv")))
     `(let* ((,fvn ,file-name)
-            (,buffer-var (find-file-noselect ,fvn)))
+            (,bvn (get-buffer-create
+                   (generate-new-buffer-name "transient"))))
        (unwind-protect
-            (progn ,@code)
+            (with-current-buffer ,bvn
+              (insert-file-contents-literally ,fvn)
+              ,@code)
          (progn
-           (with-current-buffer ,buffer-var (revert-buffer t t))
-           (kill-buffer ,buffer-var))))))
+           (set-buffer-modified-p nil)
+           (kill-buffer ,bvn))))))
 
 (defun marmalade/packages-index (httpcon)
   "Upload a package of show a package index in HTML."
@@ -383,11 +387,11 @@ file."
              (mapconcat 'identity latest-html-lst "\n"))
             (page-file (concat marmalade-dir "front-page.html"))
             (buffer (find-file-noselect page-file)))
-       (with-transient-file buf on page-file
+       (with-transient-file page-file
          (elnode-send-html
           httpcon
-          (with-current-buffer buf
-            (s-buffer-lex-format buf)
+          (progn
+            (s-buffer-lex-format (current-buffer))
             (buffer-string))))))
     ;; Or we need to upload
     (POST (marmalade/upload httpcon))))
