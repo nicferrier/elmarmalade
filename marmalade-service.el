@@ -344,6 +344,23 @@ is grabbed."
          (username (if (consp auth-cookie-cons) (car auth-cookie-cons) "")))
     (s-lex-format marmalade/login-panel)))
 
+(defmacro with-transient-file (buffer-var on file-name &rest code)
+  "Load FILE-NAME into BUFFER-VAR and eval CODE.
+
+Then dispose of the buffer.
+
+File loading errors may be generated as by any call to visit a
+file."
+  (declare (indent 2))
+  (let ((fvn (make-symbol "fv")))
+    `(let* ((,fvn ,file-name)
+            (,buffer-var (find-file-noselect ,fvn)))
+       (unwind-protect
+            (progn ,@code)
+         (progn
+           (with-current-buffer ,buffer-var (revert-buffer t t))
+           (kill-buffer ,buffer-var))))))
+
 (defun marmalade/packages-index (httpcon)
   "Upload a package of show a package index in HTML."
   (elnode-method httpcon
@@ -357,11 +374,13 @@ is grabbed."
             (latest-html 
              (mapconcat 'identity latest-html-lst "\n"))
             (page-file (concat marmalade-dir "front-page.html"))
-            (buf (let ((revert-without-query (list page-file)))
-                   (find-file-noselect page-file))))
-       (elnode-send-html httpcon (with-current-buffer
-                                     (s-buffer-lex-format buf)
-                                   (buffer-string)))))
+            (buffer (find-file-noselect page-file)))
+       (with-transient-file buf on page-file
+         (elnode-send-html
+          httpcon
+          (with-current-buffer buf
+            (s-buffer-lex-format buf)
+            (buffer-string))))))
     ;; Or we need to upload
     (POST (marmalade/upload httpcon))))
 
