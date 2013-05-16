@@ -21,6 +21,12 @@ h4 {
     font-size: 150%;
 }
 
+pre {
+    margin: 1%;
+    padding: 2%;
+    background-color: #dddddd;
+    width: 60%;
+}
 
 a:link {
     color: #895221;
@@ -31,7 +37,7 @@ a:visited {
 }
 
 #blurb {
-    width: 45%;
+    width: 50%;
 }
 
 p.description {
@@ -45,7 +51,7 @@ p.description {
 #panel {
     clear: both;
     float: right;
-    width: 40%;
+    width: 30%;
 }
 
 form[name=upload] {
