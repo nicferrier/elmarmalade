@@ -151,7 +151,8 @@ the {{{$DIRECTORY}}} should be an individual full-dump directory.
 === Turning the mongodb into a file system ===
 
 Presuming you have a mongodb with the database imported you can use
-this script to turn stuff into the filesystem:
+this script, which uses {{{mongofiles}}} to turn stuff into the
+filesystem:
 
 {{{
 (setq package-user-dir (concat default-directory "elpa"))
@@ -173,3 +174,12 @@ rm -rf elpa ; rm -rf demo ; emacs -Q -nw -l demo.el
 
 To delete the {{{elpa}}} and {{{demo}}} directory created by the
 script before recreating them.
+
+== Sync the extracted file system ==
+
+{{{mongofiles}}} doesn't update files, it just splats over them so you
+need a smarter {{{rsync}}} to move them to another host:
+
+{{{
+rsync -cave ssh $MARMALADE_HOST:marmalade/packages/* marmalade/packages
+}}}
