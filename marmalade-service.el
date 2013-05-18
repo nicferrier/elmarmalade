@@ -155,12 +155,10 @@ If the target package already exists a `file-error' is produced."
           (let* ((package-name
                  (marmalade/save-package
                   upload-file base-file-name))
-                 (package-url
-                  (concat
-                   "/packages/"
-                   (file-name-sans-extension
-                    (file-name-nondirectory package-file-name)))))
-            (elnode-send-redirect httpcon package-url 201))
+                 (package-url (concat
+                               "/packages/"
+                               package-name)))
+            (elnode-send-redirect httpcon package-url 302))
         (error (elnode-send-400
                  httpcon
                  "something went wrong uploading the package"))))))
