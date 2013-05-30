@@ -23,36 +23,37 @@
       (marmalade/package-name->filename file)
       "ascii/3.1/ascii-3.1.el"))))
 
+(defun marmalade/fakir-file (file-name &optional mod-time)
+  "Make FILE-NAME be fake."
+  (fakir-file
+   :directory (file-name-directory file-name)
+   :filename (file-name-nondirectory file-name)
+   :mtime (current-time-string (or mod-time (current-time)))))
+
 (ert-deftest marmalade-cache-test ()
   "Test the cache test."
-  ;; When the index is not specified
-  (let ((marmalade-archive-index-filename nil))
-    (flet ((marmalade/package-store-modtime () (current-time)))
-      (should (marmalade-cache-test))))
-  ;; When they are the same
-  (let ((test-time (current-time)))
-    (flet ((marmalade/archive-index-exists-p () t)
-           (marmalade/archive-index-modtime () test-time)
-           (marmalade/package-store-modtime () test-time))
-      (should-not (marmalade-cache-test))))
-  ;; Store time is earlier
-  (let ((test-time (current-time)))
-    (flet ((marmalade/archive-index-exists-p () t)
-           (marmalade/archive-index-modtime () test-time)
-           (marmalade/package-store-modtime ()
-             (time-subtract
-              test-time
-              (seconds-to-time 60))))
-      (should-not (marmalade-cache-test))))
-  ;; Store time is more recent than archive
-  (let ((test-time (current-time)))
-    (flet ((marmalade/archive-index-exists-p () t)
-           (marmalade/package-store-modtime () test-time)
-           (marmalade/archive-index-modtime ()
-             (time-subtract
-              test-time
-              (seconds-to-time 60))))
-      (should (marmalade-cache-test)))))
+  (let* ((store-dir "~/marmalade/packages")
+         (marmalade-package-store-dir store-dir)
+         (archive (marmalade/archive-file)))
+    ;; When the index is not specified
+    ;;  (fakir-fake-file  (marmalade/fakir-file archive)  (should (marmalade-cache-test)))
+    (let* ((test-time (current-time))
+           (early-time (time-subtract test-time (seconds-to-time 60))))
+      ;; When they are the same
+      (fakir-fake-file
+       (list (marmalade/fakir-file archive test-time)
+             (marmalade/fakir-file store-dir test-time))
+       (should-not (marmalade-cache-test)))
+      ;; Store time is earlier
+      (fakir-fake-file
+       (list (marmalade/fakir-file archive test-time)
+             (marmalade/fakir-file store-dir early-time))
+       (should-not (marmalade-cache-test)))
+      ;; Store time is more recent than archive
+      (fakir-fake-file
+       (list (marmalade/fakir-file archive early-time)
+             (marmalade/fakir-file store-dir test-time))
+       (should (marmalade-cache-test))))))
 
 (defun marmalade/make-requires (depends)
   "Make a requires string."
