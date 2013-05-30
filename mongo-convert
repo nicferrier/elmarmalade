@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Convert the MongoDb to a flat file system with some shell script
+
+marmalade_root=~/marmalade
+mongofiles -d marmalade list \
+    | sed -rne 's#([0-9a-zA-Z-]+)\.(tar|el)/([0-9.]+)[ \t].*#\1 \2 \3#p' \
+    | while read name type version 
+do 
+    package_file_name=$name.$type/$version
+    target_file_name=$marmalade_root/$name/$version/$name-$version.$type
+    mkdir -p $(dirname $target_file_name)
+    mongofiles -d marmalade \
+        -l $target_file_name \
+        get $package_file_name
+done
+
+# mongo-covert ends here
