@@ -32,16 +32,18 @@
   :group 'marmalade-archive
   :type '(choice
           (const :tag "Default" nil)
-          (directory "~/marmalade-packages")))
+          (directory "~/marmalade/packages")))
 
-(defcustom marmalade-archive-index-filename ""
-  "The location of the package index file.
+(defun marmalade/archive-file (&optional lisp)
+  "Get the marmalade archive file name.
 
-The package index file is a cached index of the state of the
-package archive."
-  :group 'marmalade-archive
-  :type 'file)
-
+If optional LISP is `t', the LISP version of the file is
+returned."
+  (let ((base
+         (concat
+          (file-name-as-directory marmalade-package-store-dir)
+          "archive-contents")))
+    (if lisp (concat base ".el") base)))
 
 ;; Directory root mangling code
 
@@ -186,51 +188,36 @@ kills it."
    (kvalist->values
     (kvhash->alist marmalade/archive-cache))))
 
-(defun marmalade/package-store-modtime ()
+(defun marmalade/modtime (filename)
   (let ((modtime 5))
-    (elt
-     (file-attributes
-      marmalade-package-store-dir) modtime)))
-
-(defun marmalade/archive-index-modtime ()
-  (let ((modtime 5))
-    (elt
-     (file-attributes
-      marmalade-archive-index-filename) modtime)))
-
-(defun marmalade/archive-index-exists-p ()
-  (and
-   (stringp marmalade-archive-index-filename)
-   (file-exists-p
-    marmalade-archive-index-filename)))
+    (elt (file-attributes filename) modtime)))
 
 (defun marmalade-cache-test ()
   "The implementation of the cache test.
 
 Return `t' if the `marmalade/archive-cache-fill' should be
 executed on the `marmalade-package-store-dir'."
-  (or
-   (not (marmalade/archive-index-exists-p))
-   (let* ((last-store-change (marmalade/package-store-modtime))
-          (cached-change-time (marmalade/archive-index-modtime)))
-     (time-less-p cached-change-time last-store-change))))
+  (let ((archive (marmalade/archive-file)))
+    (or
+     (not (file-exists-p archive))
+     (let* ((last-store-change (marmalade/modtime marmalade-package-store-dir))
+            (cached-change-time (marmalade/modtime archive)))
+       (time-less-p cached-change-time last-store-change)))))
 
 (defun marmalade/archive-load ()
-  "Load the archive from `marmalade-archive-index-filename'."
+  "Load the cached, lisp version, of the archive.
+
+See `marmalade/archive-file' for how the filename is obtained."
   (setq marmalade/archive-cache
         (catch 'return
-          (load-file
-           (concat
-            marmalade-archive-index-filename ".el")))))
+          (load-file (marmalade/archive-file t)))))
 
 (defun marmalade/archive-save ()
-  "Save the archive to `marmalade-archive-index-filename'."
-  (let ((archive-file
-         (concat marmalade-archive-index-filename ".el")))
-    (when (and
-           (stringp marmalade-archive-index-filename)
-           (not (equal marmalade-archive-index-filename ""))
-           (file-writable-p archive-file))
+  "Save the archive to the cached, lisp version.
+
+See `marmalade/archive-file' for how the filename is obtained."
+  (let ((archive-lisp (marmalade/archive-file t)))
+    (when  (file-writable-p archive-file)
       (with-temp-buffer
         (insert
          (format "(throw 'return %S)" marmalade/archive-cache))
