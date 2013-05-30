@@ -32,8 +32,7 @@
   :group 'marmalade-archive
   :type '(choice
           (const :tag "Default" nil)
-          (directory "~/marmalade-packages"))
-  :type 'directory)
+          (directory "~/marmalade-packages")))
 
 (defcustom marmalade-archive-index-filename ""
   "The location of the package index file.
