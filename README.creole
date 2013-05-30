@@ -121,6 +121,20 @@ packages to be tested.
 
 == Admin tasks ==
 
+For reference (and in case I get run over or something) here's a grab
+bag of marmalade tasks.
+
+
+=== To close down node.js/mongo marmalade-repo ===
+
+We will need to:
+
+* shut off the node.js app so people can't upload
+* do a full dump of the db
+* run mongo-covert to export
+* rsync the files to the new host
+* turn on new marmalade uploader
+
 === Syncing the mongodb dump from Marmalade v1 ===
 
 Here's the cron I run to keep a local copy of marmalade:
@@ -148,38 +162,33 @@ mongorestore $DIRECTORY
 
 the {{{$DIRECTORY}}} should be an individual full-dump directory.
 
+I have a directory full of dumps so this is how I actually do it:
+
+{{{
+mongorestore ~/seville-marmalade/mongodump/$(ls -t ~/seville-marmalade/mongodump/ | head -n2 | tail -n1)
+}}}
+
+that chooses the last but one dump all the time.
+
+
 === Turning the mongodb into a file system ===
 
-Presuming you have a mongodb with the database imported you can use
-this script, which uses {{{mongofiles}}} to turn stuff into the
-filesystem:
+A simple bash script uses {{{mongofiles}}} to export the mongo
+database into a marmalade file system:
 
 {{{
-(setq package-user-dir (concat default-directory "elpa"))
-(setq package-archives
-      '(("gnu" . "http://elpa.gnu.org/packages/")
-        ("marmalade" . "http://marmalade-repo.org/packages/")))
-(package-initialize)
-(package-refresh-contents)
-(customize-set-variable 'marmalade-package-store-dir "~/work/marmalade/demo/packages")
-(package-install 'marmalade-service)
-(marmalade-mongo-main)
+bash mongo-convert
 }}}
 
-I put it in a file {{{demo.el}}} and the run it like this:
+This uses {{{~/marmalade/packages}}} as the package root, by default.
 
-{{{
-rm -rf elpa ; rm -rf demo ; emacs -Q -nw -l demo.el
-}}}
 
-To delete the {{{elpa}}} and {{{demo}}} directory created by the
-script before recreating them.
-
-== Sync the extracted file system ==
+=== Sync the extracted file system ===
 
 {{{mongofiles}}} doesn't update files, it just splats over them so you
 need a smarter {{{rsync}}} to move them to another host:
 
 {{{
-rsync -cave ssh $MARMALADE_HOST:marmalade/packages/* marmalade/packages
+rsync -cave ssh "$MARMALADE_HOST:marmalade/packages/*" marmalade/packages
 }}}
+
