@@ -186,11 +186,13 @@ Evaluates CODE with the package file made using
   (marmalade/package-file
    :pkg-file-name "test546.el"
    :code
-   (should
-    (equal
-     (let ((marmalade-package-store-dir "/tmp"))
-       (marmalade/package-path "/tmp/test546.el"))
-     "/tmp/dummy-package/0.0.1/dummy-package-0.0.1.el"))))
+   (let* ((marmalade-package-store-dir "/tmp")
+          (pkg (marmalade/package-path "/tmp/test546.el"))
+          (pkg-path (plist-get pkg :package-path)))
+     (should
+      (equal
+       pkg-path
+       "/tmp/dummy-package/0.0.1/dummy-package-0.0.1.el")))))
 
 (ert-deftest marmalade/temp-file ()
   "Test that we make the temp file in the right way."
@@ -218,19 +220,18 @@ the package store."
       (marmalade/package-file
        :code
        ;; Check that the saved file is in the package store
-       (let ((expected
-              "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"))
+       (progn
          (fakir-mock-file temp-file
            (should
             (equal
              (marmalade/save-package
               package-content-string "dummy-package.el")
-             expected)))
+             "dummy-package")))
          ;; Check that the temp file has been renamed
          (should
           (equal
-           (fakir-file-path temp-file)
-           expected)))))))
+           "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"
+           (fakir-file-path temp-file))))))))
 
 (ert-deftest marmalade/relativize ()
   (should
