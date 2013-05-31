@@ -58,14 +58,22 @@ The files are then filtered by `marmalade/list-files'."
   (let ((marmalade-list-buffer (get-buffer " *marmalade-list*")))
     (if (bufferp marmalade-list-buffer)
         (with-current-buffer marmalade-list-buffer
-          (buffer-substring-no-properties (point-min)(point-max)))
-        ;; Else really do it
-        (with-current-buffer (get-buffer-create " *marmalade-list*")
-          (erase-buffer)
-          (shell-command
-           (concat "find " root " -type f")
-           (current-buffer))
-          (buffer-substring (point-min)(point-max))))))
+          (buffer-string))
+        ;; Else use lisp to do it
+        (let (done
+              (process (start-process-shell-command
+                        "marmalade/find"
+                        (generate-new-buffer " *marmalade-list*")
+                        (concat "find " root " -type f"))))
+          (set-process-sentinel
+           process
+           (lambda (proc status)
+             (when (equal status "finished\n")
+               (with-current-buffer (process-buffer proc)
+                 (setq done (buffer-string))))))
+          (while (not done)
+            (message "busy waiting in marmalade/list-files-string")
+            (accept-process-output process 1))))))
 
 (defun marmalade/list-files (root)
   "Turn ROOT into a list of maramalade meta data."
@@ -217,11 +225,11 @@ See `marmalade/archive-file' for how the filename is obtained."
 
 See `marmalade/archive-file' for how the filename is obtained."
   (let ((archive-lisp (marmalade/archive-file t)))
-    (when  (file-writable-p archive-file)
+    (when  (file-writable-p archive-lisp)
       (with-temp-buffer
         (insert
          (format "(throw 'return %S)" marmalade/archive-cache))
-        (write-file archive-file)))))
+        (write-file archive-lisp)))))
 
 (defun marmalade/package-archive ()
   "Make the package archive from package cache.
@@ -230,14 +238,15 @@ Re-caches the package cache from the files on disc if the call to
 `marmalade-cache-test' returns `t'."
   (interactive)
   ;; Possibly rebuild the cache file
-  (when (< (hash-table-size marmalade/archive-cache) 1)
-    (if (not (marmalade-cache-test))
-        (marmalade/archive-load)
-        ;; Else rebuild the cache
-        (marmalade/archive-cache-fill marmalade-package-store-dir)
-        (marmalade/archive-save)))
-  ;; Return the archive
-  (cons 1 (marmalade/cache->package-archive)))
+  (let ((cached-archive (marmalade/cache->package-archive)))
+    (when (< (length cached-archive) 1)
+      (if (not (marmalade-cache-test))
+          (marmalade/archive-load)
+          ;; Else rebuild the cache
+          (marmalade/archive-cache-fill marmalade-package-store-dir)
+          (marmalade/archive-save)))
+    ;; Return the archive
+    (cons 1 cached-archive)))
 
 ;; FIXME - should we make this conditional on elnode somehow?
 (defun marmalade-archive-handler (httpcon)
