@@ -247,7 +247,7 @@ Returns a thunk that returns the archive."
           ;; Else rebuild the cache
           (marmalade/archive-cache-fill marmalade-package-store-dir)
           (marmalade/archive-save)))
-    ;; Return the archive
+    ;; Return the archive "delayed"
     (lambda ()
       (cons 1 cached-archive))))
 
