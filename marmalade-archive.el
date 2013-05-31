@@ -1,4 +1,4 @@
-;;; make package archive files
+;;; make package archive files --- -*- lexical-binding: t -*-
 
 ;;; Commentary
 
@@ -235,7 +235,9 @@ See `marmalade/archive-file' for how the filename is obtained."
   "Make the package archive from package cache.
 
 Re-caches the package cache from the files on disc if the call to
-`marmalade-cache-test' returns `t'."
+`marmalade-cache-test' returns `t'.
+
+Returns a thunk that returns the archive."
   (interactive)
   ;; Possibly rebuild the cache file
   (let ((cached-archive (marmalade/cache->package-archive)))
@@ -246,7 +248,8 @@ Re-caches the package cache from the files on disc if the call to
           (marmalade/archive-cache-fill marmalade-package-store-dir)
           (marmalade/archive-save)))
     ;; Return the archive
-    (cons 1 cached-archive)))
+    (lambda ()
+      (cons 1 cached-archive))))
 
 ;; FIXME - should we make this conditional on elnode somehow?
 (defun marmalade-archive-handler (httpcon)
@@ -255,7 +258,7 @@ Re-caches the package cache from the files on disc if the call to
   (elnode-http-start httpcon 200 '("Content-type" . "text/plain"))
   (elnode-http-return
    httpcon
-   (format "%S" (marmalade/package-archive))))
+   (format "%S" (funcall (marmalade/package-archive)))))
 
 (provide 'marmalade-archive)
 
