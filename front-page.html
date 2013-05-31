@@ -3,16 +3,12 @@
 <link rel="stylesheet" href="/-/style.css" type="text/css"></link>
 <title>marmalade-repo - for all your EmacsLisp needs</title>
 </head>
-<body>
+<body class="home">
 ${login-panel}
 <div id="panel">
 <h4>latest</h4>
 <ul>${latest-html}</ul>
-<form name="upload" method="POST" action="" enctype="multipart/form-data">
-<legend>upload a new package</legend>
-<input type="file" name="package-file" size="80" /><br/>
-<input type="submit" name="upload"/>
-</form>
+<a href="/packages/new">add a new package</a>
 </div>
 <h1>marmalade</h1>
 <p id="blurb"><i>marmalade-repo</i> is an Emacs package repository.</p>
