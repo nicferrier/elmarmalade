@@ -417,7 +417,8 @@ file."
   :sender 'marmalade/login-sender)
 
 (defconst marmalade/webserver
-  (elnode-webserver-handler-maker (concat marmalade-dir "static"))
+  (elnode-webserver-handler-maker
+   (concat marmalade-dir "static"))
   "The webserver for marmalade.")
 
 (defun marmalade-router (httpcon)
