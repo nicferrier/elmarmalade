@@ -1,9 +1,9 @@
 (marmalade-service
- :version "2.0.8"
+ :version "2.0.9"
  :doc "The Marmalade package store service."
  :requires 
- ((dash "1.0.3")
-  (s "1.5.0")
+ ((dash "1.1.0")
+  (s "1.6.0")
   (elnode "0.9.9.6.10"))
  :files
  ("marmalade-archive.el"
@@ -14,7 +14,7 @@
   "upload-page.html")
  :test
  (:requires
-  ((fakir "0.0.16")
+  ((fakir "0.1.1")
    (s "1.4.0"))
   :files
   ("marmalade-tests.el"
