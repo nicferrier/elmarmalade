@@ -14,7 +14,7 @@ h1,h4 {
     text-shadow: 0 0 0.1em #895221;
 }
 
-h1 {
+body.home h1 {
     font-size: 450%;
 }
 
@@ -58,20 +58,32 @@ p.description {
 
 form[name=upload] {
     margin-top: 3em;
-    border: thin solid;
-    width: 90%;
-    text-align: right;
+    width: 80%;
     padding: 1em;
 }
 
+form[name=upload] legend {
+    text-align: left;
+    margin-bottom: 1em;
+    font-weight: bold;
+}
+
 form input[type=file] {
-    border: thin solid;
+    border: thin solid;    
 }
 
 label {
     display: block;
     float: left;
-    width: 80px;
+    margin-right: 1em;
+}
+
+form[name=upload] input[type=submit] {
+    padding: 0.5em;
+    margin-top: 0.5em;
+    width: 50%;
+    background-color: #895221;
+    color: #dddddd;
 }
 
 /*
