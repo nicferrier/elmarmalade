@@ -202,30 +202,28 @@ number as per the `file-attributes' help.  If not specified no
 sorting is done.
 
 TAKE specifies how many entries to return."
-  (let ((sorter
-         (lambda (a b)
+  (flet ((sorter (a b)
            (funcall
             (case sorted
               ((4 5 6) 'time-less-p)
               ((1 2 3 7) 'cmp)
               (t (error "cannot compare %s" sorted)))
             (elt a (+ 1 sorted))
-            (elt b (+ 1 sorted)))))
-        (packages 
-         (loop for e in
-              (directory-files
-               marmalade-package-store-dir
-               nil "^[^.].*")
-            collect
-              (cons
-               e
-               (file-attributes
-                (concat marmalade-package-store-dir e))))))
-    (when sorted
-      (setq packages (reverse (sort packages sorter))))
-    (if take
-        (-take take packages)
-        packages)))
+            (elt b (+ 1 sorted))))
+         (attribs (f)
+           (file-attributes
+            (expand-file-name
+             (concat
+              (file-name-as-directory marmalade-package-store-dir) f)))))
+    (let* ((files (directory-files marmalade-package-store-dir nil "^[^.].*"))
+           (packages (--map (cons it (attribs it)) files))
+           (package-list
+            (if sorted
+                (reverse (sort packages 'sorter))
+                packages)))
+      (if take
+          (-take take package-list)
+          package-list))))
 
 (defun marmalade/top-version (package-dir)
   "Return the path to the newest version of a package in PACKAGE-DIR.
