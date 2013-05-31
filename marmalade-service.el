@@ -142,6 +142,13 @@ If the target package already exists a `file-error' is produced."
       ;; Return the package name, possibly return the version too?
       package-name)))
 
+(defun marmalade/err->sym (err)
+  "Convert an error structure to a sensible symbol."
+  (intern
+   (concat
+    ":"
+    (replace-regexp-in-string " " "-" (elt err 2) ))))
+
 (defun marmalade/upload (httpcon)
   "Handle uploaded packages."
   (with-elnode-auth httpcon 'marmalade-auth
@@ -152,16 +159,15 @@ If the target package already exists a `file-error' is produced."
            (base-file-name
             (file-name-nondirectory upload-file-name)))
       (condition-case err
-          (let* ((package-name
-                 (marmalade/save-package
-                  upload-file base-file-name))
-                 (package-url (concat
-                               "/packages/"
-                               package-name)))
+          (let* ((package-name (marmalade/save-package
+                                upload-file base-file-name))
+                 (package-url (concat "/packages/" package-name)))
             (elnode-send-redirect httpcon package-url 302))
-        (error (elnode-send-400
-                 httpcon
-                 "something went wrong uploading the package"))))))
+        (error
+         (case (marmalade/err->sym err)
+           (:existing-package
+            (elnode-send-400
+             httpcon (concat base-file-name " already exists")))))))))
 
 (defun marmalade/downloader (httpcon)
   "Download a specific package."
@@ -394,6 +400,13 @@ file."
     ;; Or we need to upload
     (POST (marmalade/upload httpcon))))
 
+(defun marmalade/upload-page (httpcon)
+  "Send the upload page."
+  (with-elnode-auth httpcon 'marmalade-auth
+    (elnode-send-file
+     httpcon
+     (concat marmalade-dir "upload-page.html"))))
+
 (defun marmalade/login-sender (httpcon target redirect)
   "Send the login page."
   (let ((page-file (concat marmalade-dir "login-page.html")))
@@ -413,6 +426,7 @@ file."
   (elnode-hostpath-dispatcher
    httpcon
    `(("^[^/]*//-/\\(.*\\)$" . ,marmalade/webserver)
+     ("^[^/]*//packages/new$" . marmalade/upload-page)
      ("^[^/]+//packages/archive-contents" . marmalade-archive-handler)
      ;; We don't really want to send 404's for these if we have them
      ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
