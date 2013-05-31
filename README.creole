@@ -24,6 +24,25 @@ These are the things marmalade should do:
 ** this will likely be a separate project
 * provide an HTML front end to the package archives with some discovery
 
+== Rollout ==
+
+* install the package on the server
+** it needs to know where the package archive is
+
+{{{
+(customize-set-variable
+ 'marmalade-package-store-dir
+ (file-name-as-directory 
+   (expand-file-name "~/marmalade/packages")))
+}}}
+
+* have a daemon file for the package
+* nginx script
+** which depends on your port number
+* ssl? optional
+* we need 2 emacs instances
+** 1 to serve archive
+** 1 to serve everything else
 
 == Current problems ==
 
