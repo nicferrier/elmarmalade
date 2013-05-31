@@ -8,7 +8,10 @@
  :files
  ("marmalade-archive.el"
   "marmalade-service.el"
-  "marmalade-mongo.el")
+  "marmalade-mongo.el"
+  "front-page.html"
+  "login-page.html"
+  "upload-page.html")
  :test
  (:requires
   ((fakir "0.0.16")

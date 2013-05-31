@@ -1,0 +1,21 @@
+<html>
+<head>
+<link rel="stylesheet" href="/-/style.css" type="text/css"></link>
+<title>Marmalade - new package</title>
+</head>
+<body>
+<h1>upload your package</h1>
+<form name="upload" method="POST" action="/packages/" enctype="multipart/form-data">
+<legend>upload a new package</legend>
+<label for="packagefile">package file (.el or .tar):</label>
+<input id="packagefile" type="file" name="package-file" size="50" /><br/>
+<input type="submit" name="upload" value="upload package"/>
+</form>
+<h4>what is a package</h4>
+<p>
+ELPA packages come in 2 forms, either a <code>.el</code> file or a <code>.tar</code>
+containing one or many <code>.el</code> files and a <code>pkg.el</code> file.
+</p>
+</body>
+<html>
+</html>
