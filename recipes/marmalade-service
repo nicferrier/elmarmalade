@@ -8,7 +8,7 @@
  :files
  ("marmalade-archive.el"
   "marmalade-service.el"
-  "marmalade-mongo.el"
+  "marmalade-boot.el"
   "front-page.html"
   "login-page.html"
   "upload-page.html")
