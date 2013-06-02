@@ -26,6 +26,16 @@ These are the things marmalade should do:
 
 == Rollout ==
 
+Some notes on rollout. Marmalade is going to need more sophistication
+than I've ever managed to build with elnode. It's basically a
+collection of microservices, which is always what has been attractive
+about elnode... it's just I've never managed to put it all together.
+
+Marmalade will require multiple servers because the archive stuff is
+very expensive, because we're using emacs-db for now and that requires
+concentrating access into a single place.
+
+
 * install the package on the server
 ** it needs to know where the package archive is
 
