@@ -1,7 +1,5 @@
 ;;; marmalade-boot.el ---  initialize marmalade
 
-(require 'marmalade-service)
-
 (defgroup marmalade nil
   "Marmalade, the ELPA repository."
   :group 'applications)
@@ -27,26 +25,18 @@
   :group 'marmalade
   :type 'boolean)
 
-;;;###autoload
-(defun marmalade-init ()
-  "Start the marmalade service."
-  ;; this starts one... what about the archive service?
-  (elnode-start
-   'marmalade-router
-   :port marmalade-server-port))
-
 (defvar marmalade/inited nil
   "Autoload mechanics, when it's `t' we are started.")
 
 ;;;###autoload
-(eval-after-load 'marmalade-boot
-  (if (and (boundp 'marmalade-boot-onload)
-           marmalade-boot-onload
-	   (or (not (boundp 'marmalade/inited))
-	       (not marmalade/inited)))
-      (progn
-        (marmalade-init)
-        (setq marmalade/inited nil))))
+(defun marmalade-init ()
+  "Start the marmalade service."
+  ;; this starts one... what about the archive service?
+  (require 'marmalade-service)
+  (elnode-start
+   'marmalade-router
+   :port marmalade-server-port)
+  (setq marmalade/inited t))
 
 (provide 'marmalade-boot)
 

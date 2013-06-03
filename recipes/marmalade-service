@@ -4,7 +4,8 @@
  :requires 
  ((dash "1.1.0")
   (s "1.6.0")
-  (elnode "0.9.9.6.10"))
+  (elnode "0.9.9.6.10")
+  (htmlize "1.3.9"))
  :files
  ("marmalade-archive.el"
   "marmalade-service.el"

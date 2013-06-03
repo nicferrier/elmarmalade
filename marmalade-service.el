@@ -352,7 +352,10 @@ is grabbed."
   (let* ((auth-cookie-cons (elnode-auth-get-cookie-value
                             httpcon :cookie-name marmalade/cookie-name))
          (username (if (consp auth-cookie-cons) (car auth-cookie-cons) "")))
-    (s-lex-format marmalade/login-panel)))
+    (s-lex-format
+     "<div id=\"login-panel\">logged in: <span id=\"username\">${username}</span></div>"
+     ;;marmalade/login-panel
+     )))
 
 (defmacro with-transient-file (file-name &rest code)
   "Load FILE-NAME into a buffer and eval CODE.
