@@ -6,6 +6,7 @@
  'package-archives
  '(("gnu" . "http://elpa.gnu.org/packages/")
    ("marmalade" . "http://marmalade-repo.org/packages/")))
+(customize-set-variable 'elnode-init nil)
 (customize-set-variable 'elnode-log-files-directory (expand-file-name "logs" deploy-dir))
 (customize-set-variable 'marmalade-server-port 8005)
 (customize-set-variable 'marmalade-db-dir (expand-file-name "~/marmalade/db"))
@@ -29,4 +30,3 @@
        (marmalade-init)))
    (current-buffer))
   (append-to-file (point-min)(point-max) custom-file))
-(kill-emacs)
