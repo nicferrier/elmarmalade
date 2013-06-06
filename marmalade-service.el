@@ -446,6 +446,7 @@ file."
   "The webserver for marmalade.")
 
 (defun marmalade-router (httpcon)
+  "The top level router for marmalade-repo."
   (elnode-hostpath-dispatcher
    httpcon
    `(("^[^/]*//-/\\(.*\\)$" . ,marmalade/webserver)
