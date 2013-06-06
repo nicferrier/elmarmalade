@@ -272,6 +272,25 @@ the package store."
 (require 'something)")
       about-result))))
 
+(ert-deftest marmalade/package-list ()
+  (let ((files-list
+         `(("/root/package-a" . 7)
+           ("/root/package-b" . 2)
+           ("/root/package-c" . 5))))
+    ;; Lot's of specific fakery
+    (noflet ((directory-files (dir full match)
+               (kvalist->keys files-list))
+             (file-attributes (a)
+               (list
+                0 1 2 3 4 ; make sure we have 5 elements
+                (cdr (assoc a files-list))))
+             (time-less-p (a b)
+               (> a b)))
+      (should
+       (equal
+        (marmalade/package-list :sorted 5 :take 3)
+        '("package-b" "package-c" "package-a"))))))
+
 (provide 'marmalade-tests)
 
 ;;; marmalade-tests.el ends here

@@ -25,7 +25,9 @@
 ;;; Code:
 
 (elnode-app marmalade-dir
-  marmalade-customs marmalade-archive web htmlize db s-buffer s dash rx lisp-mnt outline)
+  marmalade-customs marmalade-archive
+  web htmlize db s-buffer s
+  dash kv rx lisp-mnt outline)
 
 (defconst marmalade/cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
@@ -196,38 +198,44 @@ If the target package already exists a `file-error' is produced."
   "Dispatch to the appropriate handler on method."
   (marmalade/downloader httpcon))
 
+(defun* marmalade/file-sort (files &key (by 5))
+  "Sort the list of FILES optional by the specified attribute.
+
+BY, if specified, should be a `file-attributes' number to use to
+sort the files by.  By default it is `5', last modification
+time."
+  (noflet ((kvcmp (a b)
+             (let ((fa (file-attributes a))
+                   (fb (file-attributes b)))
+               (funcall
+                (case by
+                  ((4 5 6) 'time-less-p)
+                  ((1 2 3 7) this-fn)
+                  (t (error "cannot compare %s" by)))
+                (elt fa by)
+                (elt fb by)))))
+    (sort files 'kvcmp)))
+
 (defun* marmalade/package-list (&key
                                 sorted
                                 take)
-  "Return the list of packages in the archive.
+  "Return the list of package names in the archive.
 
 SORTED is a `file-attributes' field to sort on specified as a
 number as per the `file-attributes' help.  If not specified no
 sorting is done.
 
 TAKE specifies how many entries to return."
-  (flet ((sorter (a b)
-           (funcall
-            (case sorted
-              ((4 5 6) 'time-less-p)
-              ((1 2 3 7) 'cmp)
-              (t (error "cannot compare %s" sorted)))
-            (elt a (+ 1 sorted))
-            (elt b (+ 1 sorted))))
-         (attribs (f)
-           (file-attributes
-            (expand-file-name
-             (concat
-              (file-name-as-directory marmalade-package-store-dir) f)))))
-    (let* ((files (directory-files marmalade-package-store-dir nil "^[^.].*"))
-           (packages (--map (cons it (attribs it)) files))
-           (package-list
-            (if sorted
-                (reverse (sort packages 'sorter))
-                packages)))
-      (if take
-          (-take take package-list)
-          package-list))))
+  (let* ((files (directory-files marmalade-package-store-dir t "^[^.]+$"))
+         (package-list
+          (--map
+           (file-name-nondirectory it)
+           (if sorted
+               (reverse (marmalade/file-sort files :by sorted))
+               files))))
+    (if take
+        (-take take package-list)
+        package-list)))
 
 (defun marmalade/top-version (package-dir)
   "Return the path to the newest version of a package in PACKAGE-DIR.
@@ -401,11 +409,11 @@ file."
 (defun marmalade/latest-html ()
   (let* ((latest (marmalade/package-list :sorted 5 :take 10)))
     (concat
-     (loop for (name . rest) in latest
+     (loop for name in latest
         concat
-          (s-lex-format
-           ;;marmalade/package-item
-           "<li><a href=\"/packages/${name}\">${name}</a></li>")) "\n")))
+          (s-format
+           "<li><a href=\"/packages/${name}\">${name}</a></li>"
+           'aget `(("name" . ,name)))) "\n")))
 
 (defun marmalade/packages-index (httpcon)
   "Upload a package of show a package index in HTML."
