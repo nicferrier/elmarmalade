@@ -195,7 +195,7 @@ kills it."
 
 Return `t' if the `marmalade/archive-cache-fill' should be
 executed on the `marmalade-package-store-dir'."
-  (let ((archive (marmalade/archive-file)))
+  (let ((archive (marmalade/archive-file t)))
     (or
      (not (file-exists-p archive))
      (let* ((last-store-change (marmalade/modtime marmalade-package-store-dir))
