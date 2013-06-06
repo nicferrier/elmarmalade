@@ -25,13 +25,17 @@
 ;;; Code:
 
 (elnode-app marmalade-dir
-  marmalade-archive htmlize db s dash rx lisp-mnt outline)
+  marmalade-customs marmalade-archive web htmlize db s-buffer s dash rx lisp-mnt outline)
 
 (defconst marmalade/cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
 
 (defconst marmalade/user-db
-  (db-make `(db-hash :filename ,(concat marmalade-dir "user")))
+  (db-make `(db-hash
+             :filename ,(concat
+                         (file-name-as-directory
+                          (or marmalade-db-dir marmalade-dir))
+                         "user")))
   "The user database.")
 
 (defun marmalade/explode-package-string (package-name)
@@ -332,7 +336,19 @@ is grabbed."
             (let* ((about-text (marmalade/commentary->about commentary))
                    (page
                     (condition-case err
-                        (s-lex-format marmalade/package-blurb-page)
+                        (s-lex-format "<html>
+<head>
+<link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
+<title>${package-name} @ Marmalade</title>
+</head>
+<body>
+<h1>${package-name} - ${version}</h1>
+<p class=\"description\">${description}</p>
+<p class=\"author\">${author}</p>
+<a href=\"${package-download}\">download ${package-name}</a>
+<pre>${about-text}</pre>
+</body>
+<html>")
                       (error (format
                               "<html>error: %S<br/><pre>%S</pre></html>"
                               (cdr err)
@@ -364,7 +380,8 @@ Then dispose of the buffer.
 
 File loading errors may be generated as by any call to visit a
 file."
-  (declare (indent 2))
+  (declare (indent 2)
+           (debug (sexp &rest form)))
   (let ((fvn (make-symbol "fv"))
         (bvn (make-symbol "bv")))
     `(let* ((,fvn ,file-name)
@@ -378,26 +395,30 @@ file."
            (set-buffer-modified-p nil)
            (kill-buffer ,bvn))))))
 
+(defconst marmalade/page-file
+  (concat marmalade-dir "front-page.html"))
+
+(defun marmalade/latest-html ()
+  (let* ((latest (marmalade/package-list :sorted 5 :take 10)))
+    (concat
+     (loop for (name . rest) in latest
+        concat
+          (s-lex-format
+           ;;marmalade/package-item
+           "<li><a href=\"/packages/${name}\">${name}</a></li>")) "\n")))
+
 (defun marmalade/packages-index (httpcon)
   "Upload a package of show a package index in HTML."
   (elnode-method httpcon
     (GET
-     (let* ((login-panel (marmalade/login httpcon))
-            (latest (marmalade/package-list :sorted 5 :take 10))
-            (latest-html-lst
-             (loop for (name . rest) in latest
-                collect
-                  (s-lex-format marmalade/package-item)))
-            (latest-html 
-             (mapconcat 'identity latest-html-lst "\n"))
-            (page-file (concat marmalade-dir "front-page.html"))
-            (buffer (find-file-noselect page-file)))
-       (with-transient-file page-file
+     (with-transient-file marmalade/page-file
          (elnode-send-html
           httpcon
-          (progn
-            (s-buffer-lex-format (current-buffer))
-            (buffer-string))))))
+          (s-buffer-format
+           (find-file-noselect marmalade/page-file)
+           'aget
+           `(("login-panel" . ,(marmalade/login httpcon))
+             ("latest-html" . ,(marmalade/latest-html)))))))
     ;; Or we need to upload
     (POST (marmalade/upload httpcon))))
 

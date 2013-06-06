@@ -6,7 +6,10 @@
  'package-archives
  '(("gnu" . "http://elpa.gnu.org/packages/")
    ("marmalade" . "http://marmalade-repo.org/packages/")))
+(customize-set-variable 'elnode-log-files-directory (expand-file-name "logs" deploy-dir))
 (customize-set-variable 'marmalade-server-port 8005)
+(customize-set-variable 'marmalade-db-dir (expand-file-name "~/marmalade/db"))
+(customize-set-variable 'marmalade-package-store-dir (expand-file-name "~/marmalade/packages"))
 (customize-set-variable 'marmalade-archive-port 8006)
 (customize-set-variable 'marmalade-boot-onload t)
 (customize-set-variable 'debug-on-error 'always)

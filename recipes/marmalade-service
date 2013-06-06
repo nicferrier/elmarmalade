@@ -4,15 +4,18 @@
  :requires 
  ((dash "1.1.0")
   (s "1.6.0")
-  (elnode "0.9.9.6.10")
+  (s-buffer "0.0.4")
+  (elnode "0.9.9.6.11")
   (htmlize "1.3.9"))
  :files
  ("marmalade-archive.el"
   "marmalade-service.el"
+  "marmalade-customs.el"
   "marmalade-boot.el"
   "front-page.html"
   "login-page.html"
-  "upload-page.html")
+  "upload-page.html"
+  "static/style.css")
  :test
  (:requires
   ((fakir "0.1.1")

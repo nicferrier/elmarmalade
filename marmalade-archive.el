@@ -22,17 +22,7 @@
 
 (require 'rx)
 (require 'package)
-
-(defgroup marmalade-archive nil
-  "The marmalade package store. Elisp version."
-  :group 'applications)
-
-(defcustom marmalade-package-store-dir nil
-  "The location of the package files."
-  :group 'marmalade-archive
-  :type '(choice
-          (const :tag "Default" nil)
-          (directory "~/marmalade/packages")))
+(require 'marmalade-customs)
 
 (defun marmalade/archive-file (&optional lisp)
   "Get the marmalade archive file name.
