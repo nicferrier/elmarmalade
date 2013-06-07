@@ -32,9 +32,9 @@
 
 (ert-deftest marmalade-cache-test ()
   "Test the cache test."
-  (let* ((store-dir "~/marmalade/packages")
+  (let* ((store-dir "/mymarmalade/marmalade/packages")
          (marmalade-package-store-dir store-dir)
-         (archive (marmalade/archive-file)))
+         (archive (marmalade/archive-file t)))
     ;; When the index is not specified
     ;;  (fakir-fake-file  (marmalade/fakir-file archive)  (should (marmalade-cache-test)))
     (let* ((test-time (current-time))
