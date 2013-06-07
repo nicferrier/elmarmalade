@@ -63,7 +63,9 @@ The files are then filtered by `marmalade/list-files'."
                  (setq done (buffer-string))))))
           (while (not done)
             (message "busy waiting in marmalade/list-files-string")
-            (accept-process-output process 1))))))
+            (accept-process-output process 1))
+          ;; And finally return done, the output from the process
+          done))))
 
 (defun marmalade/list-files (root)
   "Turn ROOT into a list of maramalade meta data."
