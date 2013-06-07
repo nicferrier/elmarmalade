@@ -183,7 +183,12 @@ kills it."
                marmalade/archive-cache)))))
 
 (defun marmalade/cache->package-archive ()
-  "Turn the cache into the package-archive."
+  "Turn the cache into the package-archive list.
+
+Returns the Lisp form of the archive which is sent (almost
+directly) back to ELPA clients.
+
+If the cache is empty this returns `nil'."
   (marmalade/packages-list->archive-list
    (kvalist->values
     (kvhash->alist marmalade/archive-cache))))
