@@ -244,18 +244,28 @@ Returns a thunk that returns the archive."
           ;; Else rebuild the cache
           (marmalade/archive-cache-fill marmalade-package-store-dir)
           (marmalade/archive-save)))
-    ;; Return the archive "delayed"
-    (lambda ()
-      (cons 1 cached-archive))))
+    ;; Return a proc representing the archive
+    (lambda (&optional arg)
+      (case arg
+        (:time
+         (marmalade/modtime marmalade-package-store-dir))
+        ;; Else return the archive
+        (t
+         (cons 1 cached-archive))))))
 
 ;; FIXME - should we make this conditional on elnode somehow?
 (defun marmalade-archive-handler (httpcon)
   "Send the archive to the HTTP connection."
-  ;; FIXME - What's the right mimetype here?
-  (elnode-http-start httpcon 200 '("Content-type" . "text/plain"))
-  (elnode-http-return
-   httpcon
-   (format "%S" (funcall (marmalade/package-archive)))))
+  ;; We need to get at the cache times here so we can have LM caching
+  (let* ((archive (marmalade/package-archive))
+         (lm-time (funcall archive :time)))
+    (elnode-http-header-set
+     httpcon "Last-modified" (elnode--rfc1123-date lm-time))
+    ;; FIXME - What's the right mimetype here?
+    (elnode-http-start httpcon 200 '("Content-type" . "text/plain"))
+    (elnode-http-return
+     httpcon
+     (format "%S" (funcall archive)))))
 
 (provide 'marmalade-archive)
 
