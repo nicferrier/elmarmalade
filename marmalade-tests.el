@@ -55,6 +55,68 @@
              (marmalade/fakir-file store-dir test-time))
        (should (marmalade-cache-test))))))
 
+(ert-deftest marmalade/list-files ()
+  "Test the file listing stuff"
+  (noflet
+      ;; This is the function that runs find to get it's stuff
+      ((marmalade/list-files-string (root)
+         (s-join
+          "\n"
+          (list
+           "/root/marmalade/packages/nic-p/0.1.1/nic-p.el"
+           "/root/marmalade/packages/bob-p/0.1.1/bob-p.el"
+           "/root/marmalade/packages/tar-p/0.5.1/tar-p.tar"))))
+    (should
+     (equal
+      (marmalade/list-files "/root/marmalade/packages")
+      (list
+       '("/root/marmalade/packages/nic-p/0.1.1/nic-p.el" "el")
+       '("/root/marmalade/packages/bob-p/0.1.1/bob-p.el" "el")
+       '("/root/marmalade/packages/tar-p/0.5.1/tar-p.tar" "tar"))))))
+
+(ert-deftest marmalade/root->archive ()
+  "Test making an archive list from the file list."
+  (let ((files-alist
+         `(("/r/m/p/nic-p/0.1.1/nic-p.el"
+            (single . ["nic-p" () "nic's package summary" "0.1.1" "Description."]))
+           ("/r/m/p/bob-p/0.1.1/bob-p.el"
+            (single . ["bob-p" () "bob's package summary" "0.1.1" "Description."]))
+           ("/r/m/p/tar-p/0.5.1/tar-p.tar"
+            (multi . ["tar-p" () "tar package summary" "0.5.1" "Description."])))))
+    (noflet
+        ;; This is the function that runs find to get it's stuff
+        ((marmalade/list-files-string (root)
+           (s-join "\n" (kvalist->keys files-alist)))
+         (marmalade/package-stuff (filename type)
+           (cadr (assoc filename files-alist))))
+      (should
+       (equal
+        (marmalade/root->archive "/r/m/p")
+        (-map 'car (kvalist->values files-alist)))))))
+
+(ert-deftest marmalade/package-list->archive-list ()
+  "Test making an archive list from the file list."
+  (let ((files-alist
+         '(("/r/m/p/nic-p/0.1.1/nic-p.el"
+            (single . ["nic-p" () "nic's package summary" "0.1.1" "Description."]))
+           ("/r/m/p/bob-p/0.1.1/bob-p.el"
+            (single . ["bob-p" () "bob's package summary" "0.1.1" "Description."]))
+           ("/r/m/p/tar-p/0.5.1/tar-p.tar"
+            (multi . ["tar-p" () "tar package summary" "0.5.1" "Description."])))))
+    (noflet
+        ;; This is the function that runs find to get it's stuff
+        ((marmalade/list-files-string (root)
+           (s-join "\n" (kvalist->keys files-alist)))
+         (marmalade/package-stuff (filename type)
+           (cadr (assoc filename files-alist))))
+      (should
+       (equal
+        (marmalade/packages-list->archive-list
+         (marmalade/root->archive "/r/m/p"))
+        '((nic-p . [(0 1 1) () "nic's package summary" single])
+          (bob-p . [(0 1 1) () "bob's package summary" single])
+          (tar-p . [(0 5 1) () "tar package summary" multi])))))))
+
 (defun marmalade/make-requires (depends)
   "Make a requires string."
   (if depends

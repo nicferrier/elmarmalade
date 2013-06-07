@@ -111,11 +111,23 @@ This does a substitute."
         (aset pkg-info 4 (marmalade/commentary-handle (current-buffer))))
       pkg-info)))
 
+(defun marmalade/package-file-info (filename)
+  "Wraps `marmalade/package-buffer-info' with FILENAME getting."
+  (let ((buffer (let ((enable-local-variables nil))
+                  (find-file-noselect filename))))
+    (unwind-protect
+         (marmalade/package-buffer-info buffer)
+      ;; FIXME - We should probably only kill it if we didn't have it
+      ;; before
+      (kill-buffer buffer))))
+
 (defun marmalade/package-stuff (filename type)
   "Make the FILENAME a package of TYPE.
 
 This reads in the FILENAME.  But it does it safely and it also
-kills it."
+kills it.
+
+It returns a cons of `single' or `multi' and "
   (let ((ptype
          (case (intern type)
            (el 'single)
@@ -123,15 +135,8 @@ kills it."
     (cons
      ptype
      (case ptype
-       (single
-        (let ((buffer (let ((enable-local-variables nil))
-                        (find-file-noselect filename))))
-          (unwind-protect
-               (marmalade/package-buffer-info buffer)
-            ;; We should probably only kill it if we didn't have it before
-            (kill-buffer buffer))))
-       (multi
-        (package-tar-file-info filename))))))
+       (single (marmalade/package-file-info filename))
+       (multi (package-tar-file-info filename))))))
 
 (defun marmalade/root->archive (root)
   "For ROOT make an archive list."
