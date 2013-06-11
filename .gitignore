@@ -1,1 +1,3 @@
-/marmalade-repo-test
+/marmalade-repo-test/.emacs.d
+/marmalade-repo-test/logs
+/marmalade-repo-test/packages/archive-contents.el
