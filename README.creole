@@ -218,6 +218,5 @@ This uses {{{~/marmalade/packages}}} as the package root, by default.
 need a smarter {{{rsync}}} to move them to another host:
 
 {{{
-rsync -cave ssh "$MARMALADE_HOST:marmalade/packages/*" marmalade/packages
+rsync -catve ssh "$MARMALADE_HOST:marmalade/packages/*" marmalade/packages
 }}}
-
