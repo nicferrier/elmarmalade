@@ -220,3 +220,37 @@ need a smarter {{{rsync}}} to move them to another host:
 {{{
 rsync -catve ssh "$MARMALADE_HOST:marmalade/packages/*" marmalade/packages
 }}}
+
+=== Deploy marmalade ===
+
+A deploy script is included in the repository.
+
+This is the sequence of things you need to do to deploy:
+
+{{{
+$ emacs-local/bin/emacsclient -s /tmp/emacs1000/marmalade -e '(kill-emacs)'
+$ rm -rf marmalade-repo
+$ emacs-local/bin/emacs --script deploy.el marmalade-repo
+$ HOME=$(realpath marmalade-repo) emacs-local/bin/emacs --daemon=marmalade
+}}}
+
+The steps are:
+
+1. kill any existing daemon
+2. remove the existing deployment (//not// the data)
+3. deploy the package and it's dependancies
+4. start the daemon
+
+Once the Emacs instance is started you can attach to it like this:
+
+{{{
+$ emacs-local/bin/emacsclient -s /tmp/emacs1000/marmalade $(realpath marmalade-repo)
+}}}
+
+The argument {{{$(realpath marmalade-repo}}} only ensures we open some
+directory. Any directory or file could be given, as ever with
+{{{emacsclient}}}.
+
+//Note on the package archives file: currently the archive file has to
+be generated manually and it's rather slow. Use M-x
+marmalade/package-archives to generate it.//
