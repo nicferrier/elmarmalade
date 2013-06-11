@@ -4,6 +4,7 @@
 (require 'marmalade-service)
 (require 'fakir)
 (require 's)
+(require 'noflet)
 
 (ert-deftest marmalade-package-explode ()
   "Make sure the regex works."
@@ -82,7 +83,7 @@
            ("/r/m/p/bob-p/0.1.1/bob-p.el"
             (single . ["bob-p" () "bob's package summary" "0.1.1" "Description."]))
            ("/r/m/p/tar-p/0.5.1/tar-p.tar"
-            (multi . ["tar-p" () "tar package summary" "0.5.1" "Description."])))))
+            (tar . ["tar-p" () "tar package summary" "0.5.1" "Description."])))))
     (noflet
         ;; This is the function that runs find to get it's stuff
         ((marmalade/list-files-string (root)
@@ -102,7 +103,7 @@
            ("/r/m/p/bob-p/0.1.1/bob-p.el"
             (single . ["bob-p" () "bob's package summary" "0.1.1" "Description."]))
            ("/r/m/p/tar-p/0.5.1/tar-p.tar"
-            (multi . ["tar-p" () "tar package summary" "0.5.1" "Description."])))))
+            (tar . ["tar-p" () "tar package summary" "0.5.1" "Description."])))))
     (noflet
         ;; This is the function that runs find to get it's stuff
         ((marmalade/list-files-string (root)
@@ -115,7 +116,71 @@
          (marmalade/root->archive "/r/m/p"))
         '((nic-p . [(0 1 1) () "nic's package summary" single])
           (bob-p . [(0 1 1) () "bob's package summary" single])
-          (tar-p . [(0 5 1) () "tar package summary" multi])))))))
+          (tar-p . [(0 5 1) () "tar package summary" tar])))))))
+
+(defconst marmalade/test-package-files
+  '("/packages/elixir-mix/0.0.1/elixir-mix-0.0.1.el"
+    "/packages/elixir-mix/0.0.2/elixir-mix-0.0.2.el"
+    "/packages/sawfish/1.32/sawfish-1.32.el"
+    "/packages/less-css-mode/0.9/less-css-mode-0.9.el"
+    "/packages/less-css-mode/0.8/less-css-mode-0.8.el"
+    "/packages/less-css-mode/0.7/less-css-mode-0.7.el"
+    "/packages/less-css-mode/0.10/less-css-mode-0.10.el"
+    "/packages/less-css-mode/0.6/less-css-mode-0.6.el"
+    "/packages/less-css-mode/0.4/less-css-mode-0.4.el"
+    "/packages/less-css-mode/0.11/less-css-mode-0.11.el"
+    "/packages/less-css-mode/0.3/less-css-mode-0.3.el"
+    "/packages/less-css-mode/0.14/less-css-mode-0.14.el"
+    "/packages/less-css-mode/0.2/less-css-mode-0.2.el"
+    "/packages/less-css-mode/0.1/less-css-mode-0.1.el"
+    "/packages/less-css-mode/0.12/less-css-mode-0.12.el"
+    "/packages/less-css-mode/0.15/less-css-mode-0.15.el"
+    "/packages/less-css-mode/0.5/less-css-mode-0.5.el"
+    "/packages/less-css-mode/0.13/less-css-mode-0.13.el"
+    "/packages/flymake-easy/0.9/flymake-easy-0.9.el"
+    "/packages/flymake-easy/0.8/flymake-easy-0.8.el"
+    "/packages/flymake-easy/0.7/flymake-easy-0.7.el"
+    "/packages/flymake-easy/0.6/flymake-easy-0.6.el"
+    "/packages/flymake-easy/0.4/flymake-easy-0.4.el"
+    "/packages/flymake-easy/0.3/flymake-easy-0.3.el"
+    "/packages/flymake-easy/0.2/flymake-easy-0.2.el"
+    "/packages/flymake-easy/0.1/flymake-easy-0.1.el"
+    "/packages/flymake-easy/0.5/flymake-easy-0.5.el")
+  "List of packaged files to test with.")
+
+(ert-deftest marmalade/list-files-dir ()
+  (let ((marmalade-package-store-dir
+         (concat "~/work/marmalade/elmarmalade/"
+                 "marmalade-repo-test/packages")))
+    (should
+     (equal
+      (sort 
+       (marmalade/list-dir marmalade-package-store-dir)
+       'string-lessp)
+      (sort marmalade/test-package-files 'string-lessp)))))
+
+(defconst marmalade/test-packages
+  '((elixir-mix . [(0 0 2) nil "Emacs integration for Elixir's elixir-mix" single]) ; "marmalade-repo-test/packages/elixir-mix/0.0.2/elixir-mix-0.0.2.el"
+    (sawfish . [(1 32) () "Sawfish mode." single]) ; "marmalade-repo-test/packages/sawfish/1.32/sawfish-1.32.el"
+    (less-css-mode . [(0 15) () "Major mode for editing LESS CSS files (lesscss.org)" single]) ; "marmalade-repo-test/packages/less-css-mode/0.15/less-css-mode-0.15.el"
+    (flymake-easy . [(0 9) () "Helpers for easily building flymake checkers" single])) ; "marmalade-repo-test/packages/flymake-easy/0.9/flymake-easy-0.9.el"
+  "List of packages from the `marmalade/test-packages'.")
+
+(ert-deftest marmalade/package-archive ()
+  (noflet ((symbol-lessp (a b)
+             (string-lessp
+              (symbol-name (car a))
+              (symbol-name (car b)))))
+    (let ((marmalade-package-store-dir
+           (concat "~/work/marmalade/elmarmalade/"
+                   "marmalade-repo-test/packages")))
+      (should
+       (equal
+        (sort
+         (cdr
+          (funcall (marmalade/package-archive '(16))))
+         'symbol-lessp)
+        (sort marmalade/test-packages 'symbol-lessp))))))
 
 (defun marmalade/make-requires (depends)
   "Make a requires string."

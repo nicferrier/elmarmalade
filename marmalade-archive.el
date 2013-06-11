@@ -23,6 +23,7 @@
 (require 'rx)
 (require 'package)
 (require 'marmalade-customs)
+(require 'dash)
 
 (defun marmalade/archive-file (&optional lisp)
   "Get the marmalade archive file name.
@@ -67,24 +68,53 @@ The files are then filtered by `marmalade/list-files'."
           ;; And finally return done, the output from the process
           done))))
 
+(defun marmalade/list-dir (root)
+  "EmacsLisp version of package find list dir.
+
+The parent directory of ROOT is stripped off the resulting
+files."
+  (let* ((root-dir (file-name-as-directory
+                    (expand-file-name root)))
+         (re (concat "^" (expand-file-name
+                          (concat root-dir "..")) "\\(.*\\)"))
+         (package-dir-list
+          (--filter
+           ;; no el files at this level
+           (not (string-match-p "\\.el$" it)) 
+           (directory-files root-dir t "^[^.].*")))
+         (version-dir-list
+          (loop for package-dir in package-dir-list
+             collect (directory-files package-dir t "^[^.].*"))))
+    (--map
+     (when (string-match re it) (match-string 1 it))
+     (-flatten
+      (loop for p in (-flatten version-dir-list)
+         collect (directory-files p t "^[^.].*"))))))
+
 (defun marmalade/list-files (root)
-  "Turn ROOT into a list of maramalade meta data."
-  (loop for filename in (split-string
-                         (marmalade/list-files-string root) "\n")
-     if (string-match
-         (concat
-          "^.*/\\([A-Za-z0-9-]+\\)/"
-          "\\([0-9.]+\\)/"
-          "\\([A-Za-z0-9.-]+\\).\\(el\\|tar\\)$")
-         filename)
-     collect
-       (list
-        filename
-        ;; (match-string 1 filename)
-        ;; (match-string 2 filename)
-        ;; (match-string 3 filename)
-        ;; The type
-        (match-string 4 filename))))
+  "Turn ROOT into a list of maramalade meta data.
+
+ROOT is present on the filename."
+  ;; (split-string (marmalade/list-files-string root) "\n")
+  (let ((root-parent
+         (expand-file-name
+          (concat (file-name-as-directory root) "..")))
+        (dir-list (marmalade/list-dir root)))
+    (loop for filename in dir-list
+       if (string-match
+           (concat
+            "^.*/\\([A-Za-z0-9-]+\\)/"
+            "\\([0-9.]+\\)/"
+            "\\([A-Za-z0-9.-]+\\).\\(el\\|tar\\)$")
+           filename)
+       collect
+         (list
+          (concat root-parent filename)
+          ;; (match-string 1 filename)
+          ;; (match-string 2 filename)
+          ;; (match-string 3 filename)
+          ;; The type
+          (match-string 4 filename)))))
 
 (defun marmalade/commentary-handle (buffer)
   "package.el does not handle bad commentary declarations.
@@ -131,24 +161,25 @@ It returns a cons of `single' or `multi' and "
   (let ((ptype
          (case (intern type)
            (el 'single)
-           (tar 'multi))))
+           (tar 'tar))))
     (cons
      ptype
      (case ptype
        (single (marmalade/package-file-info filename))
-       (multi (package-tar-file-info filename))))))
+       (tar (package-tar-file-info filename))))))
 
 (defun marmalade/root->archive (root)
   "For ROOT make an archive list."
-  (loop for (filename type) in (marmalade/list-files root)
-     with package-stuff
-     do
-       (setq package-stuff
-             (condition-case err
-                 (marmalade/package-stuff filename type)
-               (error nil)))
-     if package-stuff
-     collect package-stuff))
+  (let ((files-list (marmalade/list-files root)))
+    (loop for (filename type) in files-list
+       with package-stuff
+       do
+         (setq package-stuff
+               (condition-case err
+                   (marmalade/package-stuff filename type)
+                 (error nil)))
+       if package-stuff
+       collect package-stuff)))
 
 (defun marmalade/packages-list->archive-list (packages-list)
   "Turn the list of packages into an archive list."
@@ -169,23 +200,24 @@ It returns a cons of `single' or `multi' and "
 
 (defun marmalade/archive-cache-fill (root)
   "Fill the cache by reading the ROOT."
-  (loop
-     for (type . package) in (marmalade/root->archive root)
-     do (let* ((package-name (elt package 0))
-               (current-package
-                (gethash package-name marmalade/archive-cache)))
-          (if current-package
-              ;; Put it only if it's a newer version
-              (let ((current-version (elt (cdr current-package) 3))
-                    (new-version (elt package 3)))
-                (when (string< current-version new-version)
-                  (puthash
-                   package-name (cons type package)
-                   marmalade/archive-cache)))
-              ;; Else just put it
-              (puthash
-               package-name (cons type package)
-               marmalade/archive-cache)))))
+  (let ((typed-package-list (marmalade/root->archive root)))
+    (loop
+       for (type . package) in typed-package-list
+       do (let* ((package-name (elt package 0))
+                 (current-package
+                  (gethash package-name marmalade/archive-cache)))
+            (if current-package
+                ;; Put it only if it's a newer version
+                (let ((current-version (elt (cdr current-package) 3))
+                      (new-version (elt package 3)))
+                  (when (version< current-version new-version)
+                    (puthash
+                     package-name (cons type package)
+                     marmalade/archive-cache)))
+                ;; Else just put it
+                (puthash
+                 package-name (cons type package)
+                 marmalade/archive-cache))))))
 
 (defun marmalade/cache->package-archive ()
   "Turn the cache into the package-archive list.
@@ -233,30 +265,38 @@ See `marmalade/archive-file' for how the filename is obtained."
          (format "(throw 'return %S)" marmalade/archive-cache))
         (write-file archive-lisp)))))
 
-(defun marmalade/package-archive ()
+(defun marmalade/package-archive (&optional refresh-cache)
   "Make the package archive from package cache.
 
 Re-caches the package cache from the files on disc if the call to
-`marmalade-cache-test' returns `t'.
+`marmalade-cache-test' returns `t' or if REFRESH-CACHE is t.
 
 Returns a thunk that returns the archive."
-  (interactive)
+  (interactive (list current-prefix-arg))
   ;; Possibly rebuild the cache file
+  (when refresh-cache
+    (clrhash marmalade/archive-cache)
+    (when (and (> (car refresh-cache) 4)
+               (file-exists-p (marmalade/archive-file t)))
+      (delete-file (marmalade/archive-file t))))
   (let ((cached-archive (marmalade/cache->package-archive)))
     (when (< (length cached-archive) 1)
       (if (not (marmalade-cache-test))
           (marmalade/archive-load)
           ;; Else rebuild the cache
           (marmalade/archive-cache-fill marmalade-package-store-dir)
+          (setq cached-archive (marmalade/cache->package-archive))
           (marmalade/archive-save)))
-    ;; Return a proc representing the archive
-    (lambda (&optional arg)
-      (case arg
-        (:time
-         (marmalade/modtime marmalade-package-store-dir))
-        ;; Else return the archive
-        (t
-         (cons 1 cached-archive))))))
+    (if (called-interactively-p 'interactive)
+        (message "marmalade archive: %S" cached-archive)
+        ;; Return a proc representing the archive
+        (lambda (&optional arg)
+          (case arg
+            (:time
+             (marmalade/modtime marmalade-package-store-dir))
+            ;; Else return the archive
+            (t
+             (cons 1 cached-archive)))))))
 
 ;; FIXME - should we make this conditional on elnode somehow?
 (defun marmalade-archive-handler (httpcon)
@@ -264,6 +304,7 @@ Returns a thunk that returns the archive."
   ;; We need to get at the cache times here so we can have LM caching
   (let* ((archive (marmalade/package-archive))
          (lm-time (funcall archive :time)))
+    ;; Use the if-modified-since function in elnode to do this test
     (elnode-http-header-set
      httpcon "Last-modified" (elnode--rfc1123-date lm-time))
     ;; FIXME - What's the right mimetype here?
