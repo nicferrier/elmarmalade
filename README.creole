@@ -237,8 +237,11 @@ $ HOME=$(realpath marmalade-repo) emacs-local/bin/emacs --daemon=marmalade
 The steps are:
 
 1. kill any existing daemon
+
 2. remove the existing deployment (//not// the data)
+
 3. deploy the package and it's dependancies
+
 4. start the daemon
 
 Once the Emacs instance is started you can attach to it like this:
