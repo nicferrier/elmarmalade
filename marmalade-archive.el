@@ -43,36 +43,6 @@ returned."
 
 ;; Directory root mangling code
 
-(defun marmalade/list-files-string (root)
-  "Make the marmalade file list buffer for ROOT.
-
-The file list buffer is a list of all files under the ROOT.  We
-just use unix find for this right now.  But it could be done with
-emacs-lisp as well of course.
-
-The files are then filtered by `marmalade/list-files'."
-  (let ((marmalade-list-buffer (get-buffer " *marmalade-list*")))
-    (if (bufferp marmalade-list-buffer)
-        (with-current-buffer marmalade-list-buffer
-          (buffer-string))
-        ;; Else use lisp to do it
-        (let (done
-              (process (start-process-shell-command
-                        "marmalade/find"
-                        (generate-new-buffer " *marmalade-list*")
-                        (concat "find " root " -type f"))))
-          (set-process-sentinel
-           process
-           (lambda (proc status)
-             (when (equal status "finished\n")
-               (with-current-buffer (process-buffer proc)
-                 (setq done (buffer-string))))))
-          (while (not done)
-            (message "busy waiting in marmalade/list-files-string")
-            (accept-process-output process 1))
-          ;; And finally return done, the output from the process
-          done))))
-
 (defun marmalade/list-dir (root)
   "EmacsLisp version of package find list dir.
 
