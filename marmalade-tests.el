@@ -143,21 +143,39 @@ elmarmalade.")
     (sawfish . [(1 32) () "Sawfish mode." single]) ; "marmalade-repo-test/packages/sawfish/1.32/sawfish-1.32.el"
     (less-css-mode . [(0 15) () "Major mode for editing LESS CSS files (lesscss.org)" single]) ; "marmalade-repo-test/packages/less-css-mode/0.15/less-css-mode-0.15.el"
     (flymake-easy . [(0 9) () "Helpers for easily building flymake checkers" single])) ; "marmalade-repo-test/packages/flymake-easy/0.9/flymake-easy-0.9.el"
-  "List of packages from the `marmalade/test-packages'.")
+  "List of packages from the `marmalade/test-packages'.
+
+A static representation of what the dummy package tree should
+look like.  It is based on `marmalade/test-package-files'.")
 
 (ert-deftest marmalade/package-archive ()
-  (noflet ((symbol-lessp (a b)
-             (string-lessp
-              (symbol-name (car a))
-              (symbol-name (car b)))))
-    (let ((marmalade-package-store-dir
-           (concat "~/work/marmalade/elmarmalade/"
-                   "marmalade-repo-test/packages")))
+  "Make the package cache and test it.
+
+This is a full test of the cache, it generates the internal hash
+from the fake directory structure and then caches it and then
+reads the cache back in and checks it against
+`marmalade/test-packages'."
+  (let* ((marmalade-archive-dir
+          (concat "~/work/marmalade/elmarmalade/"
+                  "marmalade-repo-test/archives"))
+         (marmalade-package-store-dir
+          (concat "~/work/marmalade/elmarmalade/"
+                  "marmalade-repo-test/packages"))
+         (newhash (make-hash-table :test 'equal))
+         ;; The newest archive
+         (newest (progn
+                   (marmalade-archive-make-cache)
+                   (marmalade/archive-newest))))
+    (noflet ((symbol-lessp (a b)
+               (string-lessp
+                (symbol-name (car a))
+                (symbol-name (car b))))
+             (marmalade/archive-newest () newest))
       (should
        (equal
+        ;; Read it in and sort it.
         (sort
-         (cdr
-          (funcall (marmalade/package-archive '(16))))
+         (kvhash->alist (marmalade/archive-cache->hash newhash))
          'symbol-lessp)
         (sort marmalade/test-packages 'symbol-lessp))))))
 
