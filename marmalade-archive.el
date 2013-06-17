@@ -23,6 +23,8 @@
 ;; anything like that. But why should it? it's ridiculous to have to
 ;; do that all the time with a single package.
 
+;;; Code:
+
 (require 'rx)
 (require 'package)
 (require 'marmalade-customs)
