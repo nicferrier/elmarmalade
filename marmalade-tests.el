@@ -31,31 +31,6 @@
    :filename (file-name-nondirectory file-name)
    :mtime (current-time-string (or mod-time (current-time)))))
 
-(ert-deftest marmalade-cache-test ()
-  "Test the cache test."
-  (let* ((store-dir "/mymarmalade/marmalade/packages")
-         (marmalade-package-store-dir store-dir)
-         (archive (marmalade/archive-file t)))
-    ;; When the index is not specified
-    ;;  (fakir-fake-file  (marmalade/fakir-file archive)  (should (marmalade-cache-test)))
-    (let* ((test-time (current-time))
-           (early-time (time-subtract test-time (seconds-to-time 60))))
-      ;; When they are the same
-      (fakir-fake-file
-       (list (marmalade/fakir-file archive test-time)
-             (marmalade/fakir-file store-dir test-time))
-       (should-not (marmalade-cache-test)))
-      ;; Store time is earlier
-      (fakir-fake-file
-       (list (marmalade/fakir-file archive test-time)
-             (marmalade/fakir-file store-dir early-time))
-       (should-not (marmalade-cache-test)))
-      ;; Store time is more recent than archive
-      (fakir-fake-file
-       (list (marmalade/fakir-file archive early-time)
-             (marmalade/fakir-file store-dir test-time))
-       (should (marmalade-cache-test))))))
-
 (ert-deftest marmalade/list-files ()
   "Test the file listing stuff"
   (noflet
