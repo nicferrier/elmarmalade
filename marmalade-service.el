@@ -459,7 +459,7 @@ file."
    httpcon
    `(("^[^/]*//-/\\(.*\\)$" . ,marmalade/webserver)
      ("^[^/]*//packages/new$" . marmalade/upload-page)
-     ("^[^/]+//packages/archive-contents" . marmalade-archive-handler)
+     ("^[^/]+//packages/archive-contents.*" . marmalade-archive-router)
      ;; We don't really want to send 404's for these if we have them
      ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
      ("^[^/]+//packages/\\(.*\\.\\(el\\|tar\\)\\)" . marmalade/package-handler)
