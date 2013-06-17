@@ -2,17 +2,20 @@
 
 ;;; Commentary
 
-;; Makes package archives from a source tree of marmalade packages.
+;; Manage the archive-contents file. The archive-contents is an index
+;; of the packages in the repository in list form. Each ELPA client
+;; using marmalade downloads the archive-contents to know what
+;; packages are available on marmalade.
 
-;; The functions in marmalade-mongo define a way of turning the
-;; marmalade v1 mongo-db into a list of files.
+;; The internal representation of the index is a hash table. The hash
+;; is never served directly to an ELPA client though, it is cached to
+;; an archive-contents list representation in a file and the file is
+;; served.
 
-;; This is how marmalade manages it's packages, in a file system of
-;; package files. We read the packages from the filesystem into a
-;; hashtable and then present the hashtable.
-
-;; The idea is that a web server could update the hashtable whenever a
-;; user uploads.
+;; Many archive-contents cache files might exist as the hash table is
+;; written to a new file each time it is updated. Proxying techniques
+;; are used to ensure that marmalade serves the newest
+;; archive-contents file to clients.
 
 ;;; Notes
 
