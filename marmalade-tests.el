@@ -164,8 +164,7 @@ elmarmalade.")
 (defun marmalade/make-requires (depends)
   "Make a requires string."
   (if depends
-      (let ((s-lex-value-as-lisp t))
-        (s-lex-format ";; Package-Requires: ${depends}"))
+      (format ";; Package-Requires: %S" depends)
       ""))
 
 (defun marmalade/make-header (depends version)
