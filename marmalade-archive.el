@@ -194,8 +194,11 @@ It returns a cons of `single' or `multi' and "
                  package-name (cons type package)
                  marmalade/archive-cache))))))
 
-(defun marmalade/cache->package-archive ()
+(defun marmalade/cache->package-archive (&optional cache)
   "Turn the cache into the package-archive list.
+
+You can optional specify the CACHE or use the default
+`marmalade/archive-cache'.
 
 Returns the Lisp form of the archive which is sent (almost
 directly) back to ELPA clients.
@@ -203,90 +206,108 @@ directly) back to ELPA clients.
 If the cache is empty this returns `nil'."
   (marmalade/packages-list->archive-list
    (kvalist->values
-    (kvhash->alist marmalade/archive-cache))))
+    (kvhash->alist (or cache marmalade/archive-cache)))))
 
-(defun marmalade/modtime (filename)
-  (let ((modtime 5))
-    (elt (file-attributes filename) modtime)))
+(defun marmalade/archive-hash->package-file (filename &optional hash)
+  "Save the list of packages HASH as an archive with FILENAME."
+  (with-temp-file filename
+    (insert
+     (format
+      "%S"
+      (cons 1 (marmalade/cache->package-archive hash))))))
 
-(defun marmalade-cache-test ()
-  "The implementation of the cache test.
+(defun marmalade/archive-hash->cache (&optional hash)
+  "Save the current package state (or HASH) in a cache file.
 
-Return `t' if the `marmalade/archive-cache-fill' should be
-executed on the `marmalade-package-store-dir'."
-  (let ((archive (marmalade/archive-file t)))
-    (or
-     (not (file-exists-p archive))
-     (let* ((last-store-change (marmalade/modtime marmalade-package-store-dir))
-            (cached-change-time (marmalade/modtime archive)))
-       (time-less-p cached-change-time last-store-change)))))
+The cache file is generated in `marmalade-archive-dir' with a
+plain timestamp.
 
-(defun marmalade/archive-load ()
-  "Load the cached, lisp version, of the archive.
+The `marmalade-archive-dir' is forced to exist by this function."
+  (let ((dir (file-name-as-directory marmalade-archive-dir)))
+    (make-directory dir t)
+    (marmalade/archive-hash->package-file
+     (concat dir (format-time-string "%Y%m%d%H%M%S%N" (current-time)))
+     hash)))
 
-See `marmalade/archive-file' for how the filename is obtained."
-  (setq marmalade/archive-cache
-        (catch 'return
-          (load-file (marmalade/archive-file t)))))
+(defun marmalade-archive-make-cache ()
+  "Regenerate the archive and make a cache file."
+  (marmalade/archive-cache-fill marmalade-package-store-dir)
+  (marmalade/archive-hash->cache))
 
-(defun marmalade/archive-save ()
-  "Save the archive to the cached, lisp version.
+(defun marmalade/archive-newest ()
+  "Return the filename of the newest archive file.
 
-See `marmalade/archive-file' for how the filename is obtained."
-  (let ((archive-lisp (marmalade/archive-file t)))
-    (when  (file-writable-p archive-lisp)
-      (with-temp-buffer
-        (insert
-         (format "(throw 'return %S)" marmalade/archive-cache))
-        (write-file archive-lisp)))))
+The archive file is the cache of the archive-contents.
 
-(defun marmalade/package-archive (&optional refresh-cache)
-  "Make the package archive from package cache.
+The filename is returned with the property `:version' being the
+latest version number."
+  (let* ((cached-archive
+          (car
+           (directory-files
+            (file-name-as-directory marmalade-archive-dir)
+            t "^[0-9]+$"))))
+    (string-match ".*/\\([0-9]+\\)$" cached-archive)
+    (propertize cached-archive
+                :version (match-string 1 cached-archive))))
 
-Re-caches the package cache from the files on disc if the call to
-`marmalade-cache-test' returns `t' or if REFRESH-CACHE is t.
+(defun marmalade/archive-cache->list ()
+  "Read the latest archive cache into a list."
+  (let* ((archive (marmalade/archive-newest))
+         (archive-buf (find-file-noselect archive)))
+    (unwind-protect
+         (with-current-buffer archive-buf
+           (goto-char (point-min))
+           ;; Read it in and sort it.
+           (read (current-buffer)))
+      (kill-buffer archive-buf))))
 
-Returns a thunk that returns the archive."
-  (interactive (list current-prefix-arg))
-  ;; Possibly rebuild the cache file
-  (when refresh-cache
-    (clrhash marmalade/archive-cache)
-    (when (and (> (car refresh-cache) 4)
-               (file-exists-p (marmalade/archive-file t)))
-      (delete-file (marmalade/archive-file t))))
-  (let ((cached-archive (marmalade/cache->package-archive)))
-    (when (< (length cached-archive) 1)
-      (if (not (marmalade-cache-test))
-          (marmalade/archive-load)
-          ;; Else rebuild the cache
-          (marmalade/archive-cache-fill marmalade-package-store-dir)
-          (setq cached-archive (marmalade/cache->package-archive))
-          (marmalade/archive-save)))
-    (if (called-interactively-p 'interactive)
-        (message "marmalade archive: %S" cached-archive)
-        ;; Return a proc representing the archive
-        (lambda (&optional arg)
-          (case arg
-            (:time
-             (marmalade/modtime marmalade-package-store-dir))
-            ;; Else return the archive
-            (t
-             (cons 1 cached-archive)))))))
+(defun marmalade/archive-cache->hash (&optional hash)
+  "Read the latest archive cache into `marmalade/archive-cache'.
 
-;; FIXME - should we make this conditional on elnode somehow?
-(defun marmalade-archive-handler (httpcon)
-  "Send the archive to the HTTP connection."
-  ;; We need to get at the cache times here so we can have LM caching
-  (let* ((archive (marmalade/package-archive))
-         (lm-time (funcall archive :time)))
-    ;; Use the if-modified-since function in elnode to do this test
-    (elnode-http-header-set
-     httpcon "Last-modified" (elnode--rfc1123-date lm-time))
-    ;; FIXME - What's the right mimetype here?
-    (elnode-http-start httpcon 200 '("Content-type" . "text/plain"))
-    (elnode-http-return
-     httpcon
-     (format "%S" (funcall archive)))))
+If optional HASH is specified then fill that rather than
+`marmalade/archive-cache'.
+
+Returns the filled hash."
+  (let* ((lst (marmalade/archive-cache->list))
+         ;; The car is the ELPA archive format version number
+         (archive (cdr lst))
+         ;; The hash
+         (archive-hash (kvalist->hash archive)))
+    (if (hash-table-p hash)
+        (progn
+          (maphash
+           (lambda (k v) (puthash k v hash))
+           archive-hash)
+          archive-hash)
+        (setq marmalade/archive-cache archive-hash))))
+
+(defconst marmalade-archive-cache-webserver
+  (elnode-webserver-handler-maker
+   (concat marmalade-archive-dir))
+  "A webserver for the directory of archive-contents caches.")
+
+(defun marmalade-archive-contents-handler (httpcon)
+  "Handle archive-contents requests.
+
+We return proxy redirect to the correct location which is served
+by the `marmalade-archive-cache-webserver'."
+  (let* ((latest (marmalade/archive-newest))
+         (version (get-text-property 0 :version latest))
+         (location (format "/packages/archive-contents/%s" version)))
+    (elnode-send-proxy-location httpcon location)))
+
+(defun marmalade-archive-router (httpcon)
+  "Route package archive requests.
+
+We deliver the most recent \"archive-contents\" by storing them
+by date stamp and selecting the lexicographical top."
+  (elnode-hostpath-dispatcher
+   httpcon
+   `(("^[^/]*//packages/archive-contents$"
+      . marmalade-archive-contents-handler)
+     ("^[^/]*//packages/archive-contents/\\([0-9]+\\)"
+      . ,marmalade-archive-cache-webserver))))
+
 
 (provide 'marmalade-archive)
 
