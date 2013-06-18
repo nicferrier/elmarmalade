@@ -284,10 +284,13 @@ Returns the filled hash."
 
 We return proxy redirect to the correct location which is served
 by the `marmalade-archive-cache-webserver'."
-  (let* ((latest (marmalade/archive-newest))
-         (version (get-text-property 0 :version latest))
-         (location (format "/packages/archive-contents/%s" version)))
-    (elnode-send-proxy-location httpcon location)))
+  (let ((latest (marmalade/archive-newest)))
+    (if latest
+        (let ((version (get-text-property 0 :version latest))
+              (location (format "/packages/archive-contents/%s" version)))
+          (elnode-send-proxy-location httpcon location))
+        ;; Else what?
+        (elnode-send-500 httpcon "no cached index"))))
 
 (defun marmalade-archive-router (httpcon)
   "Route package archive requests.
