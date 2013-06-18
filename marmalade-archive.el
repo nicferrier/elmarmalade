@@ -213,8 +213,9 @@ If the cache is empty this returns `nil'."
   (with-temp-file filename
     (insert
      (format
-      "%S"
-      (cons 1 (marmalade/cache->package-archive hash))))))
+      "%s"
+      (pp-to-string
+       (cons 1 (marmalade/cache->package-archive hash)))))))
 
 (defun marmalade/archive-hash->cache (&optional hash)
   "Save the current package state (or HASH) in a cache file.
