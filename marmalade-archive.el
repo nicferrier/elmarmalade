@@ -30,16 +30,6 @@
 (require 'marmalade-customs)
 (require 'dash)
 
-(defun marmalade/archive-file (&optional lisp)
-  "Get the marmalade archive file name.
-
-If optional LISP is `t', the LISP version of the file is
-returned."
-  (let ((base
-         (concat
-          (file-name-as-directory marmalade-package-store-dir)
-          "archive-contents")))
-    (if lisp (concat base ".el") base)))
 
 ;; Directory root mangling code
 
