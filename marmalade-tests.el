@@ -129,8 +129,7 @@ elmarmalade.")
 (ert-deftest marmalade/list-files-dir ()
   "Test that we can read in the package store directory."
   (let ((marmalade-package-store-dir
-         (concat "~/work/marmalade/elmarmalade/"
-                 "marmalade-repo-test/packages")))
+         (concat marmalade-dir "marmalade-repo-test/packages")))
     (should
      (equal
       (sort 
@@ -156,11 +155,9 @@ from the fake directory structure and then caches it and then
 reads the cache back in and checks it against
 `marmalade/test-packages'."
   (let* ((marmalade-archive-dir
-          (concat "~/work/marmalade/elmarmalade/"
-                  "marmalade-repo-test/archives"))
+          (concat marmalade-dir "marmalade-repo-test/archives"))
          (marmalade-package-store-dir
-          (concat "~/work/marmalade/elmarmalade/"
-                  "marmalade-repo-test/packages"))
+          (concat marmalade-dir "marmalade-repo-test/packages"))
          (newhash (make-hash-table :test 'equal))
          ;; The newest archive
          (newest (progn

@@ -1,5 +1,5 @@
 (marmalade-service
- :version "2.0.9"
+ :version "2.0.10"
  :doc "The Marmalade package store service."
  :requires 
  ((dash "1.1.0")
@@ -17,7 +17,34 @@
   "front-page.html"
   "login-page.html"
   "upload-page.html"
-  "static/style.css")
+  "static/style.css"
+  "marmalade-repo-test/packages/elixir-mix/0.0.1/elixir-mix-0.0.1.el"
+  "marmalade-repo-test/packages/elixir-mix/0.0.2/elixir-mix-0.0.2.el"
+  "marmalade-repo-test/packages/sawfish/1.32/sawfish-1.32.el"
+  "marmalade-repo-test/packages/less-css-mode/0.9/less-css-mode-0.9.el"
+  "marmalade-repo-test/packages/less-css-mode/0.8/less-css-mode-0.8.el"
+  "marmalade-repo-test/packages/less-css-mode/0.7/less-css-mode-0.7.el"
+  "marmalade-repo-test/packages/less-css-mode/0.10/less-css-mode-0.10.el"
+  "marmalade-repo-test/packages/less-css-mode/0.6/less-css-mode-0.6.el"
+  "marmalade-repo-test/packages/less-css-mode/0.4/less-css-mode-0.4.el"
+  "marmalade-repo-test/packages/less-css-mode/0.11/less-css-mode-0.11.el"
+  "marmalade-repo-test/packages/less-css-mode/0.3/less-css-mode-0.3.el"
+  "marmalade-repo-test/packages/less-css-mode/0.14/less-css-mode-0.14.el"
+  "marmalade-repo-test/packages/less-css-mode/0.2/less-css-mode-0.2.el"
+  "marmalade-repo-test/packages/less-css-mode/0.1/less-css-mode-0.1.el"
+  "marmalade-repo-test/packages/less-css-mode/0.12/less-css-mode-0.12.el"
+  "marmalade-repo-test/packages/less-css-mode/0.15/less-css-mode-0.15.el"
+  "marmalade-repo-test/packages/less-css-mode/0.5/less-css-mode-0.5.el"
+  "marmalade-repo-test/packages/less-css-mode/0.13/less-css-mode-0.13.el"
+  "marmalade-repo-test/packages/flymake-easy/0.9/flymake-easy-0.9.el"
+  "marmalade-repo-test/packages/flymake-easy/0.8/flymake-easy-0.8.el"
+  "marmalade-repo-test/packages/flymake-easy/0.7/flymake-easy-0.7.el"
+  "marmalade-repo-test/packages/flymake-easy/0.6/flymake-easy-0.6.el"
+  "marmalade-repo-test/packages/flymake-easy/0.4/flymake-easy-0.4.el"
+  "marmalade-repo-test/packages/flymake-easy/0.3/flymake-easy-0.3.el"
+  "marmalade-repo-test/packages/flymake-easy/0.2/flymake-easy-0.2.el"
+  "marmalade-repo-test/packages/flymake-easy/0.1/flymake-easy-0.1.el"
+  "marmalade-repo-test/packages/flymake-easy/0.5/flymake-easy-0.5.el")
  :test
  (:requires
   ((fakir "0.1.1")
