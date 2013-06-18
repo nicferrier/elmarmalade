@@ -43,8 +43,11 @@
             (tar . ["tar-p" () "tar package summary" "0.5.1" "Description."])))))
     (noflet
         ;; This is the function that runs find to get it's stuff
-        ((marmalade/list-files-string (root)
-           (s-join "\n" (kvalist->keys files-alist)))
+        ((marmalade/list-dir (root)
+           (mapcar (lambda (d)
+                     (string-match "/r/m\\(.*\\)" d)
+                     (match-string 1 d))
+                   (kvalist->keys files-alist)))
          (marmalade/package-stuff (filename type)
            (cadr (assoc filename files-alist))))
       (should
