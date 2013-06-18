@@ -31,24 +31,6 @@
    :filename (file-name-nondirectory file-name)
    :mtime (current-time-string (or mod-time (current-time)))))
 
-(ert-deftest marmalade/list-files ()
-  "Test the file listing stuff"
-  (noflet
-      ;; This is the function that runs find to get it's stuff
-      ((marmalade/list-files-string (root)
-         (s-join
-          "\n"
-          (list
-           "/root/marmalade/packages/nic-p/0.1.1/nic-p.el"
-           "/root/marmalade/packages/bob-p/0.1.1/bob-p.el"
-           "/root/marmalade/packages/tar-p/0.5.1/tar-p.tar"))))
-    (should
-     (equal
-      (marmalade/list-files "/root/marmalade/packages")
-      (list
-       '("/root/marmalade/packages/nic-p/0.1.1/nic-p.el" "el")
-       '("/root/marmalade/packages/bob-p/0.1.1/bob-p.el" "el")
-       '("/root/marmalade/packages/tar-p/0.5.1/tar-p.tar" "tar"))))))
 
 (ert-deftest marmalade/root->archive ()
   "Test making an archive list from the file list."
