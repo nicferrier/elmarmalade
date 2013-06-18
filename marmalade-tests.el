@@ -109,6 +109,7 @@
     "/packages/flymake-easy/0.2/flymake-easy-0.2.el"
     "/packages/flymake-easy/0.1/flymake-easy-0.1.el"
     "/packages/flymake-easy/0.5/flymake-easy-0.5.el")
+  ;; FIXME - derive this list from the recipe? or from the packaged directory?
   "List of packaged files to test with.
 
 Real files like these are held in the source code repository for
