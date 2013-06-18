@@ -223,6 +223,7 @@ The `marmalade-archive-dir' is forced to exist by this function."
 
 (defun marmalade-archive-make-cache ()
   "Regenerate the archive and make a cache file."
+  (interactive)
   (marmalade/archive-cache-fill marmalade-package-store-dir)
   (marmalade/archive-hash->cache))
 
