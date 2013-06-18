@@ -29,6 +29,7 @@
 (require 'package)
 (require 'marmalade-customs)
 (require 'dash)
+(require 'elnode-proxy) ; not sure this won't cause circular depend
 
 
 ;; Directory root mangling code
