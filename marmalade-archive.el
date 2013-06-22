@@ -47,7 +47,7 @@ files."
           (--filter
            ;; no el files at this level
            (not (string-match-p "\\.el$" it)) 
-           (directory-files root-dir t "^[^.].*")))
+           (directory-files root-dir t "^[^.].*[^~]$")))
          (version-dir-list
           (loop for package-dir in package-dir-list
              collect (directory-files package-dir t "^[^.].*"))))
@@ -286,8 +286,8 @@ We return proxy redirect to the correct location which is served
 by the `marmalade-archive-cache-webserver'."
   (let ((latest (marmalade/archive-newest)))
     (if latest
-        (let ((version (get-text-property 0 :version latest))
-              (location (format "/packages/archive-contents/%s" version)))
+        (let* ((version (get-text-property 0 :version latest))
+               (location (format "/packages/archive-contents/%s" version)))
           (elnode-send-proxy-location httpcon location))
         ;; Else what?
         (elnode-send-500 httpcon "no cached index"))))
