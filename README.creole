@@ -221,6 +221,13 @@ need a smarter {{{rsync}}} to move them to another host:
 rsync -catve ssh "$MARMALADE_HOST:marmalade/packages/*" marmalade/packages
 }}}
 
+//It would be really useful// to understand the incomming packages on
+that rsync and to call the internal archive-contents update urls. Some
+sort of grep on the rsync output could probably achieve that.
+
+This would mean new marmalade could be a mirror of old marmalade for a
+while, before we switch over.
+
 === Deploy marmalade ===
 
 A deploy script is included in the repository.
