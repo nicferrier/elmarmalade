@@ -321,7 +321,7 @@ Probably the most complicated bit, it tests that an uploaded file
 can be created from some content and a filename and then moved to
 the package store."
   ;; Have to fake the temp file making stuff
-  (flet ((make-temp-name (prefix) (concat prefix "2345")))
+  (noflet ((make-temp-name (prefix) (concat prefix "2345")))
     (let ((marmalade-package-store-dir "/tmp/test-marmalade-dir")
           (temp-file (fakir-file
                       :directory "/tmp/"
@@ -335,12 +335,61 @@ the package store."
             (equal
              (marmalade/save-package
               package-content-string "dummy-package.el")
-             "dummy-package")))
+             ["dummy-package"
+              ((timeclock (2 6 1)))
+              "a fake package for the marmalade test suite"
+              "0.0.1"
+              ";;; Commentary:\n\n;; This doesn't do anything.\n;; it's just a fake package for Marmalade.\n\n"
+              ])))
          ;; Check that the temp file has been renamed
          (should
           (equal
            "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"
            (fakir-file-path temp-file))))))))
+
+(ert-deftest marmalade/package-json-hack ()
+  (should
+   (equal
+    (json-encode
+     (marmalade/package-json-hack
+      ["dummy" ((timeclock (2 6 1 )))]))
+    "[\"dummy\", {\"timeclock\":[2, 6, 1]}]")))
+
+(ert-deftest marmalade/upload ()
+  (let* ((package-content
+          (with-current-buffer
+              (find-file
+               (concat marmalade-dir "dummy-package.el"))
+            (buffer-substring-no-properties
+             (point-min)(point-max))))
+         (params
+          `(("package-file"
+             ,package-content
+             :elnode-filename "dummy-package.el")))
+         (dummy-package
+          ["dummy-package"
+           ((timeclock (2 6 1)))
+           "a fake package for the marmalade test suite"
+           "0.0.1"
+           ";;; Commentary:\n\n;; This doesn't do anything.\n;; it's just a fake package for Marmalade.\n\n"])
+         location package-data)
+    (elnode-fake-params :httpcon params
+      (noflet ((marmalade/save-package (upload-file base-file)
+                 dummy-package)
+               (elnode-auth-cookie-check (httpcon &rest stuff)
+                 t)
+               (elnode-send-redirect (httpcon loc &optional status)
+                 (setq location loc))
+               (elnode-proxy-post (httpcon location :data data)
+                 (setq package-data data)))
+        ;; We need to fake auth somehow
+        (marmalade/upload :httpcon))
+      (should
+       (equal
+        (json-read-from-string (cdar package-data))
+        ;; FIXME When the package is read the requirements version is
+        ;; a vector
+        dummy-package)))))
 
 (ert-deftest marmalade/relativize ()
   (should

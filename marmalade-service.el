@@ -78,22 +78,32 @@ the package repository."
     (t (error "Unrecognized extension `%s'"
               (file-name-extension package-file)))))
 
+(defun marmalade-pkname (package-info)
+  (elt package-info 0))
+
+(defun marmalade-pkversion (package-info)
+  (elt package-info 3))
+
 (defun marmalade/package-path (package-file)
   "Turn PACKAGE-FILE into a repository package path."
-  (let* ((info (marmalade/package-info package-file))
-         (version (elt info 3))
-         (package-dir marmalade-package-store-dir)
-         (package-name (elt info 0))
-         (file-name (file-name-base package-file))
-         (file-name-dir (file-name-directory package-file))
-         (file-name-type (file-name-extension package-file)))
-    (list
-     :info info
-     :version version
-     :package-name package-name
-     :package-path
-     (s-lex-format
-      "${package-dir}/${package-name}/${version}/${package-name}-${version}.${file-name-type}"))))
+  (let ((info (marmalade/package-info package-file)))
+    (let* ((props
+            (list
+             (cons "package-name" (marmalade-pkname info))
+             (cons "version" (marmalade-pkversion info))
+             (cons "package-dir" marmalade-package-store-dir)
+             (cons "file-name" (file-name-base package-file))
+             (cons "file-name-dir" (file-name-directory package-file))
+             (cons "file-name-type" (file-name-extension package-file))))
+           (package-path 
+            (s-format
+             (concat 
+              "${package-dir}/${package-name}"
+              "/${version}/${package-name}-${version}.${file-name-type}")
+             'aget props)))
+      (list
+       :info info
+       :package-path package-path))))
 
 (defun marmalade/package-meta (package-file)
   (with-current-buffer (find-file-noselect package-file)
@@ -134,8 +144,7 @@ If the target package already exists a `file-error' is produced."
        (substring-no-properties package-data)))
     ;; Now read the file contents to get the real path
     ;; - this part could be done on the consumer side of a queue
-    (destructuring-bind
-          (&key info version package-name package-path)
+    (destructuring-bind (&key info package-path)
         (marmalade/package-path temp-package-file)
       ;; Try to move the file to the target path
       (when (file-exists-p package-path)
@@ -145,8 +154,8 @@ If the target package already exists a `file-error' is produced."
       ;; Really creates a directory for now. Not ideal.
       (make-directory (file-name-directory package-path) t)
       (rename-file temp-package-file package-path)
-      ;; Return the package name, possibly return the version too?
-      package-name)))
+      ;; Return the package-info
+      info)))
 
 (defun marmalade/err->sym (err)
   "Convert an error structure to a sensible symbol."
@@ -154,6 +163,25 @@ If the target package already exists a `file-error' is produced."
    (concat
     ":"
     (replace-regexp-in-string " " "-" (elt err 2) ))))
+
+(defun marmalade/package-json-hack (info)
+  "Fix a json-encode problem.
+
+INFO is a package info like:
+
+ [\"dummy\" ((timeclock (2 6 1 ))) ...]
+
+with json 1.3 in emacs 24.3 this results in a broken encoding,
+instead we have to fix the requires section so that it is dotted:
+
+ [\"dummy\" ((timeclock . (2 6 1 ))) ...]
+
+so that's what this function does."
+  (let ((requires (elt info 1)))
+    (when requires
+      (loop for spec in requires
+         do (setcdr spec (cadr spec))))
+    info))
 
 (defun marmalade/upload (httpcon)
   "Handle uploaded packages."
@@ -165,10 +193,19 @@ If the target package already exists a `file-error' is produced."
            (base-file-name
             (file-name-nondirectory upload-file-name)))
       (condition-case err
-          (let* ((package-name (marmalade/save-package
-                                upload-file base-file-name))
-                 (package-url (concat "/packages/" package-name)))
-            (elnode-send-redirect httpcon package-url 302))
+          (let* ((info (marmalade/save-package upload-file base-file-name))
+                 (package-url (concat "/packages/" (marmalade-pkname info))))
+            ;; Send the response...
+            (elnode-send-redirect httpcon package-url 302)
+            ;; ... and send the request to update the cache
+            (elnode-proxy-post
+             httpcon "/packages/archive-contents/update"
+             :data
+             (list
+              (cons
+               "package-info"
+               (json-encode
+                (marmalade/package-json-hack info))))))
         (error
          (case (marmalade/err->sym err)
            (:existing-package
