@@ -292,6 +292,21 @@ by the `marmalade-archive-cache-webserver'."
         ;; Else what?
         (elnode-send-500 httpcon "no cached index"))))
 
+(defun marmalade-archive-update (httpcon)
+  "Update the archive for param \"package\", \"version\"."
+  (let ((package (elnode-http-param httpcon "package"))
+        (version (elnode-http-param httpcon "version")))
+    ;; Update the hash and cause it to be saved again
+    ;;
+    ;; We need a test for this that fakes the above params and checks
+    ;; that we've saved a new archive file
+    ;;
+    ;; FIXME -- we need a lot more stuff here - possibly send over the
+    ;; package-info in json form?
+    ;;
+    ;; Save the hash into a cached file
+    (marmalade/archive-hash->cache)))
+
 (defun marmalade-archive-router (httpcon)
   "Route package archive requests.
 
@@ -302,7 +317,9 @@ by date stamp and selecting the lexicographical top."
    `(("^[^/]*//packages/archive-contents$"
       . marmalade-archive-contents-handler)
      ("^[^/]*//packages/archive-contents/\\([0-9]+\\)"
-      . ,marmalade-archive-cache-webserver))))
+      . ,marmalade-archive-cache-webserver)
+     ("^[^/]*//packages/archive-contents/update$"
+      . ,marmalade-archive-update))))
 
 
 (provide 'marmalade-archive)
