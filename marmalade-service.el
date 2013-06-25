@@ -164,25 +164,6 @@ If the target package already exists a `file-error' is produced."
     ":"
     (replace-regexp-in-string " " "-" (elt err 2) ))))
 
-(defun marmalade/package-json-hack (info)
-  "Fix a json-encode problem.
-
-INFO is a package info like:
-
- [\"dummy\" ((timeclock (2 6 1 ))) ...]
-
-with json 1.3 in emacs 24.3 this results in a broken encoding,
-instead we have to fix the requires section so that it is dotted:
-
- [\"dummy\" ((timeclock . (2 6 1 ))) ...]
-
-so that's what this function does."
-  (let ((requires (elt info 1)))
-    (when requires
-      (loop for spec in requires
-         do (setcdr spec (cadr spec))))
-    info))
-
 (defun marmalade/upload (httpcon)
   "Handle uploaded packages."
   (with-elnode-auth httpcon 'marmalade-auth
@@ -203,9 +184,7 @@ so that's what this function does."
              :data
              (list
               (cons
-               "package-info"
-               (json-encode
-                (marmalade/package-json-hack info))))))
+               "package-info" (format "%S" info)))))
         (error
          (case (marmalade/err->sym err)
            (:existing-package

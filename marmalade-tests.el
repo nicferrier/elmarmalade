@@ -347,14 +347,6 @@ the package store."
            "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"
            (fakir-file-path temp-file))))))))
 
-(ert-deftest marmalade/package-json-hack ()
-  (should
-   (equal
-    (json-encode
-     (marmalade/package-json-hack
-      ["dummy" ((timeclock (2 6 1 )))]))
-    "[\"dummy\", {\"timeclock\":[2, 6, 1]}]")))
-
 (ert-deftest marmalade/upload ()
   (let* ((package-content
           (with-current-buffer
@@ -386,9 +378,7 @@ the package store."
         (marmalade/upload :httpcon))
       (should
        (equal
-        (json-read-from-string (cdar package-data))
-        ;; FIXME When the package is read the requirements version is
-        ;; a vector
+        (car (read-from-string (cdar package-data)))
         dummy-package)))))
 
 (ert-deftest marmalade/relativize ()
