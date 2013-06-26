@@ -295,20 +295,63 @@ by the `marmalade-archive-cache-webserver'."
         ;; Else what?
         (elnode-send-500 httpcon "no cached index"))))
 
+(defun marmalade/archive-find-file (package-name version)
+  "Find the file for the PACKAGE-NAME string and VERSION string."
+  (let* ((al `(("root" . ,marmalade-package-store-dir)
+               ("package-name" . ,package-name)
+               ("version" . ,version)))
+         (path-dir (s-format
+                    "${root}/${package-name}/${version}" 'aget al))
+         (filename-re (s-format "${package-name}-${version}.*" 'aget al)))
+    (car (directory-files path-dir t filename-re))))
+
 (defun marmalade-archive-update (httpcon)
-  "Update the archive for param \"package\", \"version\"."
-  (let ((package (elnode-http-param httpcon "package"))
-        (version (elnode-http-param httpcon "version")))
-    ;; Update the hash and cause it to be saved again
-    ;;
-    ;; We need a test for this that fakes the above params and checks
-    ;; that we've saved a new archive file
-    ;;
-    ;; FIXME -- we need a lot more stuff here - possibly send over the
-    ;; package-info in json form?
-    ;;
-    ;; Save the hash into a cached file
-    (marmalade/archive-hash->cache)))
+  "Update the archive for param \"package-info\".
+
+\"package-info\" is a Lisp formatted package-info vector.
+
+The archive hash is saved to a new version of the cache file.
+
+Sends HTTP 202 on success and 500 on error."
+  (let* ((info (elnode-http-param httpcon "package-info"))
+         (package-name (elt info 0))
+         (package-version (elt info 3))
+         (package-file (marmalade/archive-find-file package-name version))
+         (ext (file-name-extension package-file))
+         (type (marmalade/file-type->type ext)))
+    (condition-case err
+        (progn
+          (puthash package-name (cons type info))
+          (marmalade/archive-hash->cache)
+          (elnode-send-status httpcon 202))
+      (error (elnode-send-500
+              httpcon "failed to update the archive")))))
+
+(defun marmalade-archive-update (httpcon)
+  "Remove the specified version of the package from the archive.
+
+The package and version is specified by the HTTP parameter
+\"package-info\" which is a Lisp formatted package-info vector.
+
+The archive hash is saved to a new version of the cache file.
+
+The package is also removed from the file system.
+
+Sends HTTP status 202 on success and 500 on failure."
+  (let* ((info (elnode-http-param httpcon "package-info"))
+         (package-name (elt info 0))
+         (package-version (elt info 3))
+         (package-file (marmalade/archive-find-file package-name version))
+         (ext (file-name-extension package-file))
+         (type (marmalade/file-type->type ext)))
+    (condition-case err
+        (progn
+          (puthash package-name (cons type info))
+          (marmalade/archive-hash->cache)
+          (delete-file package-file)
+          (elnode-send-status httpcon 202))
+      (error (elnode-send-500
+              httpcon "something went wrong updating the archive")))))
 
 (defun marmalade-archive-router (httpcon)
   "Route package archive requests.
