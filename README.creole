@@ -147,6 +147,14 @@ which tests the package save:
 It doesn't test much about it though. We need a lot of invalid
 packages to be tested.
 
+=== Eventually consistent ===
+
+The archive is maintained separately from the filesystem. It is
+possible that a delete is performed on the filesystem but the archive
+that a user has just downloaded still shows the package. In this case
+the actual package retrieval will fail and the user will, presumably,
+refresh the package archive and the package will be shown removed.
+
 
 == Admin tasks ==
 
