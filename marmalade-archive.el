@@ -117,17 +117,20 @@ This does a substitute."
       ;; before
       (kill-buffer buffer))))
 
-(defun marmalade/package-stuff (filename type)
-  "Make the FILENAME a package of TYPE.
+(defun marmalade/file-type->type (file-extension)
+  "Return `single' or `tar' depending on the file FILE-EXTENSION."
+  (case (intern file-extension)
+    (el 'single)
+    (tar 'tar)))
+
+(defun marmalade/package-stuff (filename file-extension)
+  "Make the FILENAME a package of FILE-EXTENSION.
 
 This reads in the FILENAME.  But it does it safely and it also
 kills it.
 
 It returns a cons of `single' or `multi' and "
-  (let ((ptype
-         (case (intern type)
-           (el 'single)
-           (tar 'tar))))
+  (let ((ptype (marmalade/file-type->type file-extension)))
     (cons
      ptype
      (case ptype
