@@ -34,8 +34,11 @@
 
 ;; Directory root mangling code
 
-(defun marmalade/list-dir (root)
+(defun* marmalade/list-dir (root &key package-names-list)
   "EmacsLisp version of package find list dir.
+
+Finds all packages under ROOT.  Optionally can be filtered to
+just the packages specified in the PACKAGE-NAMES-LIST.
 
 The parent directory of ROOT is stripped off the resulting
 files."
@@ -44,10 +47,12 @@ files."
          (re (concat "^" (expand-file-name
                           (concat root-dir "..")) "\\(.*\\)"))
          (package-dir-list
-          (--filter
-           ;; no el files at this level
-           (not (string-match-p "\\.el$" it)) 
-           (directory-files root-dir t "^[^.].*[^~]$")))
+          (if package-names-list
+              (--map (concat root-dir it) package-names-list)
+              (--filter
+               ;; no el files at this level
+               (and (not (string-match-p "\\.el$" it)))
+               (directory-files root-dir t "^[^.].*[^~]$"))))
          (version-dir-list
           (loop for package-dir in package-dir-list
              collect (directory-files package-dir t "^[^.].*"))))
@@ -57,15 +62,23 @@ files."
       (loop for p in (-flatten version-dir-list)
          collect (directory-files p t "^[^.].*"))))))
 
-(defun marmalade/list-files (root)
+(defun* marmalade/list-files (root &key package-names-list)
   "Turn ROOT into a list of maramalade meta data.
 
-ROOT is present on the filename."
+Optionally take a PACKAGE-NAMES-LIST and only produce results
+for those packages.
+
+The results are a list of lists of package filenames and file
+extensions (either \"el\" or \"tar\").  The resulting filenames
+are ROOTed."
   ;; (split-string (marmalade/list-files-string root) "\n")
   (let ((root-parent
          (expand-file-name
           (concat (file-name-as-directory root) "..")))
-        (dir-list (marmalade/list-dir root)))
+        (dir-list
+         (marmalade/list-dir
+          root
+          :package-names-list package-names-list)))
     (loop for filename in dir-list
        if (string-match
            (concat
@@ -137,9 +150,11 @@ It returns a cons of `single' or `multi' and "
        (single (marmalade/package-file-info filename))
        (tar (package-tar-file-info filename))))))
 
-(defun marmalade/root->archive (root)
+(defun* marmalade/root->archive (root &key package-names-list)
   "For ROOT make an archive list."
-  (let ((files-list (marmalade/list-files root)))
+  (let ((files-list (marmalade/list-files
+                     root
+                     :package-names-list package-names-list)))
     (loop for (filename type) in files-list
        with package-stuff
        do
@@ -167,9 +182,14 @@ It returns a cons of `single' or `multi' and "
 (defvar marmalade/archive-cache (make-hash-table :test 'equal)
   "The cache of all current packages.")
 
-(defun marmalade/archive-cache-fill (root)
-  "Fill the cache by reading the ROOT."
-  (let ((typed-package-list (marmalade/root->archive root)))
+(defun* marmalade/archive-cache-fill (root &key package-names-list)
+  "Fill the cache by reading the ROOT.
+
+Optionally take a PACKAGE-NAMES-LIST which limits the fill to
+just that package."
+  (let ((typed-package-list (marmalade/root->archive
+                             root
+                             :package-names-list package-names-list)))
     (loop
        for (type . package) in typed-package-list
        do (let* ((package-name (elt package 0))

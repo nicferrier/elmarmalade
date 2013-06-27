@@ -43,7 +43,7 @@
             (tar . ["tar-p" () "tar package summary" "0.5.1" "Description."])))))
     (noflet
         ;; This is the function that runs find to get it's stuff
-        ((marmalade/list-dir (root)
+        ((marmalade/list-dir (root :package-names-list package-names-list)
            (mapcar (lambda (d)
                      (string-match "/r/m\\(.*\\)" d)
                      (match-string 1 d))
@@ -66,7 +66,7 @@
             (tar . ["tar-p" () "tar package summary" "0.5.1" "Description."])))))
     (noflet
         ;; This is the function that runs find to get it's stuff
-        ((marmalade/list-dir (root)
+        ((marmalade/list-dir (root :package-names-list package-names-list)
            (mapcar (lambda (d)
                      (string-match "/r/m\\(.*\\)" d)
                      (match-string 1 d))
@@ -122,9 +122,22 @@ elmarmalade.")
     (should
      (equal
       (sort 
-       (marmalade/list-dir marmalade-package-store-dir)
+       (marmalade/list-dir
+        marmalade-package-store-dir)
        'string-lessp)
-      (sort marmalade/test-package-files 'string-lessp)))))
+      (sort marmalade/test-package-files 'string-lessp)))
+    ;; Now try with a filter
+    (should
+     (equal
+      (sort 
+       (marmalade/list-dir
+        marmalade-package-store-dir
+        :package-names-list '("elixir-mix" "sawfish"))
+       'string-lessp)
+      (sort '("/packages/elixir-mix/0.0.1/elixir-mix-0.0.1.el"
+              "/packages/elixir-mix/0.0.2/elixir-mix-0.0.2.el"
+              "/packages/sawfish/1.32/sawfish-1.32.el")
+            'string-lessp)))))
 
 (defconst marmalade/test-packages
   '((elixir-mix . [(0 0 2) nil "Emacs integration for Elixir's elixir-mix" single]) ; "marmalade-repo-test/packages/elixir-mix/0.0.2/elixir-mix-0.0.2.el"
@@ -164,6 +177,36 @@ reads the cache back in and checks it against
          (kvhash->alist (marmalade/archive-cache->hash newhash))
          'symbol-lessp)
         (sort marmalade/test-packages 'symbol-lessp))))))
+
+(ert-deftest marmalade/archive-list-files ()
+  "Test we can list the files in the archive."
+  (let* ((marmalade-archive-dir
+          (concat marmalade-dir "marmalade-repo-test/archives"))
+         (marmalade-package-store-dir
+          (concat marmalade-dir "marmalade-repo-test/packages"))
+         (sawfish (concat marmalade-package-store-dir
+                          "/sawfish/1.32/sawfish-1.32.el")))
+    (should
+     (equal
+      (marmalade/list-files
+       marmalade-package-store-dir
+       :package-names-list '("sawfish"))
+      (list (list sawfish "el"))))))
+
+(ert-deftest marmalade/archive-cache-fill ()
+  "Test we can fill the cache with just one package."
+  (let* ((marmalade-archive-dir
+          (concat marmalade-dir "marmalade-repo-test/archives"))
+         (marmalade-package-store-dir
+          (concat marmalade-dir "marmalade-repo-test/packages"))
+         (marmalade/archive-cache (make-hash-table :test 'equal)))
+      (marmalade/archive-cache-fill
+       marmalade-package-store-dir
+       :package-names-list '("sawfish"))
+      (should
+       (equal
+        (kvalist->keys (kvhash->alist marmalade/archive-cache))
+        '("sawfish")))))
 
 (defun marmalade/make-requires (depends)
   "Make a requires string."
