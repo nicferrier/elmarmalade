@@ -182,9 +182,7 @@ If the target package already exists a `file-error' is produced."
             (elnode-proxy-post
              httpcon "/packages/archive-contents/update"
              :data
-             (list
-              (cons
-               "package-info" (format "%S" info)))))
+             (list (cons "package-info" (format "%S" info)))))
         (error
          (case (marmalade/err->sym err)
            (:existing-package
