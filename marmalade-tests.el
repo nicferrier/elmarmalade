@@ -482,6 +482,40 @@ the package store."
         (marmalade/package-list :sorted 5 :take 3)
         '("package-b" "package-c" "package-a"))))))
 
+(ert-deftest marmalade-archive-update ()
+  "Test the archive update service handler."
+  (let* ((marmalade-archive-dir
+          (concat marmalade-dir "marmalade-repo-test/archives"))
+         (marmalade-package-store-dir
+          (concat marmalade-dir "marmalade-repo-test/packages"))
+         (marmalade/archive-cache (make-hash-table :test 'equal))
+         (info (format "%S" '("sawfish" nil "doc" "1.32"))))
+    ;; Make it
+    (marmalade-archive-make-cache)
+    (noflet ((elnode-send-status (httpcon status &optional msg)
+               (throw :done status))
+             (marmalade/archive-cache-fill (root
+                                            :package-names-list package-names-list)
+               (if package-names-list
+                   ;; if we have a name make sure we remove it - why
+                   ;; do we need this? because archive-update handler
+                   ;; does not actually delete the file, this is done
+                   ;; by the main engine
+                   (progn
+                     (funcall this-fn root)
+                     (remhash (car package-names-list)
+                              marmalade/archive-cache))
+                   ;; else just do it
+                   (funcall this-fn root))))
+      (elnode-fake-params :httpcon `(("package-info" . ,info))
+        (equal
+         (catch :done
+           (noflet ((elnode-http-method (httpcon) "DELETE"))
+             (marmalade-archive-update :httpcon)))
+         202))
+      ;; Check it's been removed
+      (should-not (gethash "sawfish" marmalade/archive-cache)))))
+
 (provide 'marmalade-tests)
 
 ;;; marmalade-tests.el ends here

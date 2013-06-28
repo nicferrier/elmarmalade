@@ -333,45 +333,33 @@ by the `marmalade-archive-cache-webserver'."
 The archive hash is saved to a new version of the cache file.
 
 Sends HTTP 202 on success and 500 on error."
-  (let* ((info (elnode-http-param httpcon "package-info"))
+  (let* ((info (car
+                (read-from-string
+                 (elnode-http-param httpcon "package-info"))))
          (package-name (elt info 0))
          (package-version (elt info 3))
-         (package-file (marmalade/archive-find-file package-name version))
+         (package-file (marmalade/archive-find-file
+                        package-name package-version))
          (ext (file-name-extension package-file))
          (type (marmalade/file-type->type ext)))
     (condition-case err
         (progn
-          (puthash package-name (cons type info))
+          (elnode-method httpcon
+            (POST
+             (puthash package-name (cons type info)
+                      marmalade/archive-cache))
+            (DELETE
+             (remhash package-name marmalade/archive-cache)
+             ;; Now find the previous version
+             (marmalade/archive-cache-fill
+              marmalade-package-store-dir
+              :package-names-list (list package-name))))
+          ;; Now regenerate the hash
           (marmalade/archive-hash->cache)
           (elnode-send-status httpcon 202))
       (error (elnode-send-500
               httpcon "failed to update the archive")))))
 
-(defun marmalade-archive-update (httpcon)
-  "Remove the specified version of the package from the archive.
-
-The package and version is specified by the HTTP parameter
-\"package-info\" which is a Lisp formatted package-info vector.
-
-The archive hash is saved to a new version of the cache file.
-
-The package is also removed from the file system.
-
-Sends HTTP status 202 on success and 500 on failure."
-  (let* ((info (elnode-http-param httpcon "package-info"))
-         (package-name (elt info 0))
-         (package-version (elt info 3))
-         (package-file (marmalade/archive-find-file package-name version))
-         (ext (file-name-extension package-file))
-         (type (marmalade/file-type->type ext)))
-    (condition-case err
-        (progn
-          (puthash package-name (cons type info))
-          (marmalade/archive-hash->cache)
-          (delete-file package-file)
-          (elnode-send-status httpcon 202))
-      (error (elnode-send-500
-              httpcon "something went wrong updating the archive")))))
 
 (defun marmalade-archive-router (httpcon)
   "Route package archive requests.
