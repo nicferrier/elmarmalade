@@ -29,6 +29,28 @@
   web htmlize db s-buffer s
   dash kv rx lisp-mnt outline)
 
+(defmacro with-transient-file (file-name &rest code)
+  "Load FILE-NAME into a buffer and eval CODE.
+
+Then dispose of the buffer.
+
+File loading errors may be generated as by any call to visit a
+file."
+  (declare (indent 1)
+           (debug (sexp &rest form)))
+  (let ((fvn (make-symbol "fv"))
+        (bvn (make-symbol "bv")))
+    `(let* ((,fvn ,file-name)
+            (,bvn (get-buffer-create
+                   (generate-new-buffer-name "transient"))))
+       (unwind-protect
+            (with-current-buffer ,bvn
+              (insert-file-contents-literally ,fvn)
+              ,@code)
+         (progn
+           (set-buffer-modified-p nil)
+           (kill-buffer ,bvn))))))
+
 (defconst marmalade/cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
 
@@ -202,9 +224,7 @@ If the target package already exists a `file-error' is produced."
         with target-package
         on httpcon
         do
-        (with-current-buffer
-            (let ((enable-local-variables nil))
-              (find-file-noselect target-package))
+        (with-transient-file target-package
           (elnode-http-start httpcon 200 '("Content-type" . "text/elisp"))
           (elnode-http-return httpcon (buffer-string))))))
 
@@ -394,28 +414,6 @@ is grabbed."
      "<div id=\"login-panel\">logged in: <span id=\"username\">${username}</span></div>"
      ;;marmalade/login-panel
      )))
-
-(defmacro with-transient-file (file-name &rest code)
-  "Load FILE-NAME into a buffer and eval CODE.
-
-Then dispose of the buffer.
-
-File loading errors may be generated as by any call to visit a
-file."
-  (declare (indent 2)
-           (debug (sexp &rest form)))
-  (let ((fvn (make-symbol "fv"))
-        (bvn (make-symbol "bv")))
-    `(let* ((,fvn ,file-name)
-            (,bvn (get-buffer-create
-                   (generate-new-buffer-name "transient"))))
-       (unwind-protect
-            (with-current-buffer ,bvn
-              (insert-file-contents-literally ,fvn)
-              ,@code)
-         (progn
-           (set-buffer-modified-p nil)
-           (kill-buffer ,bvn))))))
 
 (defconst marmalade/page-file
   (concat marmalade-dir "front-page.html"))
