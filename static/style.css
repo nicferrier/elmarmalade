@@ -58,6 +58,11 @@ h4 {
     padding-bottom: 20px;  
 }
 
+h5 {
+    font-size: 20pt !important;
+    padding-bottom: 20px;  
+}
+
 .what,.how {
     color: #895221 !important;
     text-shadow: none;
@@ -102,6 +107,10 @@ p.description {
     margin-left: 40px ;
 }
 
+#loginform {
+    width: 100%;
+    margin: 50px auto;
+}
 
 form[name=upload] {
     margin-top: 3em;
@@ -116,7 +125,7 @@ form[name=upload] legend {
 }
 
 form input[type=file] {
-    border: thin solid;    
+    border: thin solid;
 }
 
 label {
@@ -126,11 +135,6 @@ label {
 }
 
 form[name=upload] input[type=submit] {
-    padding: 0.5em;
-    margin-top: 0.5em;
-    width: 50%;
-    background-color: #895221;
-    color: #dddddd;
 }
 
 /*
