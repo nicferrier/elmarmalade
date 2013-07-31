@@ -1,26 +1,124 @@
-<html>
-<head>
-<link rel="stylesheet" href="/-/style.css" type="text/css"></link>
-<title>marmalade-repo - for all your EmacsLisp needs</title>
-</head>
-<body class="home">
-${login-panel}
-<div id="panel">
-<h4>latest</h4>
-<ul>${latest-html}</ul>
-<a href="/packages/new">add a new package</a>
-</div>
-<h1>marmalade</h1>
-<p id="blurb"><i>marmalade-repo</i> is an Emacs package repository.</p>
-
-<p>We hold packages of Emacs code that Emacs users have uploaded for
-your enjoyment and use.</p>
-
-<p>Installing a package from marmalade is as easy as:</p>
-<pre>
+<!doctype html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" href="/-/bootstrap/css/bootstrap.css" type="text/css"></link>
+        <link rel="stylesheet" href="/-/style.css" type="text/css"></link>
+        <title>marmalade-repo - for all your EmacsLisp needs</title>
+    </head>
+    <body class="home">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <ul class="nav pull-right">
+                    <li class="active"><a href="#">marmalade-repo</a></li>
+                    <li><a href="#">login</a></li>
+                    <li><a href="#">register</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="github">
+            <a href="https://github.com/nicferrier/elmarmalade">
+                <img style="position: absolute; top: 0; left: 0; border: 0;" 
+                     src="https://s3.amazonaws.com/github/ribbons/forkme_left_orange_ff7600.png" 
+                     alt="Fork me on GitHub"></img>
+            </a>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div id="panel">
+                    <h4>new packages</h4>
+                    <ul>${latest-html}</ul>
+                    <a href="/packages/new">add a new package</a>
+                </div>
+                <h1>marmalade</h1>
+                <p id="intro"><i>marmalade-repo</i> is an Emacs package repository.</p>
+                <p>marmalade is free software, you can help improve it.</p>
+                <p>
+                    we hold packages of Emacs code that Emacs users have uploaded for
+                    your enjoyment and use.
+                </p>
+                <ul>
+                    <li><a href="#download">how to get Emacs packages from marmalade</a></li>
+                    <li><a href="#upload">how to upload packages to marmalade</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <h3>how to use it</h3>
+                <p>before you can use marmalade-repo you must add it to your list of Emacs <em>packages-archives</em>:</p>
+                <pre>
 M-: (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-
 M-x package-install [RET] marmalade-demo
-</pre>
-</body>
+                </pre>
+                
+                <p>Alternatively you can use Emacs' <em>customize</em> system to permanently alter your package archives:</p>
+                <pre>
+M-x customize-variable [RET] package-archives
+
+  Archive name: gnu
+  URL or directory name: http://elpa.gnu.org/packages/
+  Archive name: marmalade
+  URL or directory name: http://marmalade-repo.org/packages/
+                </pre>
+                <p>you can use the customize system to save the values you have here for when Emacs restarts.</p>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <h3>how to upload packages</h3>
+                <p>you can upload emacs-lisp packages to marmalade if you have an account on marmalade.</p>
+                <div  id="package-demo">
+                    <div>
+                        <iframe 
+                            width="480" height="360" 
+                            src="//www.youtube.com/embed/6tLbEtBaQfc?rel=0" 
+                            frameborder="0" allowfullscreen>
+                        </iframe>
+                        <p>watch the packaging example screencast</p>
+                    </div>
+                </div>
+                <p>
+                    your package has to follow a few simple
+                    constraints, a single file emacs-lisp file can be
+                    a package with the addition of a simple
+                    <em>package header</em>:
+                </p>
+                <pre>
+;;; example.el --- example Emacs package -*- lexical-binding: t -*-
+;; Copyright (C) 2013 Nic Ferrier
+
+;; Author: Nic Ferrier <nferrier@example.com>
+;; Maintainer: Nic Ferrier <nferrier@example.com>
+;; URL: http://github.com/nicferrier/example
+;; Created: 17th March 2013
+;; Version: 0.1
+;; Keywords: lisp, tools
+;; Package-Requires: ((noflet "0.0.8")(dash "1.3.2"))
+
+;;; Code:
+                </pre>
+                <p>
+                    your code can follow the <code>Code:</code>
+                    comment.
+                </p>
+                <p> 
+                    It should also end with the classic Emacs-Lisp
+                    ending:
+                </p>
+                <pre>
+;;; example.el ends here
+                </pre>
+            </div>
+        </div>
+        <footer>
+            <div>
+                <ul class="inline">
+                    <li><a href="/terms">terms</a></li>
+                    <li><a href="/docs">docs</a></li>
+                    <li><a href="https://github.com/nicferrier/elmarmalade/issues">issues</a></li>
+                    <li>(C) Nic Ferrier 2013</li>
+                </ul>
+            </div>
+        </footer>
+    </body>
 </html>

@@ -344,19 +344,22 @@ is grabbed."
           (marmalade/commentary-grab (current-buffer))))
       ""))
 
-(defconst marmalade/package-blurb-page "<html>
-<head>
-<link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
-<title>${package-name} @ Marmalade</title>
-</head>
-<body>
-<h1>${package-name} - ${version}</h1>
-<p class=\"description\">${description}</p>
-<p class=\"author\">${author}</p>
-<a href=\"${package-download}\">download ${package-name}</a>
-<pre>${about-text}</pre>
-</body>
-<html>")
+(defconst marmalade/page-header "<div class=\"navbar\">
+            <div class=\"navbar-inner\">
+                <ul class=\"nav pull-right\">
+                    <li class=\"active\"><a href=\"/\">marmalade-repo</a></li>
+                    <li><a href=\"#\">login</a></li>
+                    <li><a href=\"#\">register</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id=\"github\">
+            <a href=\"https://github.com/nicferrier/elmarmalade\">
+                <img style=\"position: absolute; top: 0; left: 0; border: 0;\" 
+                     src=\"https://s3.amazonaws.com/github/ribbons/forkme_left_orange_ff7600.png\" 
+                     alt=\"Fork me on GitHub\"></img>
+            </a>
+        </div>")
 
 (defun marmalade/package-blurb (httpcon)
   "Provide an informative description of the package."
@@ -378,19 +381,55 @@ is grabbed."
             (let* ((about-text (marmalade/commentary->about commentary))
                    (page
                     (condition-case err
-                        (s-lex-format "<html>
+                        (s-format
+                         "<!doctype html>
+<html lang=\"en\">
 <head>
 <link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
+<link rel=\"stylesheet\" href=\"/-/bootstrap/css/bootstrap.css\" type=\"text/css\"></link>
 <title>${package-name} @ Marmalade</title>
 </head>
 <body>
-<h1>${package-name} - ${version}</h1>
+${header}
+<div id=\"blurb\">
+<div class=\"container\">
+<div class=\"row\">
+<h1>${package-name} - ${version} </h1>
+<h4 class=\"what\">what is it? <a class=\"download btn\" href=\"${package-download}\">download ${package-name}</a></h4>
 <p class=\"description\">${description}</p>
-<p class=\"author\">${author}</p>
-<a href=\"${package-download}\">download ${package-name}</a>
-<pre>${about-text}</pre>
+${author-html}
+${about}
+<h4 class=\"how\">how to install</h4>
+<pre>
+M-x package-install [RET] ${package-name} [RET]
+</pre>
+</div>
+</div>
+</div>
+<footer class=\"footer\">
+    <div>
+        <ul class=\"inline\">
+            <li><a href=\"/terms\">terms</a></li>
+            <li><a href=\"/docs\">docs</a></li>
+            <li><a href=\"https://github.com/nicferrier/elmarmalade/issues\">issues</a></li>
+            <li>(C) Nic Ferrier 2013</li>
+        </ul>
+    </div>
+</footer>
 </body>
-<html>")
+<html>"
+                         'aget
+                         `(("header" . ,marmalade/page-header)
+                           ("package-name" . ,package-name)
+                           ("version" . ,version)
+                           ("author-html"
+                            . ,(if (or (not author)(equal author ""))
+                                   "" (format "<p class=\"author\">by %s</p>" author)))
+                           ("package-download" . ,package-download)
+                           ("description" . ,description)
+                           ("about"
+                            . ,(if (not (equal about-text ""))
+                                   (format "<pre>%s</pre>" about-text) ""))))
                       (error (format
                               "<html>error: %S<br/><pre>%S</pre></html>"
                               (cdr err)
@@ -410,10 +449,10 @@ is grabbed."
   (let* ((auth-cookie-cons (elnode-auth-get-cookie-value
                             httpcon :cookie-name marmalade/cookie-name))
          (username (if (consp auth-cookie-cons) (car auth-cookie-cons) "")))
-    (s-lex-format
+    (s-format
      "<div id=\"login-panel\">logged in: <span id=\"username\">${username}</span></div>"
-     ;;marmalade/login-panel
-     )))
+     'aget
+     `(("username" . ,username)))))
 
 (defconst marmalade/page-file
   (concat marmalade-dir "front-page.html"))

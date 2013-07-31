@@ -1,33 +1,78 @@
-/*
-  styles for the marmalade repository
- */
-
-body {
-    font-family: sans-serif;
+html,body {
     color: #895221;
-    margin-left: 5%;
-    margin-right: 5%;
+    padding-bottom: 0 !important;
+    height: 100%;
 }
 
-h1,h4 {
-    color: DarkOrange;
-    text-shadow: 0 0 0.1em #895221;
+footer {
+    margin-top: 40px;
+    height: 40px;
+    background-color: Black;
+    color: SandyBrown;
+    padding-top: 10px;
+    width: 100%;
 }
 
-body.home h1 {
-    font-size: 450%;
+footer div {
+    text-align: center;
+}
+
+.container {
+    margin-top: 30px;
+}
+
+#blurb {
+     min-height: 100%;
+     height: auto !important;
+     margin: 0 auto -90px;
+}
+
+h1 {
+    color: SandyBrown !important;
+    text-shadow: -2px 0 #895221, 0 2px #895221,2px 0 #895221, 0 -2px #895221;
+}
+
+h2,h3 {
+   color: Chocolate !important;
+   text-shadow: -1px 0 Black, 0 1px Black,1px 0 Black, 0 -1px Black;
+}
+
+h1 {
+    font-size: 56pt !important;
+    padding-bottom: 20px;
+}
+
+h3 {
+    font-size: 36pt !important;
+    padding-bottom: 20px;  
 }
 
 h4 {
-    font-size: 150%;
+    font-size: 28pt !important;
+    padding-bottom: 20px;  
 }
 
+.what,.how {
+    color: #895221 !important;
+    text-shadow: none;
+    padding-top: 40px;
+}
+#package-demo {
+    margin: 30px auto;
+}
+
+#package-demo div {
+    width: 480px;
+    margin: 0 auto;
+    text-align: right;
+    font-style: italic;
+}
+
+
 pre {
-    margin: 1%;
-    padding: 3%;
-    background-color: #dddddd;
+    background-color: Wheat;
     border: thin solid #895221;
-    width: 60%;
+    margin-top: 30px;
 }
 
 a:link {
@@ -38,23 +83,19 @@ a:visited {
     color: #893221;
 }
 
-#blurb {
-    width: 50%;
-}
-
 p.description {
     font-style: italic;
 }
 
-#login-panel {
-    float: right;
-}
-
 #panel {
-    clear: both;
     float: right;
     width: 30%;
 }
+
+.download {
+    margin-left: 40px ;
+}
+
 
 form[name=upload] {
     margin-top: 3em;
