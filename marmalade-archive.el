@@ -373,7 +373,7 @@ by date stamp and selecting the lexicographical top."
      ("^[^/]*//packages/archive-contents/\\([0-9]+\\)"
       . ,marmalade-archive-cache-webserver)
      ("^[^/]*//packages/archive-contents/update$"
-      . ,marmalade-archive-update))))
+      . marmalade-archive-update))))
 
 
 (provide 'marmalade-archive)
