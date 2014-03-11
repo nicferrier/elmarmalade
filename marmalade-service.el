@@ -173,28 +173,30 @@ If the target package already exists a `file-error' is produced."
   ;; TODO: if we collect the temp files into a single upload directory
   ;; we could treat that as a sort of queue... anything not moved
   ;; could just be replayed through the package-info stuff because
-  ;; temp file nmes don't matter, except the extension, which we
+  ;; temp file names don't matter, except the extension, which we
   ;; record.
   (let* ((temp-package-file
           (marmalade/temp-file package-file-name)))
     ;; First save the uploaded data to a temp package file
     (with-temp-file temp-package-file
-      (insert-string
-       (substring-no-properties package-data)))
-    ;; Now read the file contents to get the real path
-    ;; - this part could be done on the consumer side of a queue
-    (destructuring-bind (&key info package-path)
-        (marmalade/package-path temp-package-file)
-      ;; Try to move the file to the target path
-      (when (file-exists-p package-path)
-        (signal 'file-error
-                (list
-                 package-path "existing package")))
-      ;; Really creates a directory for now. Not ideal.
-      (make-directory (file-name-directory package-path) t)
-      (rename-file temp-package-file package-path)
-      ;; Return the package-info
-      info)))
+      (insert-string (substring-no-properties package-data)))
+    ;; Return the package info, the package-path and the temp file
+    (append
+     (marmalade/package-path temp-package-file)
+     (list :temp-package temp-package-file))))
+
+(defun* marmalade/temp-package->package-store (&key info package-path temp-package)
+  "Take the package and save the package to the package store."
+  ;; Try to move the file to the target path
+  (when (file-exists-p package-path)
+    (signal 'file-error
+            (list
+             package-path "existing package")))
+  ;; Really creates a directory for now. Not ideal.
+  (make-directory (file-name-directory package-path) t)
+  (rename-file temp-package package-path)
+  ;; Return the package-info
+  info)
 
 (defun marmalade/err->sym (err)
   "Convert an error structure to a sensible symbol."
@@ -213,15 +215,27 @@ If the target package already exists a `file-error' is produced."
            (base-file-name
             (file-name-nondirectory upload-file-name)))
       (condition-case err
-          (let* ((info (marmalade/save-package upload-file base-file-name))
-                 (package-url (concat "/packages/" (marmalade-pkname info))))
-            ;; Send the response...
-            (elnode-send-redirect httpcon package-url 302)
-            ;; ... and send the request to update the cache
-            (elnode-proxy-post
-             httpcon "/packages/archive-contents/update"
-             :data
-             (list (cons "package-info" (format "%S" info)))))
+          (destructuring-bind (&key info package-path temp-package)
+              (marmalade/save-package upload-file base-file-name)
+            (let* ((package-name (marmalade-pkname info))
+                   (package-url (concat "/packages/" package-name))
+                   (username (elnode-auth-username httpcon)))
+              (if (not (member package-name (marmalade-get-packages username)))
+                  (elnode-send-400
+                   httpcon
+                   (format "you aren't authorized to update %s" package-name))
+                  ;; Else save the package in the store...
+                  (marmalade/temp-package->package-store
+                   :info info
+                   :package-path package-path
+                   :temp-package temp-package)
+                  ;; ... send the redirect ...
+                  (elnode-send-redirect httpcon package-url 302)
+                  ;; ... and send the request to update the cache
+                  (elnode-proxy-post
+                   httpcon "/packages/archive-contents/update"
+                   :data
+                   (list (cons "package-info" (format "%S" info)))))))
         (error
          (case (marmalade/err->sym err)
            (:existing-package
