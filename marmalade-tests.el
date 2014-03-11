@@ -268,13 +268,13 @@ This is code that is in `package-buffer-info'."
            (version-to-list (car (cdr elt)))))
    src-list))
 
-(defmacro* marmalade/package-file (&key (pkg-name "dummy-package")
-                                        pkg-file-name ; can override the filename
-                                        (pkg-desc "a fake package for the marmalade test suite")
-                                        (pkg-depends '((timeclock "2.6.1")))
-                                        (pkg-version "0.0.1")
-                                        (pkg-commentary ";; This doesn't do anything.\n;; it's just a fake package for Marmalade.")
-                                        code)
+(defmacro* marmalade/package-file ((&key (pkg-name "dummy-package")
+                                         pkg-file-name ; can override the filename
+                                         (pkg-desc "a fake package for the marmalade test suite")
+                                         (pkg-depends '((timeclock "2.6.1")))
+                                         (pkg-version "0.0.1")
+                                         (pkg-commentary ";; This doesn't do anything.\n;; it's just a fake package for Marmalade."))
+                                   &rest code)
   "Make a fake package file.
 
 Everything is faked by default but can be over-ridden by using
@@ -282,6 +282,8 @@ the parameters.
 
 Evaluates CODE with the package file made using
 `fakir-mock-file'."
+  (declare (debug (sexp &rest form))
+           (indent 1))
   `(let* ((package-name ,pkg-name)
           (package-desc ,pkg-desc)
           (package-depends (quote ,pkg-depends))
@@ -304,21 +306,34 @@ Evaluates CODE with the package file made using
             :content package-content-string))
           (fakir--home-root "/home/marmalade"))
      (fakir-mock-file package-file
-       ,code)))
+       (progn ,@code))))
 
 (ert-deftest marmalade/package-info ()
-  "Tests for the file handling stuff."
-  (marmalade/package-file
-   :code
-   (should
-    (equal
-     (marmalade/package-info "/tmp/dummy-package.el")
-     (vector
-      package-name
-      (marmalade/package-requirify package-depends)
-      package-desc
-      package-version
-      (concat ";;; Commentary:\n\n" package-commentary "\n\n")))))
+  "Tests for the file handling stuff.
+
+Also shows some stuff about the `marmalade/package-file' macro."
+  (marmalade/package-file ()
+    (should
+     (equal
+      (marmalade/package-info "/tmp/dummy-package.el")
+      (vector
+       package-name
+       (marmalade/package-requirify package-depends)
+       package-desc
+       package-version
+       (concat ";;; Commentary:\n\n" package-commentary "\n\n")))))
+  (marmalade/package-file (:pkg-name "nic-test")
+    (should (equal package-name "nic-test"))
+    (should
+     (equal
+      ;; the package name changes the file-name
+      (marmalade/package-info "/tmp/nic-test.el") 
+      (vector
+       package-name
+       (marmalade/package-requirify package-depends)
+       package-desc
+       package-version
+       (concat ";;; Commentary:\n\n" package-commentary "\n\n")))))
   ;; A tar package
   (should
    (equal
@@ -335,12 +350,10 @@ Evaluates CODE with the package file made using
      "0.9.9.6.9" nil])))
 
 (ert-deftest marmalade/package-path ()
-  (marmalade/package-file
-   :pkg-file-name "test546.el"
-   :code
-   (let* ((marmalade-package-store-dir "/tmp")
-          (pkg (marmalade/package-path "/tmp/test546.el"))
-          (pkg-path (plist-get pkg :package-path)))
+  (marmalade/package-file (:pkg-file-name "test546.el")
+    (let* ((marmalade-package-store-dir "/tmp")
+           (pkg (marmalade/package-path "/tmp/test546.el"))
+           (pkg-path (plist-get pkg :package-path)))
      (should
       (equal
        pkg-path
@@ -356,6 +369,7 @@ Evaluates CODE with the package file made using
            (marmalade/temp-file "blah.el")
            "/tmp/marmalade-upload2345.el")))
     (delete-file "/tmp/marmalade-upload2345.el")))
+(defmacro comment (&rest code))
 
 (ert-deftest marmalade/save-package ()
   "Test the save package stuff.
@@ -369,31 +383,34 @@ the package store."
           (temp-file (fakir-file
                       :directory "/tmp/"
                       :filename "marmalade-upload2345.el")))
-      (marmalade/package-file
-       :code
-       ;; Check that the saved file is in the package store
-       (progn
-         (fakir-mock-file temp-file
-           (should
-            (equal
-             (marmalade/save-package
-              package-content-string "dummy-package.el")
-             ["dummy-package"
-              ((timeclock (2 6 1)))
-              "a fake package for the marmalade test suite"
-              "0.0.1"
-              ";;; Commentary:\n\n;; This doesn't do anything.\n;; it's just a fake package for Marmalade.\n\n"
-              ])))
-         ;; Check that the temp file has been renamed
-         (should
-          (equal
-           "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"
-           (fakir-file-path temp-file))))))))
+      (marmalade/package-file ()
+        ;; Check that the saved file is in the package store
+        (fakir-mock-file temp-file
+          (let ((save-package-res (marmalade/save-package
+                                   package-content-string "dummy-package.el")))
+            (should
+             (equal
+              save-package-res
+              (list :info ["dummy-package"
+                           ((timeclock (2 6 1)))
+                           "a fake package for the marmalade test suite"
+                           "0.0.1"
+                           ";;; Commentary:\n
+;; This doesn't do anything.
+;; it's just a fake package for Marmalade.\n\n"]
+                    :package-path "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"
+                    :temp-package (fakir-file-path temp-file))))
+            ;; Check that the temp file has been renamed
+            (apply 'marmalade/temp-package->package-store save-package-res)
+            (should
+             (equal
+              "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"
+              (fakir-file-path temp-file)))))))))
 
 (ert-deftest marmalade/upload ()
   (let* ((package-content
           (with-current-buffer
-              (find-file
+              (find-file-noselect
                (concat marmalade-dir "dummy-package.el"))
             (buffer-substring-no-properties
              (point-min)(point-max))))
@@ -407,22 +424,30 @@ the package store."
            "a fake package for the marmalade test suite"
            "0.0.1"
            ";;; Commentary:\n\n;; This doesn't do anything.\n;; it's just a fake package for Marmalade.\n\n"])
+         (elnode-loggedin-db (make-hash-table :test 'equal))
          location package-data)
-    (elnode-fake-params :httpcon params
-      (noflet ((marmalade/save-package (upload-file base-file)
-                 dummy-package)
-               (elnode-auth-cookie-check (httpcon &rest stuff)
-                 t)
-               (elnode-send-redirect (httpcon loc &optional status)
-                 (setq location loc))
-               (elnode-proxy-post (httpcon location :data data)
-                 (setq package-data data)))
-        ;; We need to fake auth somehow
-        (marmalade/upload :httpcon))
-      (should
-       (equal
-        (car (read-from-string (cdar package-data)))
-        dummy-package)))))
+    (puthash "testuser" (list :hash "faketoken") elnode-loggedin-db)
+    (fakir-mock-proc-properties :httpcon
+      (elnode-fake-params :httpcon params
+        (noflet ((marmalade/save-package (upload-file base-file)
+                   (list :info dummy-package
+                         :package-path "/tmp/marmalade/package"
+                         :temp-package "/tmp/package.el"))
+                  (marmalade/temp-package->package-store
+                    (:info info :package-path package-path :temp-package temp-package)
+                    info)
+                  (marmalade-get-packages (username) (list "dummy-package"))
+                  (elnode-auth-get-cookie-value (httpcon :cookie-name cookie-name)
+                    (cons "testuser" "faketoken"))
+                  (elnode-send-redirect (httpcon loc &optional status)
+                    (setq location loc))
+                  (elnode-proxy-post (httpcon location :data data)
+                    (setq package-data data)))
+          (marmalade/upload :httpcon))
+        (should
+         (equal
+          (car (read-from-string (cdar package-data)))
+          dummy-package))))))
 
 (ert-deftest marmalade/relativize ()
   (should
@@ -494,16 +519,16 @@ the package store."
     (marmalade-archive-make-cache)
     (noflet ((elnode-send-status (httpcon status &optional msg)
                (throw :done status))
-             (marmalade/archive-cache-fill (root
-                                            :package-names-list package-names-list)
-               (if package-names-list
-                   ;; if we have a name make sure we remove it - why
-                   ;; do we need this? because archive-update handler
-                   ;; does not actually delete the file, this is done
-                   ;; by the main engine
-                   (progn
-                     (funcall this-fn root)
-                     (remhash (car package-names-list)
+              (marmalade/archive-cache-fill (root
+                                             :package-names-list package-names-list)
+                (if package-names-list
+                    ;; if we have a name make sure we remove it - why
+                    ;; do we need this? because archive-update handler
+                    ;; does not actually delete the file, this is done
+                    ;; by the main engine
+                    (progn
+                      (funcall this-fn root)
+                      (remhash (car package-names-list)
                               marmalade/archive-cache))
                    ;; else just do it
                    (funcall this-fn root))))
@@ -515,6 +540,24 @@ the package store."
          202))
       ;; Check it's been removed
       (should-not (gethash "sawfish" marmalade/archive-cache)))))
+
+(ert-deftest marmalade-user-packages ()
+  "Test that we can add packages to a user."
+  (let ((marmalade-users
+         (db-make '(db-hash :filename "/tmp/marmalade-users-test"))))
+    (marmalade-add-user "nic" "secret")
+    (marmalade-add-packages "nic" "elnode")
+    (should
+     (equal (marmalade-get-packages "nic") '("elnode")))
+    (marmalade-add-user "testuser" "secret")
+    (marmalade-add-packages "testuser" "elnode" "marmalade")
+    (should
+     (equal (marmalade-get-packages "testuser") '("elnode" "marmalade")))
+    (db-get "testuser" marmalade/users)
+    (marmalade-rm-packages "testuser" "elnode")
+    (should
+     (equal (marmalade-get-packages "testuser")
+            '("marmalade")))))
 
 (provide 'marmalade-tests)
 
