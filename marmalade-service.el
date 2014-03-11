@@ -524,7 +524,11 @@ M-x package-install [RET] ${package-name} [RET]
    httpcon
    `(("^[^/]*//-/\\(.*\\)$" . ,marmalade/webserver)
      ("^[^/]*//packages/new$" . marmalade/upload-page)
-     ("^[^/]+//packages/archive-contents.*" . marmalade-archive-router)
+
+     ("^[^/]*//packages/archive-contents$" . marmalade-archive-contents-handler)
+     ("^[^/]*//packages/archive-contents/\\([0-9]+\\)" . ,marmalade-archive-cache-webserver)
+     ("^[^/]*//packages/archive-contents/update$" . marmalade-archive-update)
+
      ;; We don't really want to send 404's for these if we have them
      ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
      ("^[^/]+//packages/\\(.*\\.\\(el\\|tar\\)\\)" . marmalade/package-handler)
