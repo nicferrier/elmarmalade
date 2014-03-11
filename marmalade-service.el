@@ -156,9 +156,9 @@ the package repository."
   "Make a temp file for storing a package in."
   (let ((suffix (concat
                  "."
-                 (file-name-extension
-                  base-package-file-name))))
+                 (file-name-extension base-package-file-name))))
     (make-temp-file "marmalade-upload" nil suffix)))
+
 
 (defun marmalade/save-package (package-data package-file-name)
   "Save PACKAGE-DATA as PACKAGE-FILE-NAME in the package store.
