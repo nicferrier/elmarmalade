@@ -535,6 +535,7 @@ M-x package-install [RET] ${package-name} [RET]
      ("^[^/]+//packages/\\([^/]+\\)" . marmalade/package-blurb)
      ;; we have GET /packages/ and / be the same right now - probably not right
      ("^[^/]+//packages/$" . marmalade/packages-index)
+
      ("^[^/]+//$" . marmalade/packages-index))
    :log-name "marmalade"
    :auth-scheme 'marmalade-auth))
