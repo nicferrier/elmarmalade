@@ -425,7 +425,7 @@ the package store."
            "0.0.1"
            ";;; Commentary:\n\n;; This doesn't do anything.\n;; it's just a fake package for Marmalade.\n\n"])
          (elnode-loggedin-db (make-hash-table :test 'equal))
-         location package-data)
+         location package-data package-pushed)
     (puthash "testuser" (list :hash "faketoken") elnode-loggedin-db)
     (fakir-mock-proc-properties :httpcon
       (elnode-fake-params :httpcon params
@@ -433,8 +433,11 @@ the package store."
                    (list :info dummy-package
                          :package-path "/tmp/marmalade/package"
                          :temp-package "/tmp/package.el"))
-                  (marmalade/temp-package->package-store
-                    (:info info :package-path package-path :temp-package temp-package)
+                  (marmalade/install-package (:info info
+                                                    :package-path package-path
+                                                    :temp-package temp-package)
+                    "Set `package-data' to show it's been uploaded."
+                    (setq package-data info)
                     info)
                   (marmalade-get-packages (username) (list "dummy-package"))
                   (elnode-auth-get-cookie-value (httpcon :cookie-name cookie-name)
@@ -442,11 +445,15 @@ the package store."
                   (elnode-send-redirect (httpcon loc &optional status)
                     (setq location loc))
                   (elnode-proxy-post (httpcon location :data data)
-                    (setq package-data data)))
+                    "Set the `package-pushed' to indicate data sent to proxy."
+                    (setq package-pushed data)))
           (marmalade/upload :httpcon))
+        ;; Is the uploaded package ok?
+        (should (equal package-data dummy-package))
+        ;; Check the one we sent to the proxy as well
         (should
          (equal
-          (car (read-from-string (cdar package-data)))
+          (car (read-from-string (cdar package-pushed)))
           dummy-package))))))
 
 (ert-deftest marmalade/relativize ()

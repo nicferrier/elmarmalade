@@ -185,7 +185,7 @@ If the target package already exists a `file-error' is produced."
      (marmalade/package-path temp-package-file)
      (list :temp-package temp-package-file))))
 
-(defun* marmalade/temp-package->package-store (&key info package-path temp-package)
+(defun* marmalade/install-package (&key info package-path temp-package)
   "Take the package and save the package to the package store."
   ;; Try to move the file to the target path
   (when (file-exists-p package-path)
@@ -225,10 +225,9 @@ If the target package already exists a `file-error' is produced."
                    httpcon
                    (format "you aren't authorized to update %s" package-name))
                   ;; Else save the package in the store...
-                  (marmalade/temp-package->package-store
-                   :info info
-                   :package-path package-path
-                   :temp-package temp-package)
+                  (marmalade/install-package :info info
+                                             :package-path package-path
+                                             :temp-package temp-package)
                   ;; ... send the redirect ...
                   (elnode-send-redirect httpcon package-url 302)
                   ;; ... and send the request to update the cache
