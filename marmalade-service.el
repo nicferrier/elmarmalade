@@ -189,9 +189,7 @@ If the target package already exists a `file-error' is produced."
   "Take the package and save the package to the package store."
   ;; Try to move the file to the target path
   (when (file-exists-p package-path)
-    (signal 'file-error
-            (list
-             package-path "existing package")))
+    (signal 'file-error (list package-path "existing package")))
   ;; Really creates a directory for now. Not ideal.
   (make-directory (file-name-directory package-path) t)
   (rename-file temp-package package-path)
@@ -233,8 +231,7 @@ If the target package already exists a `file-error' is produced."
                   ;; ... and send the request to update the cache
                   (elnode-proxy-post
                    httpcon "/packages/archive-contents/update"
-                   :data
-                   (list (cons "package-info" (format "%S" info)))))))
+                   :data (list (cons "package-info" (format "%S" info)))))))
         (error
          (case (marmalade/err->sym err)
            (:existing-package
