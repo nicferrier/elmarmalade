@@ -209,8 +209,10 @@ If the target package already exists a `file-error' is produced."
               (marmalade/save-package upload-file base-file-name)
             (let* ((package-name (marmalade-pkname info))
                    (package-url (concat "/packages/" package-name))
-                   (username (elnode-auth-username httpcon)))
-              (if (not (member package-name (marmalade-get-packages username)))
+                   (username (elnode-auth-username httpcon))
+                   (user-packages (marmalade-get-packages username)))
+              (message "user-packages %s" user-packages)
+              (if (not (member package-name user-packages))
                   (elnode-send-400
                    httpcon
                    (format "you aren't authorized to update %s" package-name))
