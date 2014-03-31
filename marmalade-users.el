@@ -28,8 +28,12 @@
 (require 'kv)
 
 (defvar marmalade/users 
-  (db-make `(db-hash :filename "/tmp/marmalade-users")))
-
+  (db-make `(db-hash
+             :filename
+             ,(concat (file-name-as-directory
+                       (or marmalade-db-dir marmalade-dir))
+                      "/marmalade-users")))
+  "The user database.")
 
 (defun marmalade-add-user (username password &rest packages)
   "Add USERNAME to the database.
@@ -63,6 +67,7 @@ Default their PACKAGES to the list."
     record))
 
 (defun marmalade-get-packages (username)
+  "Return the list of packages editable by USERNAME."
   (kva 'package-list (db-get username marmalade/users)))
 
 (provide 'marmalade-users)

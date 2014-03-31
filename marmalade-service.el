@@ -25,7 +25,7 @@
 ;;; Code:
 
 (elnode-app marmalade-dir
-  marmalade-customs marmalade-archive
+  marmalade-customs marmalade-archive marmalade-users
   web htmlize db s-buffer s
   dash kv rx lisp-mnt outline)
 
@@ -53,14 +53,6 @@ file."
 
 (defconst marmalade/cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
-
-(defconst marmalade/user-db
-  (db-make `(db-hash
-             :filename ,(concat
-                         (file-name-as-directory
-                          (or marmalade-db-dir marmalade-dir))
-                         "user")))
-  "The user database.")
 
 (defconst marmalade/page-header "<div class=\"navbar\">
             <div class=\"navbar-inner\">
@@ -506,7 +498,7 @@ M-x package-install [RET] ${package-name} [RET]
 ;; The authentication scheme.
 (elnode-defauth 'marmalade-auth
   :cookie-name marmalade/cookie-name
-  :auth-db marmalade/user-db
+  :auth-db marmalade/users
   :sender 'marmalade/login-sender)
 
 (defconst marmalade/webserver
