@@ -401,7 +401,7 @@ the package store."
                     :package-path "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"
                     :temp-package (fakir-file-path temp-file))))
             ;; Check that the temp file has been renamed
-            (apply 'marmalade/temp-package->package-store save-package-res)
+            (apply 'marmalade/install-package save-package-res)
             (should
              (equal
               "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"
