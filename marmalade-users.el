@@ -32,7 +32,7 @@
              :filename
              ,(concat (file-name-as-directory
                        (or marmalade-db-dir marmalade-dir))
-                      "/marmalade-users")))
+                      "/marmalade-user-db")))
   "The user database.")
 
 (defun marmalade-add-user (username password &rest packages)
