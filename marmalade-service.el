@@ -197,6 +197,7 @@ If the target package already exists a `file-error' is produced."
 
 (defun marmalade/upload (httpcon)
   "Handle uploaded packages."
+  ;;(message "upload starts with %s" (marmalade-get-packages "testuser"))
   (with-elnode-auth httpcon 'marmalade-auth
     (let* ((upload-file
             (elnode-http-param httpcon "package-file"))
