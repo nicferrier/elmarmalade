@@ -407,24 +407,21 @@ the package store."
               "/tmp/test-marmalade-dir/dummy-package/0.0.1/dummy-package-0.0.1.el"
               (fakir-file-path temp-file)))))))))
 
+(defun marmalade/file->string (filename)
+  (with-temp-buffer
+    (insert-file-contents-literally filename)
+    (buffer-string)))
+
 (ert-deftest marmalade/upload ()
-  (let* ((package-content
-          (with-temp-buffer
-              (insert-file-contents-literally
-               (concat marmalade-dir "dummy-package.el"))
-              (buffer-string)))
-         (params
-          `(("package-file"
-             ,package-content
-             :elnode-filename "dummy-package.el")))
-         (dummy-package
-          ["dummy-package"
-           ((timeclock (2 6 1)))
-           "a fake package for the marmalade test suite"
-           "0.0.1"
-           ";;; Commentary:\n\n;; This doesn't do anything.\n;; it's just a fake package for Marmalade.\n\n"])
-         (marmalade/users
-          (db-make `(db-hash :filename "/tmp/test-marmalade-users")))
+  (let* ((package-file (concat marmalade-dir "dummy-package.el"))
+         (package-content (marmalade/file->string package-file))
+         (params `(("package-file" ,package-content :elnode-filename "dummy-package.el")))
+         (dummy-package ["dummy-package"
+                         ((timeclock (2 6 1)))
+                         "a fake package for the marmalade test suite"
+                         "0.0.1"
+                         ";;; Commentary:\n\n;; This doesn't do anything.\n;; it's just a fake package for Marmalade.\n\n"])
+         (marmalade/users (db-make `(db-hash :filename "/tmp/test-marmalade-users")))
          (elnode-loggedin-db (make-hash-table :test 'equal))
          (package-list (list (list 'package-list "dummy-package")))
          location package-data package-pushed)
