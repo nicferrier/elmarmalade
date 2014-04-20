@@ -16,6 +16,7 @@
   "marmalade-boot.el"
   "marmalade-users.el"
   "front-page.html"
+  "register-comingsoon.html"
   "login-page.html"
   "upload-page.html"
   "static/style.css"
