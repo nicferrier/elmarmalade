@@ -451,8 +451,9 @@ M-x package-install [RET] ${package-name} [RET]
   "Login panel template.")
 
 (defun marmalade/login (httpcon)
-  (let* ((auth-cookie-cons (elnode-auth-get-cookie-value
-                            httpcon :cookie-name marmalade/cookie-name))
+  (let* ((auth-cookie-cons
+          (elnode-auth-get-cookie-value
+           httpcon :cookie-name marmalade/cookie-name))
          (username (if (consp auth-cookie-cons) (car auth-cookie-cons) "")))
     (s-format
      "<div id=\"login-panel\">logged in: <span id=\"username\">${username}</span></div>"
