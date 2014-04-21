@@ -1,0 +1,116 @@
+== Admin tasks ==
+
+For reference (and in case I get run over or something) here's a grab
+bag of marmalade tasks.
+
+
+=== To close down node.js/mongo marmalade-repo ===
+
+We will need to:
+
+* shut off the node.js app so people can't upload
+* do a full dump of the db
+* run mongo-covert to export
+* rsync the files to the new host
+* turn on new marmalade uploader
+
+=== Syncing the mongodb dump from Marmalade v1 ===
+
+Here's the cron I run to keep a local copy of marmalade:
+
+{{{
+rsync --bwlimit=20 -av \
+      --files-from=<(ssh $MARMALADE_HOST find seville-marmalade/mongodump -cmin -60) \
+      -e ssh $MARMALADE_HOST:. $DESTINATION_DIR
+}}}
+
+The dump is pretty big so I'm not getting the latest of
+everything. Just the last hour and I run it twice a day.
+
+=== Importing a mongodb dump from Marmalade v1 ===
+
+Marmalade v1 dumps it's mongodb to a file every hour. I pull those
+files to my house and then use them to setup a local copy of the
+marmalade database that I use to generate the marmalade v2 filesystem.
+
+How to restore the database:
+
+{{{
+mongorestore $DIRECTORY
+}}}
+
+the {{{$DIRECTORY}}} should be an individual full-dump directory.
+
+I have a directory full of dumps so this is how I actually do it:
+
+{{{
+mongorestore ~/seville-marmalade/mongodump/$(ls -t ~/seville-marmalade/mongodump/ | head -n2 | tail -n1)
+}}}
+
+that chooses the last but one dump all the time.
+
+
+=== Turning the mongodb into a file system ===
+
+A simple bash script uses {{{mongofiles}}} to export the mongo
+database into a marmalade file system:
+
+{{{
+bash mongo-convert
+}}}
+
+This uses {{{~/marmalade/packages}}} as the package root, by default.
+
+
+=== Sync the extracted file system ===
+
+{{{mongofiles}}} doesn't update files, it just splats over them so you
+need a smarter {{{rsync}}} to move them to another host:
+
+{{{
+rsync -catve ssh "$MARMALADE_HOST:marmalade/packages/*" marmalade/packages
+}}}
+
+//It would be really useful// to understand the incomming packages on
+that rsync and to call the internal archive-contents update urls. Some
+sort of grep on the rsync output could probably achieve that.
+
+This would mean new marmalade could be a mirror of old marmalade for a
+while, before we switch over.
+
+=== Deploy marmalade ===
+
+A deploy script is included in the repository.
+
+This is the sequence of things you need to do to deploy:
+
+{{{
+$ emacs-local/bin/emacsclient -s /tmp/emacs1000/marmalade -e '(kill-emacs)'
+$ rm -rf marmalade-repo
+$ emacs-local/bin/emacs --script deploy.el marmalade-repo
+$ HOME=$(realpath marmalade-repo) emacs-local/bin/emacs --daemon=marmalade
+}}}
+
+The steps are:
+
+1. kill any existing daemon
+
+2. remove the existing deployment (//not// the data)
+
+3. deploy the package and it's dependancies
+
+4. start the daemon
+
+Once the Emacs instance is started you can attach to it like this:
+
+{{{
+$ emacs-local/bin/emacsclient -s /tmp/emacs1000/marmalade $(realpath marmalade-repo)
+}}}
+
+The argument {{{$(realpath marmalade-repo}}} only ensures we open some
+directory. Any directory or file could be given, as ever with
+{{{emacsclient}}}.
+
+//Note on the package archives file: currently the archive file has to
+be generated manually and it's rather slow. Use M-x
+marmalade/package-archives to generate it.//
