@@ -1,3 +1,4 @@
+
 = The Marmalade Service - A package repository in EmacsLisp =
 
 This is an EmacsLisp package to reimplement
@@ -42,4 +43,15 @@ It would be nice if marmalade provided better package discovery.
 
 It would be nice if marmalade stored licences in a clear way and
 allowed you to use only safe licences if you wish.
+
+==== Contents ====
+
+The package is contained in the top level. Elpakit is used to build
+it.
+
+{{{marmalade-repo-test}}} is a test directory containing packages used
+by the test scripts.
+
+{{{marmalade-repo-test/possible-packages}}} contains stuff we don't
+have tests for but probably should have.
 
