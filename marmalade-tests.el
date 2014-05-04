@@ -437,49 +437,49 @@ test."
            (file-error nil))))))
 
 (ert-deftest marmalade/upload ()
-  (let* ((package-file (concat marmalade-dir "dummy-package.el"))
-         (package-content (marmalade/file->string package-file))
-         (params `(("package-file" ,package-content :elnode-filename "dummy-package.el")))
-         (dummy-package ["dummy-package"
-                         ((timeclock (2 6 1)))
-                         "a fake package for the marmalade test suite"
-                         "0.0.1"
-                         ";;; Commentary:\n\n;; This doesn't do anything.\n;; it's just a fake package for Marmalade.\n\n"])
-         (marmalade/users (db-make `(db-hash :filename "/tmp/test-marmalade-users")))
-         (elnode-loggedin-db (make-hash-table :test 'equal))
-         (package-list (list (list 'package-list "dummy-package")))
-         location package-data package-pushed)
-    ;; Add the fake user to our fake databases
-    (db-put "testuser" package-list marmalade/users)
-    (puthash "testuser" (list :hash "faketoken") elnode-loggedin-db)
-    (fakir-mock-proc-properties :httpcon
-      (elnode-fake-params :httpcon params
-        (noflet ((marmalade/save-package (upload-file base-file)
-                   (list :info dummy-package
-                         :package-path "/tmp/marmalade/package"
-                         :temp-package "/tmp/package.el"))
-                  (marmalade/install-package (:info info
-                                                    :package-path package-path
-                                                    :temp-package temp-package)
-                    "Set `package-data' to show it's been uploaded."
-                    (setq package-data info)
-                    info)
-                  (elnode-auth-get-cookie-value (httpcon :cookie-name cookie-name)
-                    (cons "testuser" "faketoken"))
-                  (elnode-send-redirect (httpcon loc &optional status)
-                    (setq location loc))
-                  (elnode-proxy-post (httpcon location :data data)
-                    "Set the `package-pushed' to indicate data sent to proxy."
-                    (setq package-pushed data)))
-          (message "testuser is in the db? %s" (db-get "testuser" marmalade/users))
-          (marmalade/upload :httpcon))
-        ;; Is the uploaded package ok?
-        (should (equal package-data dummy-package))
-        ;; Check the one we sent to the proxy as well
-        (should
-         (equal
-          (car (read-from-string (cdar package-pushed)))
-          dummy-package))))))
+  (marmalade/test-hash-db marmalade/users "/tmp/test-marmalade-users"
+    (let* ((package-file (concat marmalade-dir "dummy-package.el"))
+           (package-content (marmalade/file->string package-file))
+           (params `(("package-file" ,package-content :elnode-filename "dummy-package.el")))
+           (dummy-package ["dummy-package"
+                           ((timeclock (2 6 1)))
+                           "a fake package for the marmalade test suite"
+                           "0.0.1"
+                           ";;; Commentary:\n\n;; This doesn't do anything.\n;; it's just a fake package for Marmalade.\n\n"])
+           (elnode-loggedin-db (make-hash-table :test 'equal))
+           (package-list (list (list 'package-list "dummy-package")))
+           location package-data package-pushed)
+      ;; Add the fake user to our fake databases
+      (marmalade-add-user "testuser" "secret" "testy@test")
+      (marmalade-add-packages "testuser" "dummy-package")
+      (puthash "testuser" (list :hash "faketoken") elnode-loggedin-db)
+      (fakir-mock-process :httpcon ()
+        (elnode-fake-params :httpcon params
+          (noflet ((marmalade/save-package (upload-file base-file)
+                     (list :info dummy-package
+                           :package-path "/tmp/marmalade/package"
+                           :temp-package "/tmp/package.el"))
+                   (marmalade/install-package (:info info
+                                                     :package-path package-path
+                                                     :temp-package temp-package)
+                     "Set `package-data' to show it's been uploaded."
+                     (setq package-data info)
+                     info)
+                   (elnode-auth-get-cookie-value (httpcon :cookie-name cookie-name)
+                     (cons "testuser" "faketoken"))
+                   (elnode-send-redirect (httpcon loc &optional status)
+                     (setq location loc))
+                   (elnode-proxy-post (httpcon location :data data)
+                     "Set the `package-pushed' to indicate data sent to proxy."
+                     (setq package-pushed data)))
+            (marmalade/upload :httpcon))
+          ;; Is the uploaded package ok?
+          (should (equal package-data dummy-package))
+          ;; Check the one we sent to the proxy as well
+          (should
+           (equal
+            (car (read-from-string (cdar package-pushed)))
+            dummy-package)))))))
 
 (ert-deftest marmalade/relativize ()
   (should
