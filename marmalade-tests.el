@@ -575,13 +575,13 @@ test."
 
 (ert-deftest marmalade-user-packages ()
   "Test that we can add packages to a user."
-  (let ((marmalade-users
-         (db-make '(db-hash :filename "/tmp/marmalade-users-test"))))
-    (marmalade-add-user "nic" "secret")
+  (marmalade/test-hash-db marmalade/users "/tmp/marmalade-users-test"
+    (marmalade-add-user "nic" "secret" "nic@test")
+    (db-get "nic" marmalade/users)
     (marmalade-add-packages "nic" "elnode")
     (should
      (equal (marmalade-get-packages "nic") '("elnode")))
-    (marmalade-add-user "testuser" "secret")
+    (marmalade-add-user "testuser" "secret" "nic@test")
     (marmalade-add-packages "testuser" "elnode" "marmalade")
     (should
      (equal (marmalade-get-packages "testuser") '("elnode" "marmalade")))
