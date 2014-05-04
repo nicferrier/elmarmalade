@@ -413,6 +413,29 @@ the package store."
     (insert-file-contents-literally filename)
     (buffer-string)))
 
+
+
+(defmacro marmalade/test-hash-db (symbol filename &rest body)
+  "Test a hash db.
+
+ (marmalade/test-hash-db my-db \"/tmp/my-db-file\"
+   (db-put \"nicferrier\" '((\"username\" . \"nicferrier\")) my-db))
+
+The database file is automatically deleted at the end of the
+test."
+  ;; this should migrate to db probably
+  (declare (debug (sexp sexp &rest form))
+           (indent 2))
+  (let ((filev (make-symbol "filev")))
+    `(let ((,filev ,filename))
+       (unwind-protect
+            (let ((,symbol (db-make (list 'db-hash :filename ,filev))))
+              (db-hash-clear ,symbol)
+              ,@body)
+         (condition-case err
+             (delete-file ,filev)
+           (file-error nil))))))
+
 (ert-deftest marmalade/upload ()
   (let* ((package-file (concat marmalade-dir "dummy-package.el"))
          (package-content (marmalade/file->string package-file))
