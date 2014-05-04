@@ -591,6 +591,26 @@ test."
      (equal (marmalade-get-packages "testuser")
             '("marmalade")))))
 
+(ert-deftest marmalade-auth ()
+  "Check marmalade authentication works."
+  (marmalade/test-hash-db marmalade/users "/tmp/test-marmalade-users" 
+    (marmalade-add-user "nic" "secret" "nic@test")
+    (should-error
+     (elnode-auth-login
+      "nic" "password"
+      :auth-test 'marmalade/auth-test
+      :make-hash 'marmalade/auth-make-hash)
+     :type 'elnode-auth-credentials)
+    (should-not
+     (condition-case err
+         (progn
+           (elnode-auth-login
+            "nic" "secret"
+            :auth-test 'marmalade/auth-test
+            :make-hash 'marmalade/auth-make-hash)
+           nil)
+       (elnode-auth-credentials t)))))
+
 (provide 'marmalade-tests)
 
 ;;; marmalade-tests.el ends here
