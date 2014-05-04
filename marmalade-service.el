@@ -228,10 +228,11 @@ If the target package already exists a `file-error' is produced."
                    httpcon "/packages/archive-contents/update"
                    :data (list (cons "package-info" (format "%S" info)))))))
         (error
-         (case (marmalade/err->sym err)
-           (:existing-package
-            (elnode-send-400
-             httpcon (concat base-file-name " already exists")))))))))
+         (when (listp err)
+           (case (marmalade/err->sym err)
+             (:existing-package
+              (elnode-send-400
+               httpcon (concat base-file-name " already exists"))))))))))
 
 (defun marmalade/downloader (httpcon)
   "Download a specific package."
