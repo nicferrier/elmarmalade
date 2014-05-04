@@ -408,6 +408,7 @@ the package store."
               (fakir-file-path temp-file)))))))))
 
 (defun marmalade/file->string (filename)
+  "Return the contents of FILENAME as a string."
   (with-temp-buffer
     (insert-file-contents-literally filename)
     (buffer-string)))
