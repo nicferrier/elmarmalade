@@ -36,20 +36,41 @@
                       "/marmalade-user-db")))
   "The user database.")
 
-(defun marmalade-add-user (username password &rest packages)
+(defun marmalade/user-hash (password salt)
+  "Make the hash for the user.
+
+This is stored in the user record as \"digest\"."
+  (base64-encode-string (sha1 (concat password salt) nil nil t)))
+
+(defun marmalade-add-user (username password email &rest packages)
   "Add USERNAME to the database.
 
 Default their PACKAGES to the list."
-  (db-put username 
-          `((username . ,username)
-            (token . ,(elnode-auth-make-hash username password))
-            (package-list . ,packages))
-          marmalade/users))
+  (let ((version 2))
+    (case version
+      (1
+       (db-put username 
+               `(("username" . ,username)
+                 ("token" . ,(elnode-auth-make-hash username password))
+                 ("package-list" . ,packages))
+               marmalade/users))
+      (2
+       (db-put username
+               ;; How to work out the salt?
+               (let ((salt "n7/IDsBf7FkJDKvqiIG8k+WyM+SLGyf7LbJSHVGEUak=\n"))
+                 `(("digest" . ,(marmalade/user-hash password salt))
+                   ("email" . ,email)
+                   ("name"  . ,username)
+                   ("salt"  . ,salt)
+                   ("package-list" . ,packages)
+                   ;; What's the token?
+                   ("token" . "KQCJnaLT6YySdmM6kddB8HRJMB0aR6ZHNFogH7vuZL0=")))
+               marmalade/users)))))
 
 (defun marmalade-add-packages (username &rest packages)
   "Add PACKAGES to USERNAME in the user database."
   (let* ((record (db-get username marmalade/users))
-         (rec-packages (assoc 'package-list record)))
+         (rec-packages (assoc "package-list" record)))
     (if (not (cdr rec-packages))
         (setcdr rec-packages packages)
         (push packages rec-packages))
@@ -59,7 +80,8 @@ Default their PACKAGES to the list."
 (defun marmalade-rm-packages (username &rest packages)
   "Remove PACKAGES from USERNAME in the user database."
   (let* ((record (db-get username marmalade/users))
-         (rec-packages (assoc 'package-list record)))
+         (rec-packages (assoc "package-list" record)))
+    ;; MUTATIVE - meh
     (when (cdr rec-packages)
       (setcdr rec-packages
               (--filter (not (member it packages))
@@ -69,7 +91,7 @@ Default their PACKAGES to the list."
 
 (defun marmalade-get-packages (username)
   "Return the list of packages editable by USERNAME."
-  (kva 'package-list (db-get username marmalade/users)))
+  (kva "package-list" (db-get username marmalade/users)))
 
 (provide 'marmalade-users)
 
