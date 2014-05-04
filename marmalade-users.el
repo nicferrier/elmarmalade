@@ -26,6 +26,7 @@
 
 (require 'elnode)
 (require 'kv)
+(require 'base64)
 
 (defvar marmalade/users 
   (db-make `(db-hash
