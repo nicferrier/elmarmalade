@@ -553,4 +553,4 @@ M-x package-install [RET] ${package-name} [RET]
 
 (provide 'marmalade-service)
 
-;;; marmalade-s.el ends here
+;;; marmalade-service.el ends here
