@@ -505,9 +505,21 @@ M-x package-install [RET] ${package-name} [RET]
   (let ((page-file (concat marmalade-dir "login-page.html")))
     (elnode-send-file httpcon page-file)))
 
+(defun marmalade/auth-test (username)
+  "Test function for marmalade user database."
+  (kva "digest" (db-get username marmalade/users)))
+
+(defun marmalade/auth-make-hash (username password)
+  "Hash creation function uses the salt from the user database."
+  (let* ((record (db-get username marmalade/users))
+         (salt (kva "salt" record)))
+    (marmalade/user-hash password salt)))
+
 ;; The authentication scheme.
 (elnode-defauth 'marmalade-auth
   :cookie-name marmalade/cookie-name
+  :auth-test 'marmalade/auth-test
+  :make-hash 'marmalade/auth-make-hash
   :auth-db marmalade/users
   :sender 'marmalade/login-sender)
 
