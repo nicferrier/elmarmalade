@@ -276,9 +276,10 @@ The filename is returned with the property `:version' being the
 latest version number."
   (let* ((cached-archive
           (car
-           (directory-files
-            (file-name-as-directory marmalade-archive-dir)
-            t "^[0-9]+$"))))
+           (reverse
+            (directory-files
+             (file-name-as-directory marmalade-archive-dir)
+             t "^[0-9]+$")))))
     (string-match ".*/\\([0-9]+\\)$" cached-archive)
     (propertize cached-archive
                 :version (match-string 1 cached-archive))))
