@@ -7,7 +7,7 @@
  '(("gnu" . "http://elpa.gnu.org/packages/")
    ("marmalade" . "http://marmalade-repo.org/packages/")))
 (customize-set-variable 'elnode-init nil)
-(customize-set-variable 'elnode-log-files-directory (expand-file-name "logs" deploy-dir))
+;;(customize-set-variable 'elnode-log-files-directory (expand-file-name "logs" deploy-dir))
 (customize-set-variable 'lisp-indent-function 'common-lisp-indent-function)
 (customize-set-variable 'revert-without-query '(".*"))
 (customize-set-variable 'debug-on-error 'always) ; FIXME probably not?
