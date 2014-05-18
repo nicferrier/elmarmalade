@@ -289,18 +289,18 @@ SORTED is a `file-attributes' field to sort on specified as a
 number as per the `file-attributes' help.  If not specified no
 sorting is done.
 
+
 TAKE specifies how many entries to return."
   (let* ((files (directory-files marmalade-package-store-dir t "^[^.]+$"))
-         (package-list
-          (--map
-           (file-name-nondirectory it)
-           (if sorted
-               (reverse (marmalade/file-sort files :by sorted))
-               files))))
+	 (package-list
+	  (->> (if sorted
+		   (reverse (marmalade/file-sort files :by sorted))
+                   files)
+	    (--map (file-name-nondirectory it))
+	    (--filter (not (equal it "archive-contents"))))))
     (if take
         (-take take package-list)
         package-list)))
-
 (defun marmalade/top-version (package-dir)
   "Return the path to the newest version of a package in PACKAGE-DIR.
 
