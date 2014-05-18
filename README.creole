@@ -32,8 +32,8 @@ These are the things marmalade should do:
 
 ==== ETA ====
 
-This version of marmalade is now live, serving packages. It's still
-not accepting uploads.
+This version of marmalade is now live (as of May the 18th, 2014)
+serving packages. It's still not accepting uploads.
 
 Uploads excepted to be working by the end of May 2014.
 
