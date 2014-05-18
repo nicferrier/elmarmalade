@@ -9,7 +9,7 @@ mongodb.
 
 This reimplementation uses an [[http://elnode.org|Elnode]] application
 dealing with a filesystem of all packages. It's basically a file
-server app.
+server app. It also follows the microservice model.
 
 This packages includes conversion tools from the mongodb to the
 filesystem.
@@ -23,18 +23,19 @@ These are the things marmalade should do:
 * provide HTML front end to the {{{/package/}}} HTTP API
 * provide EmacsLisp front end to the {{{/package/}}} HTTP API
 ** this will likely be a separate project
+* allow users to {{{/register/}}} in order to upload packages
+* provide {{{/profile/}}}s for people who have registered
+* allow registered users to upload and upgrade packages
+** preferably from inside their emacs
+** and securely
+* allow registered users to be added as owners
 
 ==== ETA ====
 
-Current expected ETA for live elmarmalade: end of May.
+This version of marmalade is now live, serving packages. It's still
+not accepting uploads.
 
-node.js marmalade has been broken for some time with the web
-upload. This is caused by major outdatedness in the node.js that
-marmalade was built on. It is very crufty and tedious to update.
-
-So Nic Ferrier is banking on getting this live. Sadly he has a
-demanding job at the moment so doesn't get the time to hack on this
-that he'd like.
+Uploads excepted to be working by the end of May 2014.
 
 
 ==== Other marmalade things ====
