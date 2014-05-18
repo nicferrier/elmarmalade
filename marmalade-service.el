@@ -491,13 +491,13 @@ M-x package-install [RET] ${package-name} [RET]
   (elnode-method httpcon
     (GET
      (with-transient-file marmalade/page-file
-         (elnode-send-html
-          httpcon
-          (s-buffer-format
-           (find-file-noselect marmalade/page-file)
-           'aget
-           `(("login-panel" . ,(marmalade/login httpcon))
-             ("latest-html" . ,(marmalade/latest-html)))))))
+       (elnode-send-html
+        httpcon
+        (s-buffer-format
+         (find-file-noselect marmalade/page-file)
+         'aget
+         `(("login-panel" . ,(marmalade/login httpcon))
+           ("latest-html" . ,(marmalade/latest-html)))))))
     ;; Or we need to upload
     (POST (marmalade/upload httpcon))))
 
