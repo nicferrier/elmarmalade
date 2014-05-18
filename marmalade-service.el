@@ -508,11 +508,6 @@ M-x package-install [RET] ${package-name} [RET]
      httpcon
      (concat marmalade-dir "upload-page.html"))))
 
-(defun marmalade/register-sender (httpcon)
-  "Send the login page."
-  (let ((page-file (concat marmalade-dir "register-comingsoon.html")))
-    (elnode-send-file httpcon page-file)))
-
 (defun marmalade/login-sender (httpcon target redirect)
   "Send the login page."
   (let ((page-file (concat marmalade-dir "login-page.html")))
@@ -541,12 +536,19 @@ M-x package-install [RET] ${package-name} [RET]
    (concat marmalade-dir "static"))
   "The webserver for marmalade.")
 
+(defun marmalade/special-docs (httpcon)
+  "Send the login page."
+  (let ((matched (elnode-http-mapping httpcon 1)))
+    (elnode-send-file
+     httpcon
+     (concat marmalade-dir "specialpages/" matched ".html"))))
+
 (defun marmalade-router (httpcon)
   "The top level router for marmalade-repo."
   (elnode-hostpath-dispatcher
    httpcon
    `(("^[^/]*//-/\\(.*\\)$" . ,marmalade/webserver)
-     ("^[^/]*//register-comingsoon/*$" . marmalade/register-sender)
+     ("^[^/]*//\\(register-comingsoon\\|terms\\|docs\\)/*$" . marmalade/special-docs)
      ("^[^/]*//packages/new$" . marmalade/upload-page)
 
      ("^[^/]*//packages/archive-contents$" . marmalade-archive-contents-handler)
