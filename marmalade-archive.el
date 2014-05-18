@@ -126,13 +126,9 @@ This does a substitute."
 
 (defun marmalade/package-file-info (filename)
   "Wraps `marmalade/package-buffer-info' with FILENAME getting."
-  (let ((buffer (let ((enable-local-variables nil))
-                  (find-file-noselect filename))))
-    (unwind-protect
-         (marmalade/package-buffer-info buffer)
-      ;; FIXME - We should probably only kill it if we didn't have it
-      ;; before
-      (kill-buffer buffer))))
+  (with-temp-buffer
+    (insert-file-contents-literally filename)
+    (marmalade/package-buffer-info (current-buffer))))
 
 (defun marmalade/file-type->type (file-extension)
   "Return `single' or `tar' depending on the file FILE-EXTENSION."
