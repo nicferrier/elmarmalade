@@ -286,14 +286,12 @@ latest version number."
 
 (defun marmalade/archive-cache->list ()
   "Read the latest archive cache into a list."
-  (let* ((archive (marmalade/archive-newest))
-         (archive-buf (find-file-noselect archive)))
-    (unwind-protect
-         (with-current-buffer archive-buf
-           (goto-char (point-min))
-           ;; Read it in and sort it.
-           (read (current-buffer)))
-      (kill-buffer archive-buf))))
+  (let* ((archive (marmalade/archive-newest)))
+    (with-transient-file archive
+      (save-excursion
+        (goto-char (point-min))
+        ;; Read it in and sort it.
+        (read (current-buffer))))))
 
 (defun marmalade/archive-cache->hash (&optional hash)
   "Read the latest archive cache into `marmalade/archive-cache'.
