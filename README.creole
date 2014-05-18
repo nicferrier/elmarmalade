@@ -1,4 +1,3 @@
-
 = The Marmalade Service - A package repository in EmacsLisp =
 
 This is an EmacsLisp package to reimplement
