@@ -1,39 +1,47 @@
 <!doctype html>
 <html lang="en">
-<head>
-<link rel="stylesheet" href="/-/bootstrap/css/bootstrap.css" type="text/css"></link>
-<link rel="stylesheet" href="/-/style.css" type="text/css"></link>
-<title>marmalade-repo - for all your EmacsLisp needs</title>
-</head>
-<body>
-<div class="navbar">
-    <div class="navbar-inner">
-        <ul class="nav pull-right">
-            <li class="active"><a href="/">marmalade-repo</a></li>
-            <li><a href="#">login</a></li>
-            <li><a href="#">register</a></li>
-        </ul>
-    </div>
-</div>
-<div id="blurb">
-<div class="container">
-<div class="row">
-    <h1>sorry... you can't register for marmalade-repo ...</h1>
-    <h3>We just haven't got a working registration yet. But it's coming very soon.<h3>
-    <h4>In the mean time, if you need an account, please add an issue on the 
-    <a href="http://github/nicferrier/elmarmalade">github</a>.</h4>
-</div>
-</div>
-</div>
-<footer>
-    <div>
-         <ul class="inline">
-             <li><a href="/terms">terms</a></li>
-             <li><a href="/docs">docs</a></li>
-             <li><a href="https://github.com/nicferrier/elmarmalade/issues">issues</a></li>
-             <li>(C) Nic Ferrier 2013</li>
-         </ul>
-     </div>
-</footer>
-</body>
+    <head>
+        <link rel="stylesheet" href="/-/bootstrap/css/bootstrap.css" type="text/css"></link>
+        <link rel="stylesheet" href="/-/style.css" type="text/css"></link>
+        <title>marmalade-repo - for all your EmacsLisp needs</title>
+    </head>
+    <body class="home">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <ul class="nav pull-right">
+                    <li class="active"><a href="#">marmalade-repo</a></li>
+                    <li><a href="/login/">login</a></li>
+                    <li><a href="/register-comingsoon/">register</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id="github">
+            <a href="https://github.com/nicferrier/elmarmalade">
+                <img style="position: absolute; top: 0; left: 0; border: 0;" 
+                     src="https://s3.amazonaws.com/github/ribbons/forkme_left_orange_ff7600.png" 
+                     alt="Fork me on GitHub"></img>
+            </a>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div id="panel">
+                    <h4>new packages</h4>
+                    <ul>${latest-html}</ul>
+                    <a class="btn btn-large" href="/packages/new">add a new package</a>
+                </div>
+                <h1>marmalade repo</h1>
+                <p id="intro">registration is coming soon.</p>
+            </div>
+        </div>
+       <footer>
+           <div>
+                <ul class="inline">
+                    <li><a href="/terms">terms</a></li>
+                    <li><a href="/docs">docs</a></li>
+                    <li><a href="https://github.com/nicferrier/elmarmalade/issues">issues</a></li>
+                    <li>(C) Nic Ferrier 2013</li>
+                </ul>
+            </div>
+        </footer>
+    </body>
 </html>
