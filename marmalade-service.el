@@ -105,7 +105,14 @@ the package repository."
        (buffer-string) ; leave it in so it's easy to debug
        (package-buffer-info)))
     ((string-match-p "\\.tar$" package-file)
-     (package-tar-file-info package-file))
+     (if (version< emacs-version "24.3.90")
+         (package-tar-file-info package-file)
+         (let (tar-buf)
+           (unwind-protect
+                (with-current-buffer (setq tar-buf (find-file-noselect package-file))
+                  (package-tar-file-info))
+             (when (bufferp tar-buf)
+               (kill-buffer tar-buf))))))
     (t (error "Unrecognized extension `%s'"
               (file-name-extension package-file)))))
 
