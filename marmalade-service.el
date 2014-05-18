@@ -376,26 +376,32 @@ is grabbed."
 
 (defun marmalade/package-blurb (httpcon)
   "Provide an informative description of the package."
-  (elnode-docroot-for
-      marmalade-package-store-dir
-      with target-package
-      on httpcon
-      do
-      (let* ((package-name (elnode-http-mapping httpcon 1))
-             (package-file (marmalade/top-version target-package))
-             (package-download (file-name-nondirectory package-file))
-             (info (marmalade/package-info package-file)))
-        (destructuring-bind
-              (name depends description version commentary)
-            (mapcar 'identity info)
-          (destructuring-bind
-                (author maintainer url keywords)
-              (marmalade/package-meta package-file)
-            (let* ((about-text (marmalade/commentary->about commentary))
-                   (page
-                    (condition-case err
-                        (s-format
-                         "<!doctype html>
+  (let (enable-local-variables enable-local-eval)
+    (elnode-docroot-for
+        marmalade-package-store-dir
+        with target-package
+        on httpcon
+        do
+        (let* ((package-name (elnode-http-mapping httpcon 1))
+               (package-file (marmalade/top-version target-package))
+               (package-download (file-name-nondirectory package-file))
+               (info (marmalade/package-info package-file)))
+          (destructuring-bind (name depends description version commentary)
+              (if (version< emacs-version "24.3.90")
+                  (mapcar 'identity info)
+                  ;; Else new struct version
+                  (list (package-desc-name info)
+                        (package-desc-reqs info)
+                        (package-desc-summary info)
+                        (package-desc-version info)
+                        (package-desc-summary info)))
+            (destructuring-bind (author maintainer url keywords)
+                (marmalade/package-meta package-file)
+              (let* ((about-text (marmalade/commentary->about commentary))
+                     (page
+                      (condition-case err
+                          (s-format
+                           "<!doctype html>
 <html lang=\"en\">
 <head>
 <link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
@@ -431,24 +437,24 @@ M-x package-install [RET] ${package-name} [RET]
 </footer>
 </body>
 <html>"
-                         'aget
-                         `(("header" . ,marmalade/page-header)
-                           ("package-name" . ,package-name)
-                           ("version" . ,version)
-                           ("author-html"
-                            . ,(if (or (not author)(equal author ""))
-                                   "" (format "<p class=\"author\">by %s</p>" author)))
-                           ("package-download" . ,package-download)
-                           ("description" . ,description)
-                           ("about"
-                            . ,(if (not (equal about-text ""))
-                                   (format "<pre>%s</pre>" about-text) ""))))
-                      (error (format
-                              "<html>error: %S<br/><pre>%S</pre></html>"
-                              (cdr err)
-                              about-text)))))
-              (elnode-http-start httpcon 200 '(Content-type . "text/html"))
-              (elnode-http-return httpcon page)))))))
+                           'aget
+                           `(("header" . ,marmalade/page-header)
+                             ("package-name" . ,package-name)
+                             ("version" . ,(format "%S" version))
+                             ("author-html"
+                              . ,(if (or (not author)(equal author ""))
+                                     "" (format "<p class=\"author\">by %s</p>" author)))
+                             ("package-download" . ,package-download)
+                             ("description" . ,description)
+                             ("about"
+                              . ,(if (not (equal about-text ""))
+                                     (format "<pre>%s</pre>" about-text) ""))))
+                        (error (format
+                                "<html>error: %S<br/><pre>%S</pre></html>"
+                                (cdr err)
+                                about-text)))))
+                (elnode-http-start httpcon 200 '(Content-type . "text/html"))
+                (elnode-http-return httpcon page))))))))
 
 (defconst marmalade/package-item
   "<li><a href=\"/packages/${name}\">${name}</a></li>"
