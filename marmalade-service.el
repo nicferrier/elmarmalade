@@ -143,7 +143,7 @@ the package repository."
        :package-path package-path))))
 
 (defun marmalade/package-meta (package-file)
-  (with-current-buffer (find-file-noselect package-file)
+  (with-transient-file package-file
     (list
      (lm-header "Author")
      (lm-header "Maintainer")
