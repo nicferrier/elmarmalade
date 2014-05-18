@@ -108,11 +108,10 @@ the package repository."
      (if (version< emacs-version "24.3.90")
          (package-tar-file-info package-file)
          (let (tar-buf)
-           (unwind-protect
-                (with-current-buffer (setq tar-buf (find-file-noselect package-file))
-                  (package-tar-file-info))
-             (when (bufferp tar-buf)
-               (kill-buffer tar-buf))))))
+           (with-temp-buffer
+             (insert-file-contents-literally package-file)
+             (tar-mode)
+             (package-tar-file-info)))))
     (t (error "Unrecognized extension `%s'"
               (file-name-extension package-file)))))
 
