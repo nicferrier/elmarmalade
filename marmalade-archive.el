@@ -48,11 +48,15 @@ files."
                           (concat root-dir "..")) "\\(.*\\)"))
          (package-dir-list
           (if package-names-list
-              (--map (concat root-dir it) package-names-list)
+	      (--filter
+	       (not (string-match-p "^archive-contents$" it))
+	       (--map (concat root-dir it) package-names-list))
+	      ;; Else
               (--filter
                ;; no el files at this level
-               (and (not (string-match-p "\\.el$" it)))
-               (directory-files root-dir t "^[^.].*[^~]$"))))
+               (and (not (string-match-p "\\.el$" it))
+		    (not (string-match-p ".*/archive-contents$" it)))
+               (directory-files root-dir t "^[^.][^~]*$"))))
          (version-dir-list
           (loop for package-dir in package-dir-list
              collect (directory-files package-dir t "^[^.].*"))))
