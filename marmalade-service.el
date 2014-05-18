@@ -493,7 +493,7 @@ M-x package-install [RET] ${package-name} [RET]
        (elnode-send-html
         httpcon
         (s-buffer-format
-         (find-file-noselect marmalade/page-file)
+         (current-buffer)
          'aget
          `(("login-panel" . ,(marmalade/login httpcon))
            ("latest-html" . ,(marmalade/latest-html)))))))
