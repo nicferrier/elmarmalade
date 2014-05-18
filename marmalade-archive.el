@@ -142,40 +142,57 @@ This does a substitute."
 This reads in the FILENAME.  But it does it safely and it also
 kills it.
 
-It returns a cons of `single' or `multi' and "
+It returns a cons of `single' or `tar' and the package
+description parsed from the file."
   (let ((ptype (marmalade/file-type->type file-extension)))
     (cons
      ptype
      (case ptype
        (single (marmalade/package-file-info filename))
-       (tar (package-tar-file-info filename))))))
+       (tar
+        (if (version< emacs-version "24.3.90")
+            (package-tar-file-info filename)
+            ;; Else the new way
+            (let (tar-buf)
+              (with-temp-buffer
+                (insert-file-contents-literally filename)
+                (tar-mode)
+                (package-tar-file-info)))))))))
 
 (defun* marmalade/root->archive (root &key package-names-list)
-  "For ROOT make an archive list."
+  "For directory ROOT make an archive list."
   (let ((files-list (marmalade/list-files
                      root
                      :package-names-list package-names-list)))
     (loop for (filename type) in files-list
-       with package-stuff
-       do
-         (setq package-stuff
-               (condition-case err
-                   (marmalade/package-stuff filename type)
-                 (error nil)))
-       if package-stuff
-       collect package-stuff)))
+	  with package-stuff
+	  do
+	  (setq package-stuff
+		(condition-case err
+		    (marmalade/package-stuff filename type)
+		  (error nil)))
+	  if package-stuff
+	  collect package-stuff)))
 
 (defun marmalade/packages-list->archive-list (packages-list)
   "Turn the list of packages into an archive list."
   ;; elpakit has a version of this
   (loop for (type . package) in packages-list
-     collect
-       (cons
-        (intern (elt package 0)) ; name
-        (vector (version-to-list (elt package 3)) ; version list
-                (elt package 1) ; requirements
-                (elt package 2) ; doc string
-                type))))
+	collect
+       (if (version< emacs-version "24.3.90")
+	  (cons
+	   (intern (elt package 0)) ; name
+	   (vector (version-to-list (elt package 3)) ; version list
+		   (elt package 1) ; requirements
+		   (elt package 2) ; doc string
+		   type))
+          ;; Else the package struct version
+          (cons
+            (package-desc-name package)
+            (vector (package-desc-version package)
+                    (package-desc-reqs package)
+                    (package-desc-summary package)
+                    (package-desc-kind package))))))
 
 ;; Handle the cache
 
