@@ -541,7 +541,7 @@ M-x package-install [RET] ${package-name} [RET]
   (let ((matched (elnode-http-mapping httpcon 1)))
     (elnode-send-file
      httpcon
-     (concat marmalade-dir "specialpages/" matched ".html"))))
+     (concat marmalade-dir "/" matched ".html"))))
 
 (defun marmalade-router (httpcon)
   "The top level router for marmalade-repo."
