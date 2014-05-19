@@ -611,6 +611,15 @@ test."
            nil)
        (elnode-auth-credentials t)))))
 
+(ert-deftest safe-s-format ()
+  "Test `safe-s-format'."
+  (should (string= (safe-s-format "foo ${bar} baz" 'aget '(("bar" . "<i> &")))
+                   "foo &lt;i&gt; &amp; baz"))
+  (should (string= (safe-s-format "foo $1 baz" 'elt '("bar" "a<i"))
+                   "foo a&lt;i baz"))
+  (should (string= (safe-s-format "${x} xxx" #'(lambda (&rest x) "&a>i"))
+                   "&amp;a&gt;i xxx")))
+
 (provide 'marmalade-tests)
 
 ;;; marmalade-tests.el ends here
