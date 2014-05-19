@@ -26,49 +26,9 @@
 
 (elnode-app marmalade-dir
   marmalade-customs marmalade-archive marmalade-users
-  web htmlize db s-buffer s
+  file-format ; should be a separate package
+  web htmlize db s 
   dash kv rx lisp-mnt outline)
-
-(defun safe-s-format (template replacer &optional extra)
-  "Format TEMPLATE with the function REPLACER.
-
-This function behaves like `s-format' but additionally escapes
-all replacements using `xml-escape-string'."
-  (s-format template
-            #'(lambda (key &optional extra)
-                (xml-escape-string
-                 (cond
-                  ((eq replacer 'aget)
-                   (s--aget extra key))
-                  ((eq replacer 'elt)
-                   (elt extra key))
-                  (t
-                   (if extra
-                       (funcall replacer key extra)
-                     (funcall replacer key))))))
-            extra))
-
-(defmacro with-transient-file (file-name &rest code)
-  "Load FILE-NAME into a buffer and eval CODE.
-
-Then dispose of the buffer.
-
-File loading errors may be generated as by any call to visit a
-file."
-  (declare (indent 1)
-           (debug (sexp &rest form)))
-  (let ((fvn (make-symbol "fv"))
-        (bvn (make-symbol "bv")))
-    `(let* ((,fvn ,file-name)
-            (,bvn (get-buffer-create
-                   (generate-new-buffer-name "transient"))))
-       (unwind-protect
-            (with-current-buffer ,bvn
-              (insert-file-contents-literally ,fvn)
-              ,@code)
-         (progn
-           (set-buffer-modified-p nil)
-           (kill-buffer ,bvn))))))
 
 (defconst marmalade/cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
@@ -418,56 +378,24 @@ is grabbed."
               (let* ((about-text (marmalade/commentary->about commentary))
                      (page
                       (condition-case err
-                          (safe-s-format
-                           "<!doctype html>
-<html lang=\"en\">
-<head>
-<meta charset=\"utf-8\"></meta>
-<link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
-<link rel=\"stylesheet\" href=\"/-/bootstrap/css/bootstrap.css\" type=\"text/css\"></link>
-<title>${package-name} @ Marmalade</title>
-</head>
-<body>
-${header}
-<div id=\"blurb\">
-<div class=\"container\">
-<div class=\"row\">
-<h1>${package-name} &mdash; ${version} </h1>
-<h4 class=\"what\">what is it? <a class=\"download btn\" href=\"${package-download}\">download ${package-name}</a></h4>
-<p class=\"description\">${description}</p>
-<p class=\"author\">by ${author}</p>
-<pre>${about}</pre>
-<h4 class=\"how\">how to install</h4>
-<pre>
-M-x package-install [RET] ${package-name} [RET]
-</pre>
-</div>
-</div>
-</div>
-<footer class=\"footer\">
-    <div>
-        <ul class=\"inline\">
-            <li><a href=\"/terms\">terms</a></li>
-            <li><a href=\"/docs\">docs</a></li>
-            <li><a href=\"https://github.com/nicferrier/elmarmalade/issues\">issues</a></li>
-            <li>(C) Nic Ferrier 2013</li>
-        </ul>
-    </div>
-</footer>
-</body>
-</html>"
-                           'aget
-                           `(("header" . ,marmalade/page-header)
-                             ("package-name" . ,package-name)
-                             ("version" . ,(format "%S" version))
-                             ("author"
-                              . ,(if (or (not author)(equal author ""))
-                                     "Unknown" author))
-                             ("package-download" . ,package-download)
-                             ("description" . ,description)
-                             ("about" . ,about-text)))
+                          (s-format 
+                           (file-format-html
+                            "front-page.html" marmalade-dir
+                            'aget
+                            `(("package-name" . ,package-name)
+                              ("version" . ,(format "%S" version))
+                              ("author"
+                               . ,(if (or (not author)(equal author ""))
+                                      "Unknown" author))
+                              ("package-download" . ,package-download)
+                              ("description" . ,description)
+                              ("about" . ,about-text)
+                              ;; Replace safely later
+                              ("header" . "${header}")))
+                           ;; This is safe to use HTML because it's controlled by us
+                           'aget `(("header" . ,marmalade/page-header)))
                         (error (format
-                                "<html>error: %S<br/><pre>%S</pre></html>"
+                                "<html><h3>marmalade error: %S</h3><pre>%S</pre></html>"
                                 (xml-escape-string (cdr err))
                                 (xml-escape-string about-text))))))
                 (elnode-http-start httpcon 200 '(Content-type . "text/html"))
@@ -495,26 +423,24 @@ M-x package-install [RET] ${package-name} [RET]
   (concat marmalade-dir "front-page.html"))
 
 (defun marmalade/latest-html ()
+  "Convert `marmalade/package-list' into HTML LI elements."
   (let* ((latest (marmalade/package-list :sorted 5 :take 10)))
-    (concat
-     (loop for name in latest
-        concat
-          (safe-s-format
-           "<li><a href=\"/packages/${name}\">${name}</a></li>"
-           'aget `(("name" . ,name)))) "\n")))
+    (mapconcat
+     (lambda (name)
+       (s-format
+        "<li><a href=\"/packages/${name}\">${name}</a></li>" 'aget
+        `(("name" . ,(xml-escape-string name)))))
+     latest "\n")))
 
 (defun marmalade/packages-index (httpcon)
   "Upload a package of show a package index in HTML."
   (elnode-method httpcon
     (GET
-     (with-transient-file marmalade/page-file
-       (elnode-send-html
-        httpcon
-        (s-buffer-format
-         (current-buffer)
-         'aget
-         `(("login-panel" . ,(marmalade/login httpcon))
-           ("latest-html" . ,(marmalade/latest-html)))))))
+     (elnode-send-html
+      (file-format
+       marmalade/page-file marmalade-dir 'aget
+       `(("login-panel" . ,(marmalade/login httpcon))
+         ("latest-html" . ,(marmalade/latest-html))))))
     ;; Or we need to upload
     (POST (marmalade/upload httpcon))))
 
