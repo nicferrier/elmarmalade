@@ -415,7 +415,8 @@ is grabbed."
                         (package-desc-summary info)))
             (destructuring-bind (author maintainer url keywords)
                 (marmalade/package-meta package-file)
-              (let* ((about-text (marmalade/commentary->about commentary))
+              (let* ((status 200)
+                     (about-text (marmalade/commentary->about commentary))
                      (page
                       (condition-case err
                           (safe-s-format
@@ -466,11 +467,12 @@ M-x package-install [RET] ${package-name} [RET]
                              ("package-download" . ,package-download)
                              ("description" . ,description)
                              ("about" . ,about-text)))
-                        (error (format
-                                "<html>error: %S<br/><pre>%S</pre></html>"
+                        (error (setq status 500)
+                               (format
+                                "<html>error: %S<br /><pre>%S</pre></html>"
                                 (xml-escape-string (cdr err))
                                 (xml-escape-string about-text))))))
-                (elnode-http-start httpcon 200 '(Content-type . "text/html"))
+                (elnode-http-start httpcon status '(Content-type . "text/html"))
                 (elnode-http-return httpcon page))))))))
 
 (defconst marmalade/package-item
