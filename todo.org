@@ -28,3 +28,11 @@
 *** upload
 **** this should be particularly simple
 **** is there a standard for this in package-x or something?
+
+
+* authentication
+** we have basic auth
+** we need permission upload
+*** we need to know which packages have which owners
+*** package db needs to be updated
+*** this is what marmalade!authorize-check is
