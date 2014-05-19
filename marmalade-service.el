@@ -504,7 +504,7 @@ is grabbed."
 
          ;; We don't really want to send 404's for these if we have them
          ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
-         ("^[^/]+//packages/\\(.*\\.\\(el\\|tar\\)\\)" . marmalade/package-handler)
+         ("^[^/]+//packages/\\(.*\\.\\(el\\|tar\\)\\)$" . marmalade/package-handler)
          ("^[^/]+//packages/\\([^/]+\\)" . marmalade/package-blurb)
          ;; we have GET /packages/ and / be the same right now - probably not right
          ("^[^/]+//packages/$" . marmalade/packages-index)
