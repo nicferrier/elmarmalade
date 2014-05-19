@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
     <head>
+        <meta charset="utf-8"></meta>
         <link rel="stylesheet" href="/-/bootstrap/css/bootstrap.css" type="text/css"></link>
         <link rel="stylesheet" href="/-/style.css" type="text/css"></link>
         <title>marmalade-repo - for all your EmacsLisp needs</title>
@@ -45,7 +46,7 @@
         <div class="section">
             <div class="container">
                 <div class="row">
-                    <h3>how to use it</h3>
+                    <h3 id="download">how to use it</h3>
                     <p>before you can use marmalade-repo you must add it to your list of Emacs <em>packages-archives</em>:</p>
                     <pre>
 M-: (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
@@ -68,7 +69,7 @@ M-x customize-variable [RET] package-archives
         <div class="section">
             <div class="container">
                 <div class="row">
-                    <h3>how to upload packages</h3>
+                    <h3 id="upload">how to upload packages</h3>
                     <p>you can upload emacs-lisp packages to marmalade if you have an account on marmalade.</p>
                     <div  id="package-demo">
                         <div>
@@ -90,8 +91,8 @@ M-x customize-variable [RET] package-archives
 ;;; example.el --- example Emacs package -*- lexical-binding: t -*-
 ;; Copyright (C) 2013 Nic Ferrier
 
-;; Author: Nic Ferrier <nferrier@example.com>
-;; Maintainer: Nic Ferrier <nferrier@example.com>
+;; Author: Nic Ferrier &lt;nferrier@example.com&gt;
+;; Maintainer: Nic Ferrier &lt;nferrier@example.com&gt;
 ;; URL: http://github.com/nicferrier/example
 ;; Created: 17th March 2013
 ;; Version: 0.1
