@@ -29,6 +29,25 @@
   web htmlize db s-buffer s
   dash kv rx lisp-mnt outline)
 
+(defun safe-s-format (template replacer &optional extra)
+  "Format TEMPLATE with the function REPLACER.
+
+This function behaves like `s-format' but additionally escapes
+all replacements using `xml-escape-string'."
+  (s-format template
+            #'(lambda (key &optional extra)
+                (xml-escape-string
+                 (cond
+                  ((eq replacer 'aget)
+                   (s--aget extra key))
+                  ((eq replacer 'elt)
+                   (elt extra key))
+                  (t
+                   (if extra
+                       (funcall replacer key extra)
+                     (funcall replacer key))))))
+            extra))
+
 (defmacro with-transient-file (file-name &rest code)
   "Load FILE-NAME into a buffer and eval CODE.
 
@@ -399,10 +418,11 @@ is grabbed."
               (let* ((about-text (marmalade/commentary->about commentary))
                      (page
                       (condition-case err
-                          (s-format
+                          (safe-s-format
                            "<!doctype html>
 <html lang=\"en\">
 <head>
+<meta charset=\"utf-8\"></meta>
 <link rel=\"stylesheet\" href=\"/-/style.css\" type=\"text/css\"></link>
 <link rel=\"stylesheet\" href=\"/-/bootstrap/css/bootstrap.css\" type=\"text/css\"></link>
 <title>${package-name} @ Marmalade</title>
@@ -412,11 +432,11 @@ ${header}
 <div id=\"blurb\">
 <div class=\"container\">
 <div class=\"row\">
-<h1>${package-name} - ${version} </h1>
+<h1>${package-name} &mdash; ${version} </h1>
 <h4 class=\"what\">what is it? <a class=\"download btn\" href=\"${package-download}\">download ${package-name}</a></h4>
 <p class=\"description\">${description}</p>
-${author-html}
-${about}
+<p class=\"author\">by ${author}</p>
+<pre>${about}</pre>
 <h4 class=\"how\">how to install</h4>
 <pre>
 M-x package-install [RET] ${package-name} [RET]
@@ -435,23 +455,21 @@ M-x package-install [RET] ${package-name} [RET]
     </div>
 </footer>
 </body>
-<html>"
+</html>"
                            'aget
                            `(("header" . ,marmalade/page-header)
                              ("package-name" . ,package-name)
                              ("version" . ,(format "%S" version))
-                             ("author-html"
+                             ("author"
                               . ,(if (or (not author)(equal author ""))
-                                     "" (format "<p class=\"author\">by %s</p>" author)))
+                                     "Unknown" author))
                              ("package-download" . ,package-download)
                              ("description" . ,description)
-                             ("about"
-                              . ,(if (not (equal about-text ""))
-                                     (format "<pre>%s</pre>" about-text) ""))))
+                             ("about" . ,about-text)))
                         (error (format
                                 "<html>error: %S<br/><pre>%S</pre></html>"
-                                (cdr err)
-                                about-text)))))
+                                (xml-escape-string (cdr err))
+                                (xml-escape-string about-text))))))
                 (elnode-http-start httpcon 200 '(Content-type . "text/html"))
                 (elnode-http-return httpcon page))))))))
 
@@ -481,7 +499,7 @@ M-x package-install [RET] ${package-name} [RET]
     (concat
      (loop for name in latest
         concat
-          (s-format
+          (safe-s-format
            "<li><a href=\"/packages/${name}\">${name}</a></li>"
            'aget `(("name" . ,name)))) "\n")))
 
