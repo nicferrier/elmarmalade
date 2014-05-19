@@ -196,7 +196,7 @@ If the target package already exists a `file-error' is produced."
           (marmalade/temp-file package-file-name)))
     ;; First save the uploaded data to a temp package file
     (with-temp-file temp-package-file
-      (insert-string (substring-no-properties package-data)))
+      (insert (substring-no-properties package-data)))
     ;; Return the package info, the package-path and the temp file
     (append
      (marmalade/package-path temp-package-file)
@@ -415,7 +415,8 @@ is grabbed."
                         (package-desc-summary info)))
             (destructuring-bind (author maintainer url keywords)
                 (marmalade/package-meta package-file)
-              (let* ((about-text (marmalade/commentary->about commentary))
+              (let* ((status 200)
+                     (about-text (marmalade/commentary->about commentary))
                      (page
                       (condition-case err
                           (safe-s-format
@@ -466,11 +467,12 @@ M-x package-install [RET] ${package-name} [RET]
                              ("package-download" . ,package-download)
                              ("description" . ,description)
                              ("about" . ,about-text)))
-                        (error (format
-                                "<html>error: %S<br/><pre>%S</pre></html>"
+                        (error (setq status 500)
+                               (format
+                                "<html>error: %S<br /><pre>%S</pre></html>"
                                 (xml-escape-string (cdr err))
                                 (xml-escape-string about-text))))))
-                (elnode-http-start httpcon 200 '(Content-type . "text/html"))
+                (elnode-http-start httpcon status '(Content-type . "text/html"))
                 (elnode-http-return httpcon page))))))))
 
 (defconst marmalade/package-item
@@ -492,7 +494,7 @@ M-x package-install [RET] ${package-name} [RET]
      `(("username" . ,username)))))
 
 (defconst marmalade/page-file
-  (concat marmalade-dir "front-page.html"))
+  (expand-file-name "front-page.html" marmalade-dir))
 
 (defun marmalade/latest-html ()
   (let* ((latest (marmalade/package-list :sorted 5 :take 10)))
@@ -523,11 +525,11 @@ M-x package-install [RET] ${package-name} [RET]
   (with-elnode-auth httpcon 'marmalade-auth
     (elnode-send-file
      httpcon
-     (concat marmalade-dir "upload-page.html"))))
+     (expand-file-name "upload-page.html" marmalade-dir))))
 
-(defun marmalade/login-sender (httpcon target redirect)
+(defun marmalade/login-sender (httpcon _target _redirect)
   "Send the login page."
-  (let ((page-file (concat marmalade-dir "login-page.html")))
+  (let ((page-file (expand-file-name "login-page.html" marmalade-dir)))
     (elnode-send-file httpcon page-file)))
 
 (defun marmalade/auth-test (username)
@@ -550,7 +552,7 @@ M-x package-install [RET] ${package-name} [RET]
 
 (defconst marmalade/webserver
   (elnode-webserver-handler-maker
-   (concat marmalade-dir "static"))
+   (expand-file-name "static" marmalade-dir))
   "The webserver for marmalade.")
 
 (defun marmalade/special-docs (httpcon)
@@ -558,7 +560,7 @@ M-x package-install [RET] ${package-name} [RET]
   (let ((matched (elnode-http-mapping httpcon 1)))
     (elnode-send-file
      httpcon
-     (concat marmalade-dir "/" matched ".html"))))
+     (expand-file-name (concat matched ".html") marmalade-dir))))
 
 (defun marmalade-router (httpcon)
   "The top level router for marmalade-repo."
