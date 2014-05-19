@@ -544,26 +544,28 @@ M-x package-install [RET] ${package-name} [RET]
 
 (defun marmalade-router (httpcon)
   "The top level router for marmalade-repo."
-  (elnode-hostpath-dispatcher
-   httpcon
-   `(("^[^/]*//-/\\(.*\\)$" . ,marmalade/webserver)
-     ("^[^/]*//\\(register-comingsoon\\|terms\\|docs\\)/*$" . marmalade/special-docs)
-     ("^[^/]*//packages/new$" . marmalade/upload-page)
+  (condition-case err
+      (elnode-hostpath-dispatcher
+       httpcon
+       `(("^[^/]*//-/\\(.*\\)$" . ,marmalade/webserver)
+         ("^[^/]*//\\(register-comingsoon\\|terms\\|docs\\)/*$" . marmalade/special-docs)
+         ("^[^/]*//packages/new$" . marmalade/upload-page)
 
-     ("^[^/]*//packages/archive-contents$" . marmalade-archive-contents-handler)
-     ("^[^/]*//packages/archive-contents/\\([0-9]+\\)" . ,marmalade-archive-cache-webserver)
-     ("^[^/]*//packages/archive-contents/update$" . marmalade-archive-update)
+         ("^[^/]*//packages/archive-contents$" . marmalade-archive-contents-handler)
+         ("^[^/]*//packages/archive-contents/\\([0-9]+\\)" . ,marmalade-archive-cache-webserver)
+         ("^[^/]*//packages/archive-contents/update$" . marmalade-archive-update)
 
-     ;; We don't really want to send 404's for these if we have them
-     ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
-     ("^[^/]+//packages/\\(.*\\.\\(el\\|tar\\)\\)" . marmalade/package-handler)
-     ("^[^/]+//packages/\\([^/]+\\)" . marmalade/package-blurb)
-     ;; we have GET /packages/ and / be the same right now - probably not right
-     ("^[^/]+//packages/$" . marmalade/packages-index)
+         ;; We don't really want to send 404's for these if we have them
+         ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
+         ("^[^/]+//packages/\\(.*\\.\\(el\\|tar\\)\\)" . marmalade/package-handler)
+         ("^[^/]+//packages/\\([^/]+\\)" . marmalade/package-blurb)
+         ;; we have GET /packages/ and / be the same right now - probably not right
+         ("^[^/]+//packages/$" . marmalade/packages-index)
 
-     ("^[^/]+//$" . marmalade/packages-index))
-   :log-name "marmalade"
-   :auth-scheme 'marmalade-auth))
+         ("^[^/]+//$" . marmalade/packages-index))
+       :log-name "marmalade"
+       :auth-scheme 'marmalade-auth)
+    (error (message "marmalade: some router error occurred %S" err))))
 
 (provide 'marmalade-service)
 
