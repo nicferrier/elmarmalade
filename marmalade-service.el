@@ -381,13 +381,13 @@ is grabbed."
                       (condition-case err
                           (s-format 
                            (file-format-html
-                            "front-page.html" marmalade-dir
+                            "package-page.html" marmalade-dir
                             'aget
                             `(("package-name" . ,package-name)
                               ("version" . ,(format "%S" version))
-                              ("author"
-                               . ,(if (or (not author)(equal author ""))
-                                      "Unknown" author))
+                              ("author" . ,(if (or (not author)
+                                                   (equal author ""))
+                                               "Unknown" author))
                               ("package-download" . ,package-download)
                               ("description" . ,description)
                               ("about" . ,about-text)
