@@ -440,6 +440,7 @@ is grabbed."
   (elnode-method httpcon
     (GET
      (elnode-send-html
+      httpcon
       (file-format
        marmalade/page-file marmalade-dir 'aget
        `(("login-panel" . ,(marmalade/login httpcon))
