@@ -15,6 +15,7 @@
   "marmalade-boot.el"
   "marmalade-users.el"
   "file-format.el"
+  "nginx-cache-kill"
   "nginx.conf"
   "front-page.html"
   "register-comingsoon.html"

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Remove $1 from the nginx cache
+# $1 has to be a pattern
+# MUST be run under sudo
+
+grep -lr -E "$1" /var/cache/nginx-marmaladerepo/ | xargs -L1 sudo rm -f
+
+# End
+
