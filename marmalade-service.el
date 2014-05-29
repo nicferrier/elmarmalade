@@ -444,7 +444,8 @@ is grabbed."
       (file-format
        marmalade/page-file marmalade-dir 'aget
        `(("login-panel" . ,(marmalade/login httpcon))
-         ("latest-html" . ,(marmalade/latest-html))))))
+         ("latest-html" . ,(marmalade/latest-html))
+         ("header" . ,marmalade/page-header)))))
     ;; Or we need to upload
     (POST (marmalade/upload httpcon))))
 
