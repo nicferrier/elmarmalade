@@ -57,14 +57,15 @@ Default their PACKAGES to the list."
       (2
        (db-put username
                ;; How to work out the salt?
-               (let ((salt "n7/IDsBf7FkJDKvqiIG8k+WyM+SLGyf7LbJSHVGEUak=\n"))
+               (let ((salt (shell-command-to-string "openssl rand -base64 32")))
                  `(("digest" . ,(marmalade/user-hash password salt))
                    ("email" . ,email)
                    ("name"  . ,username)
                    ("salt"  . ,salt)
                    ("package-list" . ,packages)
-                   ;; What's the token?
-                   ("token" . "KQCJnaLT6YySdmM6kddB8HRJMB0aR6ZHNFogH7vuZL0=")))
+                   ("token" . ,(replace-regexp-in-string
+                                "\n$" ""
+                                (shell-command-to-string "openssl rand -base64 32")))))
                marmalade/users)))))
 
 (defun marmalade-add-packages (username &rest packages)
