@@ -279,6 +279,7 @@ TAKE specifies how many entries to return."
     (if take
         (-take take package-list)
         package-list)))
+
 (defun marmalade/top-version (package-dir)
   "Return the path to the newest version of a package in PACKAGE-DIR.
 
