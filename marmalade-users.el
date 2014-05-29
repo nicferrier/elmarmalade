@@ -28,12 +28,12 @@
 (require 'kv)
 (require 'base64)
 
-(defvar marmalade/users 
+(defvar marmalade/users
   (db-make `(db-hash
              :filename
-             ,(concat (file-name-as-directory
-                       (or marmalade-db-dir marmalade-dir))
-                      "/marmalade-user-db")))
+             ,(expand-file-name
+               "marmalade-user-db"
+               (or marmalade-db-dir marmalade-dir))))
   "The user database.")
 
 (defun marmalade/user-hash (password salt)
