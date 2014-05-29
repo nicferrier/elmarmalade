@@ -20,6 +20,7 @@
   "front-page.html"
   "register-comingsoon.html"
   "login-page.html"
+  "package-page.html"
   "upload-page.html"
   "static/style.css"
   "static/bootstrap/css/bootstrap.min.css"
