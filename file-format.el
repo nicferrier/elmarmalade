@@ -73,10 +73,11 @@ file."
                                  (cons :fsdevice 11))
   "The indices for `file-attributes' list items.")
 
-(defun file-format/template-get (name root)
-  "Return the template object for the file NAME under ROOT."
-  (let ((template (gethash name file-format/cache))
-        (file-details (file-attributes (expand-file-name name root))))
+(defun file-format/template-get (file-name root)
+  "Return the template object for the file FILE-NAME under ROOT."
+  (let* ((name (file-name-nondirectory file-name))
+         (template (gethash name file-format/cache))
+         (file-details (file-attributes (expand-file-name name root))))
     (unless file-details
       (signal 'file-error (format "file %s at %s not found" name root)))
     (let ((mtime (elt file-details (kva :mtime file-attributes))))
