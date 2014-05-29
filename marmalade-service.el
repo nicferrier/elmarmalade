@@ -399,7 +399,7 @@ is grabbed."
                          (setq status 500) ; set the response for later
                          (format
                           "<html><h3>marmalade error: %S</h3><pre>%S</pre></html>"
-                          (xml-escape-string (cdr err))
+                          (xml-escape-string (format "%S" err))
                           (xml-escape-string about-text))))))
                 (elnode-http-start httpcon status '(Content-type . "text/html"))
                 (elnode-http-return httpcon page))))))))
