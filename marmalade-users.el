@@ -65,7 +65,8 @@ Default their PACKAGES to the list."
                    ("package-list" . ,packages)
                    ("token" . ,(replace-regexp-in-string
                                 "\n$" ""
-                                (shell-command-to-string "openssl rand -base64 32")))))
+                                (shell-command-to-string
+                                 "openssl rand -base64 32")))))
                marmalade/users)))))
 
 (defun marmalade-add-packages (username &rest packages)
