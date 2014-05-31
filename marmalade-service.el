@@ -27,8 +27,8 @@
 (elnode-app marmalade-dir
   marmalade-customs marmalade-archive marmalade-users
   file-format ; should be a separate package
-  web htmlize db s 
-  dash kv rx lisp-mnt outline)
+  web htmlize db s
+  noflet dash kv rx lisp-mnt outline)
 
 (defconst marmalade/cookie-name "marmalade-user"
   "The name of the cookie we use for auth.")
@@ -221,12 +221,12 @@ If the target package already exists a `file-error' is produced."
 
 (defun marmalade/downloader (httpcon)
   "Download a specific package."
-  (flet ((elnode-http-mapping (httpcon which)
-           (let* ((package
-                   (elnode--http-mapping-implementation
-                    httpcon which))
-                  (file (marmalade/package-name->filename package)))
-             file)))
+  (noflet ((elnode-http-mapping (httpcon which)
+             (let* ((package
+                     (elnode--http-mapping-implementation
+                      httpcon which))
+                    (file (marmalade/package-name->filename package)))
+               file)))
     (elnode-docroot-for
         marmalade-package-store-dir
         with target-package
