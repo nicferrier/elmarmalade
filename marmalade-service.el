@@ -512,6 +512,9 @@ is grabbed."
          ;; we have GET /packages/ and / be the same right now - probably not right
          ("^[^/]+//packages/$" . marmalade/packages-index)
 
+         ;; The profile
+         ("^[^/]+//profile/\\([^/]+\\)/*" . marmalade-user-profile)
+
          ("^[^/]+//$" . marmalade/packages-index))
        :log-name "marmalade"
        :auth-scheme 'marmalade-auth)

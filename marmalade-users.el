@@ -27,6 +27,7 @@
 (require 'elnode)
 (require 'kv)
 (require 'base64)
+(require 'file-format)
 
 (defvar marmalade/users
   (db-make `(db-hash
@@ -114,6 +115,20 @@ Default their PACKAGES to the list."
 (defun marmalade-get-packages (username)
   "Return the list of packages editable by USERNAME."
   (kva "package-list" (db-get username marmalade/users)))
+
+
+(defun marmalade-user-profile (httpcon)
+  "Elnode handler for users.
+
+`elnode-http-mapping' 1 should be the username."
+  (let ((username (elnode-http-mapping httpcon 1)))
+    (elnode-http-start httpcon status '(Content-type . "text/html"))
+    (elnode-http-return
+     httpcon 
+     (file-format-html
+      "profile-page.html" marmalade-dir
+      'aget `(("username" . ,username)
+              ("package-list" . ,(marmalade-get-packages username)))))))
 
 (provide 'marmalade-users)
 
