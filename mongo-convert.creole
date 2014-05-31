@@ -1,0 +1,85 @@
+= How I converted the mongodb =
+
+=== Packages ===
+
+
+
+=== Users ===
+
+The users in the mongo db were a separate collection. The record
+included a packages array but it seemed unreliable. More reliable was
+the owners details attached to each of the packages.
+
+This is how to dump the users:
+
+{{{
+cat > users-mongo.js <<EOF ; ( mongo --quiet localhost:27017/marmalade users-mongo.js | jq 'map({ (.name): .})' )
+curs = db.users.find({},{ _id: 0, name: 1, email: 1, digest: 1, salt: 1, token: 1 });
+printjson(curs.toArray());
+EOF
+}}}
+
+This strips out the _id and makes sure the json is readable by Emacs.
+
+
+Here's some elisp to import that:
+
+{{{
+(defun elmarmalade-fill-user-db-with-json (db json-file)
+  (let ((json (with-temp-buffer
+                (insert-file-contents json-file)
+                (goto-char (point-min))
+                (let ((json-key-type 'string)) (json-read)))))
+    (mapc
+     (lambda (v)
+       (let ((it (car v)))
+         (db-put (car it) (cdr it) db)))
+     json)))
+
+(let ((db (db-make `(db-hash :filename "/tmp/nicmarmalade/userdb"))))
+  (elmarmalade-fill-user-db-with-json db "dbdump.json"))
+}}}
+
+
+I test it first with this:
+
+{{{
+(let (do-nic)
+  (unwind-protect
+       (let ((mydb (db-make `(db-hash :filename "/tmp/mydb"))))
+         (elmarmalade-fill-user-db-with-json mydb "dbdump.json")
+         ;; list the keys
+         (db-map (lambda (key record) key) mydb))
+    (delete-file "/tmp/mydb.elc")))
+}}}
+
+
+Here's the code to get the list of packages and their owners:
+
+{{{
+mongo --quiet localhost:27017/marmalade --eval='printjson(db.packages.find({},{ _id: 0, name: 1, owners: 1 }).toArray());' | jq 'map({(.name): .owners | keys })'
+}}}
+
+Here's some elisp to read this and update the (existing) database:
+
+{{{
+(let ((packages 
+       (with-transient-file "packages-owners.json"
+         (let ((json-key-type 'string)) (json-read)))))
+  (--each
+      (->> (mapcar 'identity packages)
+        (--keep (car it))
+        (--keep (-map (lambda (p) (cons p (car it))) (cdr it)))
+        (-flatten))
+    (let ((username (car it))
+          (package (cdr it)))
+      ;; update add-packages to handle a blank packages entry
+      (condition-case err
+          (apply 'marmalade-add-packages (list username package))
+        (error
+         (message "something bad happened for %s with %s" username package))))))
+}}}
+
+So we're moving to an Emacs db where the user record stores
+everything. There is no package record, the package is just the files
+on the disc and a name which is recorded in the user db.
