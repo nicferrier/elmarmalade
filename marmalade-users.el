@@ -96,7 +96,7 @@ Default their PACKAGES to the list."
       ((not (cdr rec-packages))
        (setcdr rec-packages packages))
       (t
-       (push packages rec-packages)))
+       (setcdr (cdr rec-packages) packages)))
     (db-hash/save marmalade/users)
     record))
 
@@ -115,7 +115,6 @@ Default their PACKAGES to the list."
 (defun marmalade-get-packages (username)
   "Return the list of packages editable by USERNAME."
   (kva "package-list" (db-get username marmalade/users)))
-
 
 (defun marmalade-user-profile (httpcon)
   "Elnode handler for users.

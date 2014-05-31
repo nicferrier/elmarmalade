@@ -598,6 +598,16 @@ test."
       ;; Check the packages got added
       (should (equal (marmalade-get-packages "nictest") '("elnode" "elpakit")))
       ;; Check that the other keys are still there
+      (should (equal (kva "email" (db-get "nictest" marmalade/users)) "nictest@test"))))
+  (marmalade/test-hash-db marmalade/users "/tmp/marmalade-users-test"
+    (let ((marmalade/add-user-version '2-test))
+      (marmalade-add-user "nictest" "secret" "nictest@test")
+      (should (equal (marmalade-get-packages "nictest") nil))
+      (marmalade-add-packages "nictest" "elnode")
+      (marmalade-add-packages "nictest" "elpakit")
+      ;; Check the packages got added
+      (should (equal (marmalade-get-packages "nictest") '("elnode" "elpakit")))
+      ;; Check that the other keys are still there
       (should (equal (kva "email" (db-get "nictest" marmalade/users)) "nictest@test")))))
 
 (ert-deftest marmalade-auth ()
