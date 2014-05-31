@@ -42,40 +42,60 @@
 This is stored in the user record as \"digest\"."
   (base64-encode-string (sha1 (concat password salt) nil nil t)))
 
+
+(defconst marmalade/add-user-version 2
+  "Version variable controlling marmalade user db format.")
+
 (defun marmalade-add-user (username password email &rest packages)
   "Add USERNAME to the database.
 
 Default their PACKAGES to the list."
-  (let ((version 2))
-    (case version
-      (1
-       (db-put username 
-               `(("username" . ,username)
-                 ("token" . ,(elnode-auth-make-hash username password))
-                 ("package-list" . ,packages))
-               marmalade/users))
-      (2
-       (db-put username
-               ;; How to work out the salt?
-               (let ((salt (shell-command-to-string "openssl rand -base64 32")))
-                 `(("digest" . ,(marmalade/user-hash password salt))
-                   ("email" . ,email)
-                   ("name"  . ,username)
-                   ("salt"  . ,salt)
-                   ("package-list" . ,packages)
-                   ("token" . ,(replace-regexp-in-string
-                                "\n$" ""
-                                (shell-command-to-string
-                                 "openssl rand -base64 32")))))
-               marmalade/users)))))
+  (case marmalade/add-user-version
+    (1
+     (db-put username 
+             `(("username" . ,username)
+               ("token" . ,(elnode-auth-make-hash username password))
+               ("package-list" . ,packages))
+             marmalade/users))
+    (2-test ; same as 2 but no package list
+     (db-put username
+             ;; How to work out the salt?
+             (let ((salt (shell-command-to-string "openssl rand -base64 32"))
+                   (token (replace-regexp-in-string
+                           "\n$" ""
+                           (shell-command-to-string "openssl rand -base64 32"))))
+               `(("digest" . ,(marmalade/user-hash password salt))
+                 ("email" . ,email)
+                 ("name"  . ,username)
+                 ("salt"  . ,salt)
+                 ("token" . ,token)))
+             marmalade/users))
+    (2
+     (db-put username
+             ;; How to work out the salt?
+             (let ((salt (shell-command-to-string "openssl rand -base64 32"))
+                   (token (replace-regexp-in-string
+                           "\n$" ""
+                           (shell-command-to-string "openssl rand -base64 32"))))
+               `(("digest" . ,(marmalade/user-hash password salt))
+                 ("email" . ,email)
+                 ("name"  . ,username)
+                 ("salt"  . ,salt)
+                 ("package-list" . ,packages)
+                 ("token" . ,token)))
+             marmalade/users))))
 
 (defun marmalade-add-packages (username &rest packages)
   "Add PACKAGES to USERNAME in the user database."
   (let* ((record (db-get username marmalade/users))
          (rec-packages (assoc "package-list" record)))
-    (if (not (cdr rec-packages))
-        (setcdr rec-packages packages)
-        (push packages rec-packages))
+    (cond
+      ((not rec-packages)
+       (setcdr (last record) (list (cons "package-list" packages))))
+      ((not (cdr rec-packages))
+       (setcdr rec-packages packages))
+      (t
+       (push packages rec-packages)))
     (db-hash/save marmalade/users)
     record))
 

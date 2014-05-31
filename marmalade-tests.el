@@ -577,7 +577,7 @@ test."
   "Test that we can add packages to a user."
   (marmalade/test-hash-db marmalade/users "/tmp/marmalade-users-test"
     (marmalade-add-user "nic" "secret" "nic@test")
-    (db-get "nic" marmalade/users)
+    ;; (db-get "nic" marmalade/users)
     (marmalade-add-packages "nic" "elnode")
     (should
      (equal (marmalade-get-packages "nic") '("elnode")))
@@ -590,6 +590,16 @@ test."
     (should
      (equal (marmalade-get-packages "testuser")
             '("marmalade")))))
+
+(ert-deftest marmalade-user-packages-for-blanks ()
+  "Test whether we can add packages to users with no package slot."
+  (marmalade/test-hash-db marmalade/users "/tmp/marmalade-users-test"
+    (let ((marmalade/add-user-version '2-test))
+      (marmalade-add-user "nictest" "secret" "nictest@test")
+      (should (equal (marmalade-get-packages "nictest") nil)) ; need a should
+      (marmalade-add-packages "nictest" "elnode" "elpakit")
+      (should (equal (marmalade-get-packages "nictest") '("elnode" "elpakit")))
+      (should (equal (kva "email" (db-get "nictest" marmalade/users)) "nictest@test")))))
 
 (ert-deftest marmalade-auth ()
   "Check marmalade authentication works."
