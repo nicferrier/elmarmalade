@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Report the keys from the marmalade cache
+
+find /var/cache/nginx-marmaladerepo/ -type f \
+     | while read filename ; do grep -aE "^KEY" $filename ; done
+
+# End
