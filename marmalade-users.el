@@ -96,7 +96,7 @@ Default their PACKAGES to the list."
       ((not (cdr rec-packages))
        (setcdr rec-packages packages))
       (t
-       (setcdr (cdr rec-packages) packages)))
+       (setcdr rec-packages (-uniq (append (cdr rec-packages) packages)))))
     (db-hash/save marmalade/users)
     record))
 
