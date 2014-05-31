@@ -583,22 +583,21 @@ test."
      (equal (marmalade-get-packages "nic") '("elnode")))
     (marmalade-add-user "testuser" "secret" "nic@test")
     (marmalade-add-packages "testuser" "elnode" "marmalade")
-    (should
-     (equal (marmalade-get-packages "testuser") '("elnode" "marmalade")))
+    (should (equal (marmalade-get-packages "testuser") '("elnode" "marmalade")))
     (db-get "testuser" marmalade/users)
     (marmalade-rm-packages "testuser" "elnode")
-    (should
-     (equal (marmalade-get-packages "testuser")
-            '("marmalade")))))
+    (should (equal (marmalade-get-packages "testuser") '("marmalade")))))
 
 (ert-deftest marmalade-user-packages-for-blanks ()
   "Test whether we can add packages to users with no package slot."
   (marmalade/test-hash-db marmalade/users "/tmp/marmalade-users-test"
     (let ((marmalade/add-user-version '2-test))
       (marmalade-add-user "nictest" "secret" "nictest@test")
-      (should (equal (marmalade-get-packages "nictest") nil)) ; need a should
+      (should (equal (marmalade-get-packages "nictest") nil))
       (marmalade-add-packages "nictest" "elnode" "elpakit")
+      ;; Check the packages got added
       (should (equal (marmalade-get-packages "nictest") '("elnode" "elpakit")))
+      ;; Check that the other keys are still there
       (should (equal (kva "email" (db-get "nictest" marmalade/users)) "nictest@test")))))
 
 (ert-deftest marmalade-auth ()
