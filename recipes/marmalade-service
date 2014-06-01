@@ -17,6 +17,7 @@
   "file-format.el"
   "nginx-cache-kill"
   "nginx.conf"
+  "cron-db-backup"
   "front-page.html"
   "register-comingsoon.html"
   "login-page.html"

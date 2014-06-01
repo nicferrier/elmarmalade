@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Backup the user database and then trim the backups 
+# ... so we don't have too many
+
+BACKUPDIR=/home/nferrier/marmalade-backups
+DATE=$(date '+%Y%m%d%H%M')
+cp /home/nferrier/marmalade/db/marmalade-user-db.elc \
+    ${BACKUPDIR}/user-db-${DATE}
+
+find ${BACKUPDIR} -ctime +100 -exec rm \{} \;
+
+# End
