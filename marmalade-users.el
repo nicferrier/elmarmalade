@@ -121,13 +121,13 @@ Default their PACKAGES to the list."
 
 `elnode-http-mapping' 1 should be the username."
   (let ((username (elnode-http-mapping httpcon 1)))
-    (elnode-http-start httpcon status '(Content-type . "text/html"))
+    (elnode-http-start httpcon 200 '(Content-type . "text/html"))
     (elnode-http-return
      httpcon 
      (file-format-html
       "profile-page.html" marmalade-dir
       'aget `(("username" . ,username)
-              ("package-list" . ,(marmalade-get-packages username)))))))
+              ("package-list" . ,(s-join " " (marmalade-get-packages username))))))))
 
 (provide 'marmalade-users)
 

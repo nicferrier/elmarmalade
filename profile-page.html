@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="/-/bootstrap/css/bootstrap.css" type="text/css"></link>
+<link rel="stylesheet" href="/-/style.css" type="text/css"></link>
+<title>marmalade-repo - for all your EmacsLisp needs</title>
+</head>
+<body>
+<div class="navbar">
+    <div class="navbar-inner">
+        <ul class="nav pull-right">
+            <li class="active"><a href="/">marmalade-repo</a></li>
+            <li><a href="#">login</a></li>
+            <li><a href="#">register</a></li>
+        </ul>
+    </div>
+</div>
+<div id="blurb">
+<div class="container">
+<div class="row">
+    <h1>${username} @ marmalade-repo</h1>
+    <p>${username} has provided the following packages to Emacs on marmalade:</p>
+
+    <pre>
+        ${package-list}
+    </pre>
+</div>
+</div>
+</div>
+<footer>
+    <div>
+         <ul class="inline">
+             <li><a href="/terms">terms</a></li>
+             <li><a href="/docs">docs</a></li>
+             <li><a href="https://github.com/nicferrier/elmarmalade/issues">issues</a></li>
+             <li>(C) Nic Ferrier 2013</li>
+         </ul>
+     </div>
+</footer>
+</body>
+</html>
