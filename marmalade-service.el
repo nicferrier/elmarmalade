@@ -250,7 +250,6 @@ If the target package already exists a `file-error' is produced."
                    (package-url (concat "/packages/" package-name))
                    (username (elnode-auth-username httpcon))
                    (user-packages (marmalade-get-packages username)))
-              (message "user-packages %s" user-packages)
               (if (not (member package-name user-packages))
                   (elnode-send-400
                    httpcon
