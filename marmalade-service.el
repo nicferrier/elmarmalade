@@ -439,6 +439,23 @@ is grabbed."
      'aget
      `(("username" . ,username)))))
 
+(defun marmalade-user-profile (httpcon)
+  "Elnode handler for users.
+
+`elnode-http-mapping' 1 should be the username."
+  (let ((username (elnode-http-mapping httpcon 1)))
+    (elnode-http-start httpcon 200 '(Content-type . "text/html"))
+    (elnode-http-return
+     httpcon
+     (s-format
+      (file-format-html
+       "profile-page.html" marmalade-dir
+       'aget `(("username" . ,username)
+               ("header" . "${header}")
+               ("package-list"
+                . ,(s-join " " (marmalade-get-packages username)))))
+      'aget `(("header" . ,(marmalade/page-header httpcon)))))))
+
 (defconst marmalade/page-file
   (expand-file-name "front-page.html" marmalade-dir))
 
