@@ -28,6 +28,7 @@
 (require 'kv)
 (require 'base64)
 (require 'file-format)
+(require 'marmalade-vars)
 
 (defvar marmalade/users
   (db-make `(db-hash
@@ -123,11 +124,15 @@ Default their PACKAGES to the list."
   (let ((username (elnode-http-mapping httpcon 1)))
     (elnode-http-start httpcon 200 '(Content-type . "text/html"))
     (elnode-http-return
-     httpcon 
-     (file-format-html
-      "profile-page.html" marmalade-dir
-      'aget `(("username" . ,username)
-              ("package-list" . ,(s-join " " (marmalade-get-packages username))))))))
+     httpcon
+     (s-format
+      (file-format-html
+       "profile-page.html" marmalade-dir
+       'aget `(("username" . ,username)
+               ("header" . "${header}")
+               ("package-list"
+                . ,(s-join " " (marmalade-get-packages username)))))
+      'aget `(("header" . ,(marmalade/page-header httpcon)))))))
 
 (provide 'marmalade-users)
 
