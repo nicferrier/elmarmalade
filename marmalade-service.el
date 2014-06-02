@@ -219,7 +219,7 @@ If the target package already exists a `file-error' is produced."
   "Take the package and save the package to the package store."
   ;; Try to move the file to the target path
   (when (file-exists-p package-path)
-    (signal 'file-error (list package-path "existing package")))
+    (signal 'file-error (list (file-name-base package-path) "existing package")))
   ;; Really creates a directory for now. Not ideal.
   (make-directory (file-name-directory package-path) t)
   (rename-file temp-package package-path)
@@ -270,7 +270,7 @@ If the target package already exists a `file-error' is produced."
            (case (marmalade/err->sym err)
              (:existing-package
               (elnode-send-400
-               httpcon (concat base-file-name " already exists"))))))))))
+               httpcon (concat (cadr err) " already exists"))))))))))
 
 (defun marmalade/downloader (httpcon)
   "Download a specific package."
