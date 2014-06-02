@@ -421,14 +421,6 @@ is grabbed."
                 (elnode-http-start httpcon status '(Content-type . "text/html"))
                 (elnode-http-return httpcon page))))))))
 
-(defconst marmalade/package-item
-  "<li><a href=\"/packages/${name}\">${name}</a></li>"
-  "Template for package items.")
-
-(defconst marmalade/login-panel
-  "<div id=\"login-panel\">logged in: <span id=\"username\">${username}</span></div>"
-  "Login panel template.")
-
 (defun marmalade/login (httpcon)
   (let* ((auth-cookie-cons
           (elnode-auth-get-cookie-value
