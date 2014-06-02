@@ -9,7 +9,8 @@
   (elnode "0.9.9.7.7")
   (htmlize "1.3.9"))
  :files
- ("marmalade-customs.el"
+ ("marmalade-vars.el"
+  "marmalade-customs.el"
   "marmalade-service.el"
   "marmalade-archive.el"
   "marmalade-boot.el"
