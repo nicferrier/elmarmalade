@@ -37,8 +37,8 @@
             <div class=\"navbar-inner\">
                 <ul class=\"nav pull-right\">
                     <li class=\"active\"><a href=\"/\">marmalade-repo</a></li>
-                    <li><a href=\"#\">login</a></li>
-                    <li><a href=\"#\">register</a></li>
+                    <li><a href=\"/login/\">login</a></li>
+                    <li><a href=\"/register/\">register</a></li>
                 </ul>
             </div>
         </div>
@@ -48,7 +48,61 @@
                      src=\"https://s3.amazonaws.com/github/ribbons/forkme_left_orange_ff7600.png\" 
                      alt=\"Fork me on GitHub\"></img>
             </a>
-        </div>")
+        </div>"
+  "The page header for logged out users.")
+
+(defconst marmalade/page-header-loggedin "<div class=\"navbar\">
+            <div class=\"navbar-inner\">
+                <ul class=\"nav pull-right\">
+                    <li class=\"active\"><a href=\"/\">marmalade-repo</a></li>
+                    <li><a href=\"/profile/${username}/\">${username}</a></li>
+                    <li><a href=\"/register/\">register</a></li>
+                </ul>
+            </div>
+        </div>
+        <div id=\"github\">
+            <a href=\"https://github.com/nicferrier/elmarmalade\">
+                <img style=\"position: absolute; top: 0; left: 0; border: 0;\" 
+                     src=\"https://s3.amazonaws.com/github/ribbons/forkme_left_orange_ff7600.png\" 
+                     alt=\"Fork me on GitHub\"></img>
+            </a>
+        </div>"
+  "The page header for logged-in users.")
+
+
+(defun marmalade/login-sender (httpcon _target _redirect)
+  "Send the login page."
+  (let ((page-file (expand-file-name "login-page.html" marmalade-dir)))
+    (elnode-send-file httpcon page-file)))
+
+(defun marmalade/auth-test (username)
+  "Test function for marmalade user database."
+  (kva "digest" (db-get username marmalade/users)))
+
+(defun marmalade/auth-make-hash (username password)
+  "Hash creation function uses the salt from the user database."
+  (let* ((record (db-get username marmalade/users))
+         (salt (kva "salt" record)))
+    (marmalade/user-hash password salt)))
+
+;; The authentication scheme.
+(elnode-defauth 'marmalade-auth
+  :cookie-name marmalade/cookie-name
+  :auth-test 'marmalade/auth-test
+  :make-hash 'marmalade/auth-make-hash
+  :auth-db marmalade/users
+  :sender 'marmalade/login-sender)
+
+
+(defun marmalade/page-header (httpcon)
+  "Deliver the appropriate page header.
+
+The page header differs whether you are logged in or not."
+  (if-elnode-auth httpcon 'marmalade-auth
+    (s-format marmalade/page-header-loggedin
+              'aget (list (cons "username" (elnode-auth-username httpcon))))
+    ;; Else send the plain thing
+    marmalade/page-header))
 
 (defun marmalade/explode-package-string (package-name)
   (string-match
@@ -395,7 +449,7 @@ is grabbed."
                               ;; Replace safely later
                               ("header" . "${header}")))
                            ;; This is safe to use HTML because it's controlled by us
-                           'aget `(("header" . ,marmalade/page-header)))
+                           'aget `(("header" . ,(marmalade/page-header httpcon))))
                         (error
                          (setq status 500) ; set the response for later
                          (format
@@ -437,7 +491,7 @@ is grabbed."
      latest "\n")))
 
 (defun marmalade/packages-index (httpcon)
-  "Upload a package of show a package index in HTML."
+  "Upload a package or show a package index in HTML."
   (elnode-method httpcon
     (GET
      (elnode-send-html
@@ -446,7 +500,7 @@ is grabbed."
        marmalade/page-file marmalade-dir 'aget
        `(("login-panel" . ,(marmalade/login httpcon))
          ("latest-html" . ,(marmalade/latest-html))
-         ("header" . ,marmalade/page-header)))))
+         ("header" . ,(marmalade/page-header httpcon))))))
     ;; Or we need to upload
     (POST (marmalade/upload httpcon))))
 
@@ -456,29 +510,6 @@ is grabbed."
     (elnode-send-file
      httpcon
      (expand-file-name "upload-page.html" marmalade-dir))))
-
-(defun marmalade/login-sender (httpcon _target _redirect)
-  "Send the login page."
-  (let ((page-file (expand-file-name "login-page.html" marmalade-dir)))
-    (elnode-send-file httpcon page-file)))
-
-(defun marmalade/auth-test (username)
-  "Test function for marmalade user database."
-  (kva "digest" (db-get username marmalade/users)))
-
-(defun marmalade/auth-make-hash (username password)
-  "Hash creation function uses the salt from the user database."
-  (let* ((record (db-get username marmalade/users))
-         (salt (kva "salt" record)))
-    (marmalade/user-hash password salt)))
-
-;; The authentication scheme.
-(elnode-defauth 'marmalade-auth
-  :cookie-name marmalade/cookie-name
-  :auth-test 'marmalade/auth-test
-  :make-hash 'marmalade/auth-make-hash
-  :auth-db marmalade/users
-  :sender 'marmalade/login-sender)
 
 (defconst marmalade/webserver
   (elnode-webserver-handler-maker
