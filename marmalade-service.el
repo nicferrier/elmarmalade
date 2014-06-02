@@ -518,9 +518,12 @@ is grabbed."
 (defun marmalade/special-docs (httpcon)
   "Send the login page."
   (let ((matched (elnode-http-mapping httpcon 1)))
-    (elnode-send-file
+    (elnode-send-html
      httpcon
-     (expand-file-name (concat matched ".html") marmalade-dir))))
+     (file-format
+      (concat matched ".html") marmalade-dir
+      'aget
+      `(("latest-html" . ,(marmalade/latest-html)))))))
 
 (defun marmalade-router (httpcon)
   "The top level router for marmalade-repo."
