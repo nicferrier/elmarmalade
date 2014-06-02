@@ -38,7 +38,7 @@
                 <ul class=\"nav pull-right\">
                     <li class=\"active\"><a href=\"/\">marmalade-repo</a></li>
                     <li><a href=\"/login/\">login</a></li>
-                    <li><a href=\"/register/\">register</a></li>
+                    <li><a href=\"/register-comingsoon/\">register</a></li>
                 </ul>
             </div>
         </div>
@@ -56,7 +56,6 @@
                 <ul class=\"nav pull-right\">
                     <li class=\"active\"><a href=\"/\">marmalade-repo</a></li>
                     <li><a href=\"/profile/${username}/\">${username}</a></li>
-                    <li><a href=\"/register/\">register</a></li>
                 </ul>
             </div>
         </div>
