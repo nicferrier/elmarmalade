@@ -258,7 +258,7 @@ The `marmalade-archive-dir' is forced to exist by this function."
   (let ((dir (file-name-as-directory marmalade-archive-dir)))
     (make-directory dir t)
     (marmalade/archive-hash->package-file
-     (concat dir (format-time-string "%Y%m%d%H%M%S%N" (current-time)))
+     (expand-file-name (format-time-string "%Y%m%d%H%M%S%N" (current-time)) dir)
      hash)))
 
 (defun marmalade-archive-make-cache ()
