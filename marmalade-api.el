@@ -72,17 +72,20 @@ and password to be authenticated."
                         ;; don't have the username here
                         (user-packages (marmalade-get-packages username)))
                    (if (not (member package-name user-packages))
-                       (elnode-send-400
-                        httpcon
-                        (format "you aren't authorized to update %s" package-name))
+                       (let ((error-packet
+                              `(("message"
+                                 . (format "you aren't authorized to update %s"
+                                           package-name)))))
+                         (elnode-send-400 httpcon error-packet))
                        ;; Else save the package in the store...
                        (marmalade/install-package :info info
                                                   :package-path package-path
                                                   :temp-package temp-package)
                        ;; ... send the content of the package as json
-                       (elnode-send-json httpcon
-                                         (append (list (cons "message" "done"))
-                                                 (mapcar 'identity  info)))
+                       (let ((json-to-send
+                              (append (list (cons "message" "done"))
+                                      (list (cons "package" package-name)))))
+                         (elnode-send-json httpcon json-to-send))
                        ;; ... and send the request to update the cache
                        (elnode-proxy-post
                         httpcon "/packages/archive-contents/update"
