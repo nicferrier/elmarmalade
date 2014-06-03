@@ -71,7 +71,9 @@ and password to be authenticated."
                         (package-url (concat "/packages/" package-name))
                         ;; don't have the username here
                         (user-packages (marmalade-get-packages username)))
-                   (if (not (member package-name user-packages))
+                   (if (and
+                        (file-exists-p (expand-file-name "../.." package-path))
+                        (not (member package-name user-packages)))
                        (let ((error-packet
                               `(("message"
                                  . (format "you aren't authorized to update %s"
