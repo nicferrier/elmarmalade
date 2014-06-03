@@ -156,15 +156,11 @@ the package repository."
 
 
 (defun marmalade/save-package (package-data package-file-name)
-  "Save PACKAGE-DATA as PACKAGE-FILE-NAME in the package store.
+  "Save PACKAGE-DATA as PACKAGE-FILE-NAME in a temporary store.
 
 PACKAGE-FILE-NAME is used as the basis of a temporary file name
 and then the package info is computed and the target package path
-name is computed.
-
-The file is moved from the temp name to the target name.
-
-If the target package already exists a `file-error' is produced."
+name is computed."
   ;; TODO: if we collect the temp files into a single upload directory
   ;; we could treat that as a sort of queue... anything not moved
   ;; could just be replayed through the package-info stuff because
@@ -181,7 +177,9 @@ If the target package already exists a `file-error' is produced."
      (list :temp-package temp-package-file))))
 
 (defun* marmalade/install-package (&key info package-path temp-package)
-  "Take the package and save the package to the package store."
+  "Take the package and save the package to the package store.
+
+If the package already exists then `file-error' is signalled."
   ;; Try to move the file to the target path
   (when (file-exists-p package-path)
     (signal 'file-error (list (file-name-base package-path) "existing package")))
