@@ -213,14 +213,18 @@ If the package already exists then `file-error' is signalled."
                    (package-url (concat "/packages/" package-name))
                    (username (elnode-auth-username httpcon))
                    (user-packages (marmalade-get-packages username)))
-              (if (not (member package-name user-packages))
+              ;; If the base name dir doesn't exist the package hasn't been uploaded yet
+              (if (and
+                   (file-exists-p (expand-file-name "../.." package-path))
+                   (not (member package-name user-packages)))
                   (elnode-send-400
                    httpcon
                    (format "you aren't authorized to update %s" package-name))
                   ;; Else save the package in the store...
-                  (marmalade/install-package :info info
-                                             :package-path package-path
-                                             :temp-package temp-package)
+                  (marmalade/install-package
+                   :info info
+                   :package-path package-path
+                   :temp-package temp-package)
                   ;; ... send the redirect ...
                   (elnode-send-redirect httpcon package-url 302)
                   ;; ... and send the request to update the cache
