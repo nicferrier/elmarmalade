@@ -80,9 +80,11 @@ and password to be authenticated."
                                            package-name)))))
                          (elnode-send-400 httpcon error-packet))
                        ;; Else save the package in the store...
-                       (marmalade/install-package :info info
-                                                  :package-path package-path
-                                                  :temp-package temp-package)
+                       (marmalade/install-package
+                        :info info
+                        :package-path package-path
+                        :temp-package temp-package
+                        :username username)
                        ;; ... send the content of the package as json
                        (let ((json-to-send
                               (append (list (cons "message" "done"))

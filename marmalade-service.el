@@ -176,7 +176,7 @@ name is computed."
      (marmalade/package-path temp-package-file)
      (list :temp-package temp-package-file))))
 
-(defun* marmalade/install-package (&key info package-path temp-package)
+(defun* marmalade/install-package (&key info package-path temp-package username)
   "Take the package and save the package to the package store.
 
 If the package already exists then `file-error' is signalled."
@@ -186,6 +186,8 @@ If the package already exists then `file-error' is signalled."
   ;; Really creates a directory for now. Not ideal.
   (make-directory (file-name-directory package-path) t)
   (rename-file temp-package package-path)
+  ;; Update the user database
+  (marmalade-add-packages username (elt info 0))
   ;; Return the package-info
   info)
 
@@ -224,7 +226,8 @@ If the package already exists then `file-error' is signalled."
                   (marmalade/install-package
                    :info info
                    :package-path package-path
-                   :temp-package temp-package)
+                   :temp-package temp-package
+                   :username username)
                   ;; ... send the redirect ...
                   (elnode-send-redirect httpcon package-url 302)
                   ;; ... and send the request to update the cache
