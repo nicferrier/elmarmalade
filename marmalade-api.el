@@ -99,4 +99,6 @@ and password to be authenticated."
                    (elnode-send-400
                     httpcon (concat (cadr err) " already exists"))))))))))))
 
+(provide 'marmalade-api)
+
 ;;; marmalade-api.el ends here
