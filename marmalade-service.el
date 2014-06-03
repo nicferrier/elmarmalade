@@ -104,6 +104,7 @@ the package repository."
     ((string-match-p "\\.tar$" package-file)
      (if (version< emacs-version "24.3.90")
          (package-tar-file-info package-file)
+         ;; Else requires a different API
          (let (tar-buf)
            (with-temp-buffer
              (insert-file-contents-literally package-file)
