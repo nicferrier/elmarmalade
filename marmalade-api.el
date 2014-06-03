@@ -2,7 +2,7 @@
 
 (require 'elnode)
 (require 'db)
-(require 'marmalade-user)
+(require 'marmalade-users)
 
 (defun marmalade-api/user-login (httpcon)
   "Return the user's authentication token.
