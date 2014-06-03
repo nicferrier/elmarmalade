@@ -25,8 +25,9 @@
 ;;; Code:
 
 (elnode-app marmalade-dir
-  marmalade-vars marmalade-customs marmalade-archive marmalade-users
-  file-format ; should be a separate package
+  marmalade-vars marmalade-customs
+  marmalade-archive marmalade-users marmalade-api
+  file-format ; should be a separate package but is in marmalade for now
   web htmlize db s
   noflet dash kv rx lisp-mnt outline)
 
@@ -515,6 +516,10 @@ is grabbed."
          ("^[^/]+//packages/\\([^/]+\\)" . marmalade/package-blurb)
          ;; we have GET /packages/ and / be the same right now - probably not right
          ("^[^/]+//packages/$" . marmalade/packages-index)
+
+
+         ("^[^/]+//v1/packages$" .  marmalade-api/upload)
+         ("^[^/]+//v1/users/login/*$" .  marmalade-api/user-login)
 
          ;; The profile
          ("^[^/]+//profile/\\([^/]+\\)/*" . marmalade-user-profile)
