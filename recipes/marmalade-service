@@ -13,6 +13,7 @@
   "marmalade-customs.el"
   "marmalade-service.el"
   "marmalade-archive.el"
+  "marmalade-api.el"
   "marmalade-boot.el"
   "marmalade-users.el"
   "file-format.el"
