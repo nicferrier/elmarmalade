@@ -33,6 +33,10 @@ footer div {
      margin: 0 auto -90px;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2em;
+}
+
 h1 {
     color: SandyBrown !important;
     text-shadow: -2px 0 #895221, 0 2px #895221,2px 0 #895221, 0 -2px #895221;
