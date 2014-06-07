@@ -161,13 +161,9 @@ the package repository."
 PACKAGE-FILE-NAME is used as the basis of a temporary file name
 and then the package info is computed and the target package path
 name is computed."
-  ;; TODO: if we collect the temp files into a single upload directory
-  ;; we could treat that as a sort of queue... anything not moved
-  ;; could just be replayed through the package-info stuff because
-  ;; temp file names don't matter, except the extension, which we
-  ;; record.
   (let* ((temp-package-file
-          (marmalade/temp-file package-file-name)))
+          (marmalade/temp-file package-file-name))
+         (coding-system-for-write 'raw-text))
     ;; First save the uploaded data to a temp package file
     (with-temp-file temp-package-file
       (insert (substring-no-properties package-data)))
