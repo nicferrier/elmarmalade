@@ -309,7 +309,7 @@ The full path including the package root is returned."
   (let* ((pkg-dir (file-name-as-directory package-dir))
          (versions
               (directory-files pkg-dir nil "[^.].*"))
-         (top-version (car (reverse versions))))
+         (top-version (car (reverse (-sort 'version< versions)))))
     (car
      (directory-files
       (concat pkg-dir top-version) t "[^.].*"))))
