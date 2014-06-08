@@ -19,6 +19,8 @@
   "file-format.el"
   "nginx-cache-kill"
   "nginx.conf"
+  "nginx-proxy-port-map-b.conf"
+  "nginx-proxy-port-map-g.conf"
   "crontab-db-backup"
   "front-page.html"
   "register-comingsoon.html"
