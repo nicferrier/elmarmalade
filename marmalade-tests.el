@@ -630,6 +630,23 @@ test."
            nil)
        (elnode-auth-credentials t)))))
 
+(ert-deftest marmalade-api/upload ()
+  "Tests the basics of the API."
+  ;; Test that the API returns error values correctly
+  (should
+   (equal
+    (catch :json
+      (with-elnode-mock-httpcon :httpcon
+          (:elnode-method "POST"
+                          :elnode-http-resource "/"
+                          :elnode-http-version "1.1"
+                          :elnode-parsed-time (current-time))
+        (noflet ((elnode-http-return (httpcon data)
+                   (throw :json data)))
+          (marmalade-api/upload :httpcon))))
+    (json-encode '((message . "only POST supported"))))))
+
+
 (provide 'marmalade-tests)
 
 ;;; marmalade-tests.el ends here
