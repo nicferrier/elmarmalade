@@ -73,6 +73,12 @@ file."
                                  (cons :fsdevice 11))
   "The indices for `file-attributes' list items.")
 
+(defun file-attr (filename symbolic-name)
+  "Get the SYMBOLIC-NAME attribute from FILENAME, eg: `:mtime'."
+  ;; We could do with caching this stuff
+  (elt (file-attributes (expand-file-name filename))
+       (kva symbolic-name file-attributes)))
+
 (defun file-format/template-get (file-name root)
   "Return the template object for the file FILE-NAME under ROOT."
   (let* ((name (file-name-nondirectory file-name))
@@ -80,7 +86,7 @@ file."
          (file-details (file-attributes (expand-file-name name root))))
     (unless file-details
       (signal 'file-error (format "file %s at %s not found" name root)))
-    (let ((mtime (elt file-details (kva :mtime file-attributes))))
+    (let ((mtime (file-attr file-name :mtime)))
       (when (or (not template)
                 (time-less-p (or (plist-get template :time)) mtime))
         (with-transient-file (expand-file-name name root)
