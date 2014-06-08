@@ -100,7 +100,7 @@ and password to be authenticated."
                   (case (marmalade/err->sym err)
                     (:existing-package
                      (elnode-send-400
-                      httpcon (concat (cadr err) " already exists")))))))))))))
+                      httpcon (format "%S already exists" (cadr err))))))))))))))
 
 (provide 'marmalade-api)
 
