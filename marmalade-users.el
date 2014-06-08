@@ -114,7 +114,9 @@ Default their PACKAGES to the list."
 
 (defun marmalade-get-packages (username)
   "Return the list of packages editable by USERNAME."
-  (kva "package-list" (db-get username marmalade/users)))
+  (-sort
+   'string<
+   (kva "package-list" (db-get username marmalade/users))))
 
 (provide 'marmalade-users)
 
