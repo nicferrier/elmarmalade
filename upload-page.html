@@ -21,8 +21,13 @@
 <div class="container">
 <div class="row">
     <h1>marmalade-repo</h1>
+
+    <p>marmalade-repo accepts submissions of FREE software packages 
+    for the Emacs environment.</p>
+
     <form name="upload" method="POST" action="/packages/" enctype="multipart/form-data">
         <legend>upload a new package</legend>
+        <p>please ensure your package is GPLed or GPL compatible before uploading to marmalade.</p>
         <div class="control-group">
             <div class="control">
                 <input id="packagefile" type="file" name="package-file" size="50" />
@@ -30,25 +35,27 @@
                        type="submit" name="upload" value="upload package"/>
             </div>
         </div>
+
+            <h5>what is a package</h5>
+            <p>
+                The ELPA packages which marmalade accepts come in 2 forms, either:
+            </p>
+            
+            <ul>
+                <li>a single <code>.el</code> file with a package header</li>
+                <li>or a <code>.tar</code> file with a <code>pkg.el</code> file</li>
+            </ul>
+            
+            <p>Your uploaded file must conform to one of these 2 types.</p>
+            
+            <h5>licences</h5>
+            <p>Your uploaded file should also carry a licence file for a free software licence (for example, the GPL) or a reference to a licence. 
+            marmalade-repo does not try to check licences yet but it will in the future.</p>
+
+            <h5>other ways to upload</h5>
+            <p>You can also upload a package to maramalade directly from Emacs.</p>
+            <p>To do this you must install our <a href="/packages/marmalade-upload">marmalade-upload</a> package.</p>
     </form>
-    <h5>what is a package</h5>
-    <p>
-        The ELPA packages which marmalade accepts come in 2 forms, either:
-    </p>
-
-    <ul>
-        <li>a single <code>.el</code> file with a package header</li>
-        <li>or a <code>.tar</code> file with a <code>pkg.el</code> file</li>
-    </ul>
-
-    <p>Your uploaded file must conform to one of these 2 types.</p>
-</div>
-</div>
-<div class="container">
-<div class="row">
-    <h5>other ways to upload</h5>
-    <p>You can also upload a package to maramalade directly from Emacs.</p>
-    <p>To do this you must install our <a href="/packages/marmalade-upload">marmalade-upload</a> package.</p>
 </div>
 </div>
 </div>
