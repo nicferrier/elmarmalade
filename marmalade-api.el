@@ -15,24 +15,27 @@ and password to be authenticated."
   (let ((username (elnode-http-param httpcon "name"))
         (password (elnode-http-param httpcon "password"))
         (method (elnode-http-method httpcon)))
-    (cond
-      ;; List of constraints
-      ((not (equal method "POST")) (elnode-send-400 httpcon "only POST supported"))
-      ((equal username "") (elnode-send-400 httpcon "no user specified"))
-      ((not username) (elnode-send-400 httpcon "no user specified"))
-      ((not (stringp username)) (elnode-send-400 httpcon "don't understand non-string username"))
-      ((equal password "") (elnode-send-400 httpcon "no password specified"))
-      ((not password) (elnode-send-400 httpcon "no password specified"))
-      ((not (stringp  password)) (elnode-send-400 httpcon "don't understand non-string password specified"))
-      ((let ((user-record (db-get username marmalade/users)))
-         (not (equal
-               (kva "digest" user-record)
-               (marmalade/user-hash password (kva "salt" user-record)))))
-       (elnode-send-400 httpcon "bad authentication"))
-      ;; Success!
-      (t (elnode-send-json
-          httpcon
-          `((token . ,(kva "token" (db-get username marmalade/users)))))))))
+    (noflet ((elnode-send-400 (httpcon &optional message)
+               (elnode-http-start httpcon 400 '(content-type . "application/json"))
+               (elnode-http-return httpcon (json-encode `((message . ,message))))))
+      (cond
+        ;; List of constraints
+        ((not (equal method "POST")) (elnode-send-400 httpcon "only POST supported"))
+        ((equal username "") (elnode-send-400 httpcon "no user specified"))
+        ((not username) (elnode-send-400 httpcon "no user specified"))
+        ((not (stringp username)) (elnode-send-400 httpcon "don't understand non-string username"))
+        ((equal password "") (elnode-send-400 httpcon "no password specified"))
+        ((not password) (elnode-send-400 httpcon "no password specified"))
+        ((not (stringp  password)) (elnode-send-400 httpcon "don't understand non-string password specified"))
+        ((let ((user-record (db-get username marmalade/users)))
+           (not (equal
+                 (kva "digest" user-record)
+                 (marmalade/user-hash password (kva "salt" user-record)))))
+         (elnode-send-400 httpcon "bad authentication"))
+        ;; Success!
+        (t (elnode-send-json
+            httpcon
+            `((token . ,(kva "token" (db-get username marmalade/users))))))))))
 
 (defun marmalade-api/upload (httpcon)
   "Upload a package."
