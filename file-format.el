@@ -88,7 +88,8 @@ file."
       (signal 'file-error (format "file %s at %s not found" name root)))
     (let ((mtime (file-attr file-name :mtime)))
       (when (or (not template)
-                (time-less-p (or (plist-get template :time)) mtime))
+                (time-less-p (or (plist-get template :time)
+                                 (seconds-to-time 0)) mtime))
         (with-transient-file (expand-file-name name root)
           (puthash name
                    (list :name name
