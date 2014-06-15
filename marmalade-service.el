@@ -398,23 +398,22 @@ is grabbed."
                      (about-text (marmalade/commentary->about commentary))
                      (page
                       (condition-case err
-                          (s-format 
-                           (file-format-html
-                            "package-page.html" marmalade-dir
-                            'aget
-                            `(("package-name" . ,package-name)
-                              ("version" . ,(format "%S" version))
-                              ("author" . ,(if (or (not author)
-                                                   (equal author ""))
-                                               "Unknown" author))
-                              ("package-download" . ,package-download)
-                              ("description" . ,description)
-                              ("about" . ,about-text)
-                              ;; Replace safely later
-                              ("header" . "${header}")))
-                           ;; This is safe to use HTML because it's controlled by us
-                           'aget `(("header" . ,(marmalade/page-header httpcon))))
+                          (file-format-html
+                           "package-page.html" marmalade-dir 'aget
+                           `(("package-name" . ,package-name)
+                             ("version" . ,(format "%S" version))
+                             ("author" . ,(if (or (not author)
+                                                  (equal author ""))
+                                              "Unknown" author))
+                             ("package-download" . ,package-download)
+                             ("description" . ,description)
+                             ("about" . ,about-text)
+                             ;; Replace safely later
+                             ("header" . ,(propertize 
+                                           (marmalade/page-header httpcon)
+                                           :file-format-html-safe t))))
                         (error
+                         (message "the error is %S" err)
                          (setq status 500) ; set the response for later
                          (format
                           "<html><h3>marmalade error: %S</h3><pre>%S</pre></html>"
