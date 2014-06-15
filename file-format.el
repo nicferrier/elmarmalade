@@ -130,19 +130,23 @@ EXTRA.  See `s-format' for more details."
 FUNC specifies how to replace the templated values, possibly with
 EXTRA.  See `s-format' for more details.
 
-Each value replaced is escaped for HTML-ness.  See
-`xml-escape-string' for details on how we do that."
+Each value replaced is escaped for HTML-ness with
+`xml-escape-string' unless it is marked with the text property
+`:file-format-html-safe'."
   (apply 's-format
          (plist-get (file-format/template-get name root) :content)
          (lambda (key &optional extra)
-           (xml-escape-string
-            (cond
-              ((eq replacer 'aget) (s--aget extra key))
-              ((eq replacer 'elt) (elt extra key))
-              (t
-               (if extra
-                   (funcall replacer key extra)
-                   (funcall replacer key))))))
+           (let ((value
+                  (cond
+                    ((eq replacer 'aget) (s--aget extra key))
+                    ((eq replacer 'elt) (elt extra key))
+                    (t
+                     (if extra
+                         (funcall replacer key extra)
+                         (funcall replacer key))))))
+             (if (memq :file-format-html-safe (text-properties-at 0 value))
+                 value
+                 (xml-escape-string value))))
          extra))
 
 (provide 'file-format)
