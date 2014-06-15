@@ -28,6 +28,25 @@
 ;; unless they have been changed.  They are stored internally, as
 ;; strings, in a cache.
 
+;; Here's an example, from marmalade:
+
+;; (file-format-html
+;;  "package-page.html" marmalade-dir 'aget
+;;  `(("package-name" . ,package-name)
+;;    ("version" . ,(format "%S" version))
+;;    ("author" . ,(if (or (not author)
+;;                         (equal author ""))
+;;                     "Unknown" author))
+;;    ("package-download" . ,package-download)
+;;    ("description" . ,description)
+;;    ("about" . ,about-text)
+;;    ;; Replace safely later
+;;    ("header" . ,(propertize 
+;;                  (marmalade/page-header httpcon)
+;;                  :file-format-html-safe t))))
+
+;; Note the use of propertize to mark the HTML as safe so it isn't
+;; escaped.
 
 ;;; Code:
 
