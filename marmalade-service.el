@@ -450,11 +450,9 @@ is grabbed."
                 ("header" . "${header}")
                 ("package-list"
                  . ,(propertize
-                     (format
-                      "<ul>%s</ul>"
-                      (wrap
-                       "<li><a href=\"/packages/%s\">%s</a></li>"
-                       (marmalade-get-packages username)))
+                     (wrap
+                      "<li><a href=\"/packages/%s\">%s</a></li>"
+                      (marmalade-get-packages username))
                      :file-format-html-safe t))
                 ("header"
                  . ,(propertize 
