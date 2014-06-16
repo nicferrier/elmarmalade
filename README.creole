@@ -6,6 +6,27 @@ Weizenbaum wrote the
 original [[http://marmalade-repo.org|marmalade-repo]] with node.js and
 mongodb.
 
+
+=== News ===
+
+//2014 06 15 - Marmalade uploads are live//
+
+You can now upload more safely. The API is somewhat fixed though we
+still seem to have some bugs. I've been working hard on the
+//blue-green// aspect of marmalade configuration which will allow me
+to roll releases with no downtime. I'm going to have to docker-ize
+Emacs to do that I think.
+
+//2014 06 08 - marmalade is missing some packages//
+
+[[https://github.com/nicferrier/elmarmalade/issues/21|Reference this]]
+it seems that the mongo conversion missed some stuff. So I'll have to
+go and work on that to see if I can dredge it up.
+
+
+
+=== About ===
+
 This reimplementation uses an [[http://elnode.org|Elnode]] application
 dealing with a filesystem of all packages. It's basically a file
 server app. It also follows the microservice model.
@@ -29,13 +50,6 @@ These are the things marmalade should do:
 ** and securely
 * allow registered users to be added as owners
 
-==== ETA ====
-
-This version of marmalade is now live (as of May the 18th, 2014)
-serving packages. It's still not accepting uploads.
-
-Uploads excepted to be working by the end of May 2014.
-
 
 ==== Other marmalade things ====
 
@@ -44,7 +58,8 @@ It would be nice if marmalade provided better package discovery.
 It would be nice if marmalade stored licences in a clear way and
 allowed you to use only safe licences if you wish.
 
-==== Contents ====
+
+==== How it works ====
 
 The package is contained in the top level. Elpakit is used to build
 it.
