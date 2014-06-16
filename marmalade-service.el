@@ -437,17 +437,29 @@ is grabbed."
 
 `elnode-http-mapping' 1 should be the username."
   (let ((username (elnode-http-mapping httpcon 1)))
-    (elnode-http-start httpcon 200 '(Content-type . "text/html"))
-    (elnode-http-return
-     httpcon
-     (s-format
-      (file-format-html
-       "profile-page.html" marmalade-dir
-       'aget `(("username" . ,username)
-               ("header" . "${header}")
-               ("package-list"
-                . ,(s-join " " (marmalade-get-packages username)))))
-      'aget `(("header" . ,(marmalade/page-header httpcon)))))))
+    (noflet ((wrap (str lst)
+               (mapconcat
+                (lambda (e)
+                  (replace-regexp-in-string "%s" e str)) lst "")))
+      (elnode-http-start httpcon 200 '(Content-type . "text/html"))
+      (elnode-http-return
+       httpcon
+       (file-format-html
+        "profile-page.html" marmalade-dir
+        'aget `(("username" . ,username)
+                ("header" . "${header}")
+                ("package-list"
+                 . ,(propertize
+                     (format
+                      "<ul>%s</ul>"
+                      (wrap
+                       "<li><a href=\"/packages/%s\">%s</a></li>"
+                       (marmalade-get-packages username)))
+                     :file-format-html-safe t))
+                ("header"
+                 . ,(propertize 
+                     (marmalade/page-header httpcon)
+                     :file-format-html-safe t))))))))
 
 (defconst marmalade/page-file
   (expand-file-name "front-page.html" marmalade-dir))
