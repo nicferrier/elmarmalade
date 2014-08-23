@@ -9,7 +9,9 @@
   (require 'marmalade-service)
   (elnode-start
    'marmalade-router
-   :port marmalade-server-port
+   :port (or
+          (symbol-value 'marmalade-server-port)
+          8010)
    :host "0.0.0.0")
   (setq marmalade/inited t))
 
