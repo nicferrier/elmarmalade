@@ -447,7 +447,6 @@ is grabbed."
        (file-format-html
         "profile-page.html" marmalade-dir
         'aget `(("username" . ,username)
-                ("header" . "${header}")
                 ("package-list"
                  . ,(propertize
                      (wrap
