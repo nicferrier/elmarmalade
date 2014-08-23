@@ -6,7 +6,7 @@
 . ./.deploy
 dockerImage=nicferrier/marmalade
 dockerExPort=8005
-nginxConfig=/etc/init.d/nginx/sites-enabled/marmalade.conf
+nginxConfig=/etc/nginx/sites-enabled/marmalade.conf
 hostName=po3.ferrier.me.uk
 dockerVolumes=+/home/nferrier/marmalade:/home/emacs/marmalade/
-deploy ${1:-"deploy"} nicferrier/marmalade 8005 /etc/init.d/nginx/sites-enabled/marmalade.conf po3.ferrier.me.uk +/home/nferrier/marmalade:/home/emacs/marmalade/
+deploy ${1:-"deploy"} nicferrier/marmalade 8005 /etc/nginx/sites-enabled/marmalade.conf po3.ferrier.me.uk +/home/nferrier/marmalade:/home/emacs/marmalade/
