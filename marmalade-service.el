@@ -27,7 +27,7 @@
 (elnode-app marmalade-dir
   marmalade-vars marmalade-customs
   marmalade-archive marmalade-users marmalade-api
-  file-format ; should be a separate package but is in marmalade for now
+  file-format
   web htmlize db s
   noflet dash kv rx lisp-mnt outline)
 

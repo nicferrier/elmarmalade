@@ -7,6 +7,7 @@
   (kv "0.0.16")
   (noflet "0.0.7")
   (elnode "0.9.9.8.6")
+  (file-format "0.0.1")
   (htmlize "1.3.9"))
  :files
  ("marmalade-vars.el"
@@ -16,11 +17,6 @@
   "marmalade-api.el"
   "marmalade-boot.el"
   "marmalade-users.el"
-  "file-format.el"
-  "nginx-cache-kill"
-  "nginx.conf"
-  "nginx-proxy-port-map-b.conf"
-  "nginx-proxy-port-map-g.conf"
   "crontab-db-backup"
   "front-page.html"
   "register-comingsoon.html"
