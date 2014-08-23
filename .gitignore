@@ -2,3 +2,4 @@
 /marmalade-repo-test/logs
 /marmalade-repo-test/packages/archive-contents.el
 /marmalade-repo-test/archives/
+/marmalade-service-*.tar
