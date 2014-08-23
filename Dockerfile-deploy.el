@@ -12,4 +12,5 @@
 (toggle-debug-on-error)
 (package-initialize)
 (package-refresh-contents)
-(package-install 'marmalade-service)
+(package-install-file
+ (car (directory-files (expand-file-name "~/builds") t ".*\\.tar$")))

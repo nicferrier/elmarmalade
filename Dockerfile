@@ -3,7 +3,9 @@ FROM nicferrier/elnode
 MAINTAINER nic@ferrier.me.uk
 USER root
 ADD Dockerfile-deploy.el /tmp/Dockerfile-deploy.el
+ADD builds/ /home/emacs/builds
 ADD boot.el /home/emacs/boot.el
+RUN chown -R emacs /home/emacs/builds
 RUN chown emacs /tmp/Dockerfile-deploy.el
 RUN chown emacs /home/emacs/boot.el
 USER emacs

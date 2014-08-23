@@ -1,5 +1,5 @@
 (marmalade-service
- :version "2.0.15"
+ :version "2.0.16"
  :doc "The Marmalade package store service."
  :requires 
  ((dash "1.1.0")
