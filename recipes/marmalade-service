@@ -1,5 +1,5 @@
 (marmalade-service
- :version "2.0.14"
+ :version "2.0.15"
  :doc "The Marmalade package store service."
  :requires 
  ((dash "1.1.0")
@@ -15,7 +15,6 @@
   "marmalade-service.el"
   "marmalade-archive.el"
   "marmalade-api.el"
-  "marmalade-boot.el"
   "marmalade-users.el"
   "crontab-db-backup"
   "front-page.html"

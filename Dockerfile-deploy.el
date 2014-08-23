@@ -1,3 +1,4 @@
+;; Setup marmalade and install the package
 (customize-set-variable 'lisp-indent-function 'common-lisp-indent-function)
 (customize-set-variable 'revert-without-query '(".*"))
 ;(customize-set-variable 'debug-on-error 'always) ; FIXME probably not?
@@ -12,13 +13,3 @@
 (package-initialize)
 (package-refresh-contents)
 (package-install 'marmalade-service)
-(with-temp-buffer
-  (print
-   '(add-hook
-     'after-init-hook
-     (lambda nil
-       (marmalade-init)))
-   (current-buffer))
-  (append-to-file
-   (point-min)(point-max)
-   (or custom-file user-init-file)))
