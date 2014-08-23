@@ -9,6 +9,12 @@ mongodb.
 
 === News ===
 
+//2014 08 23 - docker Marmalade deployed//
+
+Deploying Marmalade has been tricky so I've dockerized it based on
+my
+[[https://registry.hub.docker.com/u/nicferrier/elnode/|elnode dockers]].
+
 //2014 06 15 - Marmalade uploads are live//
 
 You can now upload more safely. The API is somewhat fixed though we
