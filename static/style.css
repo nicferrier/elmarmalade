@@ -141,6 +141,13 @@ label {
 form[name=upload] input[type=submit] {
 }
 
+
+div.profile ul {
+    -moz-column-count: 4;
+    -webkit-column-count: 4;
+    column-count: 4;
+}
+
 /*
   end of marmalade styles
   */
