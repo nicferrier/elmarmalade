@@ -497,9 +497,27 @@ is grabbed."
       'aget
       `(("latest-html" . ,(marmalade/latest-html)))))))
 
+(defmacro try (form &rest body)
+  "Try FORM and eval BODY if it fails.
+
+Within BODY `backtrace' will return the backtrace including the
+stack which caused the problem.  This can be used for actually
+debugging the problem."
+  (declare (indent 1))
+  (let ((ret-var (make-symbol "ret-var")))
+    `(let* (,ret-var
+            (debug-on-error t)
+            (debugger
+             (lambda (&rest args)
+               (setq ,ret-var (progn ,@body)))))
+       (condition-case err
+           (setq ,ret-var (progn ,form))
+         ((debug error)))
+       ,ret-var)))
+
 (defun marmalade-router (httpcon)
   "The top level router for marmalade-repo."
-  (condition-case err
+  (try
       (elnode-hostpath-dispatcher
        httpcon
        `(("^[^/]*//-/\\(.*\\)$" . ,marmalade/webserver)
@@ -527,7 +545,12 @@ is grabbed."
          ("^[^/]+//$" . marmalade/packages-index))
        :log-name "marmalade"
        :auth-scheme 'marmalade-auth)
-    (error (message "marmalade: some router error occurred %S" err))))
+    ;; And handle the error by sending an error page otherwise
+    (elnode-http-start httpcon 400 '(Content-type "text/html"))
+    (elnode-http-return
+     httpcon
+     (format "<h1>Error!</h1><p>the backtrace was</p><pre>%s</pre>"
+             (with-output-to-string (backtrace))))))
 
 (provide 'marmalade-service)
 
