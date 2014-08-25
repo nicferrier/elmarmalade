@@ -1,4 +1,4 @@
-;;; elmarmalade.el --- the marmalade repository in emacs-lisp -*- lexical-binding: t -*-
+;;; marmalade-service.el --- the marmalade repository in emacs-lisp -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2013  Nic Ferrier
 
