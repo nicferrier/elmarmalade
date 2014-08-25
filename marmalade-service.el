@@ -396,29 +396,19 @@ is grabbed."
                 (marmalade/package-meta package-file)
               (let* ((status 200)
                      (about-text (marmalade/commentary->about commentary))
+                     (vars
+                      `(("package-name" . ,package-name)
+                        ("version" . ,(format "%S" version))
+                        ("author" . ,(if (or (not author) (equal author "")) "Unknown" author))
+                        ("package-download" . ,package-download)
+                        ("description" . ,description)
+                        ("about" . ,about-text)
+                        ;; Replace safely later
+                        ("header" . ,(propertize 
+                                      (marmalade/page-header httpcon)
+                                      :file-format-html-safe t))))
                      (page
-                      (condition-case err
-                          (file-format-html
-                           "package-page.html" marmalade-dir 'aget
-                           `(("package-name" . ,package-name)
-                             ("version" . ,(format "%S" version))
-                             ("author" . ,(if (or (not author)
-                                                  (equal author ""))
-                                              "Unknown" author))
-                             ("package-download" . ,package-download)
-                             ("description" . ,description)
-                             ("about" . ,about-text)
-                             ;; Replace safely later
-                             ("header" . ,(propertize 
-                                           (marmalade/page-header httpcon)
-                                           :file-format-html-safe t))))
-                        (error
-                         (message "the error is %S" err)
-                         (setq status 500) ; set the response for later
-                         (format
-                          "<html><h3>marmalade error: %S</h3><pre>%S</pre></html>"
-                          (xml-escape-string (format "%S" err))
-                          (xml-escape-string about-text))))))
+                      (file-format-html "package-page.html" marmalade-dir 'aget vars)))
                 (elnode-http-start httpcon status '(Content-type . "text/html"))
                 (elnode-http-return httpcon page))))))))
 
