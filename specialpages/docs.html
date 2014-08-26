@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="/-/style.css" type="text/css"></link>
+<link rel="stylesheet" href="/-/bootstrap/css/bootstrap.css" type="text/css"></link>
+<title>Marmalade - docs</title>
+</head>
+<body>
+${header}
+<div id="blurb">
+<div class="container">
+<div class="row">
+<h1>docs</h1>
+
+<p>
+    marmalade-repo provides an API. It was designed by Nex, the original author of
+    marmalade-repo.
+</p>
+
+<h3 class="docheader">v1 API</h3>
+
+<p>
+    The current API supported by the Elnode service is massively cut
+    down from the original API supported by the nodejs service. The
+    current API supports only the functions needed to upload packages.
+</p>
+
+<h4 class="what">token acquire</h4>
+<p>
+    <code>http://marmalade-repo.org/v1/users/login/</code><br></br>
+    <span>
+        Acquiring a token is basically like getting a cookie. You get
+        the cookie and then present it to all the subsequent requests.<br></br>
+        marmalade-repo API does not work without an authentication token.
+    </span>
+    <i>parameters:</i>
+    <ul>
+        <li><i>name</i> - a valid marmalade-repo username</li>
+        <li><i>password</i> - a valid marmalade-repo password</li>
+    </ul>
+    <i>
+        Returns a JSON structure with the token being present as a key
+        <code>token</code>.
+    </i>
+</p>
+
+<h4 class="what">package upload</h4>
+<p>
+    <code>http://marmalade-repo.org/v1/packages</code><br></br>
+    <span>
+        Upload a package file to marmalade-repo. Either an ELPA
+        package format //tar// file or an ELPA marked-up //.el// file
+        may be specified.
+    </span>
+    <i>parameters:</i>
+    <ul>
+        <li><i>name</i> - the username of the owner of the package</li>
+        <li><i>token</i> - the auth token of the owner of the package</li>
+        <li><i>package</i> - the package file contents</li>
+    </ul>
+    <i>
+        Returns a JSON structure with a <code>message</code> key for
+        any informational or error message.
+    </i>
+</p>
+
+<h3 class="docheader">implementations</h3>
+
+<p>I know of the following implementations of the API:</p>
+
+<ul>
+<li>
+    <a href="https://github.com/nicferrier/emacs-marmalade-upload">Nic Ferrier's uploader</a> 
+    is async and based on <a href="http://github.com/nicferrier/emacs-web">his emacs-web</a> 
+    HTTP client
+</li>
+</ul>
+
+<small>
+    If you want to have your marmalade tool listed here then please send
+    me a pull request via <a
+    href="http://github.com/nicferrier/elmarmalade">marmalade-repo's</a>
+    GitHub account
+</small>
+
+</div>
+</div>
+</div>
+<footer class="footer">
+    <div>
+        <ul class="inline">
+            <li><a href="/terms">terms</a></li>
+            <li><a href="/docs">docs</a></li>
+            <li><a href="https://github.com/nicferrier/elmarmalade/issues">issues</a></li>
+            <li>(C) Nic Ferrier 2013</li>
+        </ul>
+    </div>
+</footer>
+</body>
+<html>

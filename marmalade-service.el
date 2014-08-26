@@ -552,15 +552,24 @@ is grabbed."
    (expand-file-name "static" marmalade-dir))
   "The webserver for marmalade.")
 
+(defconst marmalade/special-docroot
+  (expand-file-name "specialpages" marmalade-dir)
+  "The docroot of 'special' pages.
+
+Special pages are the ones that aren't part of the main app,
+things like terms and conditions and documentation.")
+
 (defun marmalade/special-docs (httpcon)
-  "Send the login page."
-  (let ((matched (elnode-http-mapping httpcon 1)))
-    (elnode-send-html
-     httpcon
-     (file-format
-      (concat matched ".html") marmalade-dir
-      'aget
-      `(("latest-html" . ,(marmalade/latest-html)))))))
+  "Send special pages."
+  (let* ((matched (elnode-http-mapping httpcon 1))
+         (text
+          (file-format-html
+           (concat matched ".html") marmalade/special-docroot
+           'aget `(("latest-html" . ,(marmalade/latest-html))
+                   ("header" . ,(propertize 
+                                 (marmalade/page-header httpcon)
+                                 :file-format-html-safe t))))))
+    (elnode-send-html httpcon text)))
 
 (defmacro try (form &rest body)
   "Try FORM and eval BODY if it fails.
