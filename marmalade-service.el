@@ -482,10 +482,12 @@ is grabbed."
           (elnode-auth-get-cookie-value
            httpcon :cookie-name marmalade/cookie-name))
          (username (if (consp auth-cookie-cons) (car auth-cookie-cons) "")))
-    (s-format
-     "<div id=\"login-panel\">logged in: <span id=\"username\">${username}</span></div>"
-     'aget
-     `(("username" . ,username)))))
+    (propertize
+     (s-format
+      "<div id=\"login-panel\">logged in: <span id=\"username\">${username}</span></div>"
+      'aget
+      `(("username" . ,username)))
+     :file-format-html-safe t)))
 
 (defun marmalade-user-profile (httpcon)
   "Elnode handler for users.
@@ -516,15 +518,24 @@ is grabbed."
 (defconst marmalade/page-file
   (expand-file-name "front-page.html" marmalade-dir))
 
+(defconst marmalade/news
+  (propertize
+   (with-temp-buffer
+     (insert-file-contents
+      (expand-file-name "news.html" marmalade-dir))
+     (buffer-string)) :file-format-html-safe t)
+  "A list of news about marmalade kept in the repository.")
+
 (defun marmalade/latest-html ()
   "Convert `marmalade/package-list' into HTML LI elements."
   (let* ((latest (marmalade/package-list :sorted 5 :take 10)))
-    (mapconcat
-     (lambda (name)
-       (s-format
-        "<li><a href=\"/packages/${name}\">${name}</a></li>" 'aget
-        `(("name" . ,(xml-escape-string name)))))
-     latest "\n")))
+    (propertize
+     (mapconcat
+      (lambda (name)
+        (s-format
+         "<li><a href=\"/packages/${name}\">${name}</a></li>" 'aget
+         `(("name" . ,(xml-escape-string name)))))
+      latest "\n") :file-format-html-safe t)))
 
 (defun marmalade/packages-index (httpcon)
   "Upload a package or show a package index in HTML."
@@ -532,11 +543,14 @@ is grabbed."
     (GET
      (elnode-send-html
       httpcon
-      (file-format
+      (file-format-html
        marmalade/page-file marmalade-dir 'aget
        `(("login-panel" . ,(marmalade/login httpcon))
          ("latest-html" . ,(marmalade/latest-html))
-         ("header" . ,(marmalade/page-header httpcon))))))
+         ("news" . ,marmalade/news)
+         ("header" . ,(propertize
+                       (marmalade/page-header httpcon)
+                       :file-format-html-safe t))))))
     ;; Or we need to upload
     (POST (marmalade/upload httpcon))))
 
