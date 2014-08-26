@@ -9,4 +9,4 @@ dockerExPort=8005
 nginxConfig=/etc/nginx/sites-enabled/marmalade.conf
 hostName=po3.ferrier.me.uk
 dockerVolumes=+/home/nferrier/marmalade:/home/emacs/marmalade/
-deploy ${1:-"deploy"} nicferrier/marmalade 8005 /etc/nginx/sites-enabled/marmalade.conf po3.ferrier.me.uk +/home/nferrier/marmalade:/home/emacs/marmalade/
+deploy ${1:-"deploy"} nicferrier/elmarmalade 8005 /etc/nginx/sites-enabled/marmalade.conf po3.ferrier.me.uk +/home/nferrier/marmalade:/home/emacs/marmalade/
