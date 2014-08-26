@@ -340,6 +340,62 @@ The full path including the package root is returned."
                it)
            (split-string str "\n"))))
 
+(defun package-tar-file-info (file)
+  "Find package information for a tar file.
+FILE is the name of the tar file to examine.
+The return result is a vector like `package-buffer-info'."
+  (let ((default-directory (file-name-directory file))
+	(file (file-name-nondirectory file)))
+    (unless (string-match (concat "\\`" package-subdirectory-regexp "\\.tar\\'")
+			  file)
+      (error "Invalid package name `%s'" file))
+    (let* ((pkg-name (match-string-no-properties 1 file))
+	   (pkg-version (match-string-no-properties 2 file))
+	   ;; Extract the package descriptor.
+	   (pkg-def-contents (shell-command-to-string
+			      ;; Requires GNU tar.
+			      (concat "tar -xOf " file " "
+
+				      pkg-name "-" pkg-version "/"
+				      pkg-name "-pkg.el")))
+	   (pkg-def-parsed (package-read-from-string pkg-def-contents)))
+      (unless (eq (car pkg-def-parsed) 'define-package)
+	(error "No `define-package' sexp is present in `%s-pkg.el'" pkg-name))
+      (let ((name-str       (nth 1 pkg-def-parsed))
+	    (version-string (nth 2 pkg-def-parsed))
+	    (docstring      (nth 3 pkg-def-parsed))
+	    (requires       (nth 4 pkg-def-parsed))
+	    (readme  ; Requires GNU tar.
+             (let ((filename
+                    (car
+                     (s-split
+                      "\n"
+                      (shell-command-to-string
+                       (concat "tar --wildcards -tOf " file " "
+                               pkg-name "-" pkg-version "/README*"))))))
+               (if filename
+                   (propertize 
+                    (shell-command-to-string
+                     ;; Requires GNU tar.
+                     (concat "tar -xOf " file " " filename))
+                    :filename filename)))))
+	(unless (equal pkg-version version-string)
+	  (error "Package has inconsistent versions"))
+	(unless (equal pkg-name name-str)
+	  (error "Package has inconsistent names"))
+	;; Kind of a hack.
+	(if (string-match ": Not found in archive" readme)
+	    (setq readme nil))
+	;; Turn string version numbers into list form.
+	(if (eq (car requires) 'quote)
+	    (setq requires (car (cdr requires))))
+	(setq requires
+	      (mapcar (lambda (elt)
+			(list (car elt)
+			      (version-to-list (cadr elt))))
+		      requires))
+	(vector pkg-name requires docstring version-string readme)))))
+
 (defun marmalade/commentary-grab (buffer)
   "Grab commentary from BUFFER."
   (with-current-buffer buffer
@@ -349,8 +405,8 @@ The full path including the package root is returned."
              (when (re-search-forward "^;+ Commentary:" nil t)
                (re-search-forward "^;+" nil t)
                (line-beginning-position))))
-        (if (not start-pos) ""
-            ;; Else we do have a commentary
+        (if start-pos
+            ;; We do have a commentary...
             (let* ((end-pos
                     (progn
                       (or
@@ -362,7 +418,9 @@ The full path including the package root is returned."
                    (str (buffer-substring-no-properties
                          start-pos end-pos))
                    (fmted-str (marmalade/uncomment str)))
-              (htmlize-protect-string fmted-str)))))))
+              (htmlize-protect-string fmted-str))
+            ;; Else we don't have a commentary... maybe we have a readme?
+            (htmlize-protect-string (buffer-string)))))))
 
 (defun marmalade/commentary->about (commentary)
   "Transform the COMMENTARY to something we can display.
