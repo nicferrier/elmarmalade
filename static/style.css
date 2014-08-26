@@ -4,6 +4,8 @@ html,body {
     height: 100%;
     min-height: 100%;
     margin: 0em 0em -40px 0em;
+    font-family: sans-serif;
+    font-size: 12pt;
 }
 
 .container:after {
@@ -55,7 +57,7 @@ h2,h3 {
 }
 
 h1 {
-    font-size: 56pt !important;
+    font-size: 48pt !important;
     padding-bottom: 20px;
 }
 
@@ -65,7 +67,7 @@ h3 {
 }
 
 h4 {
-    font-size: 28pt !important;
+    font-size: 22pt !important;
     padding-bottom: 20px;  
 }
 
@@ -74,11 +76,30 @@ h5 {
     padding-bottom: 20px;  
 }
 
+#index-links {
+    list-style-type: none;
+    margin-top: 1em;
+}
+
+#index-links li {
+    margin-top: 1em;
+}
+
+
+#news + p {
+    padding-bottom: 30px;
+}
+
+.docheader {
+    padding-top: 20px;
+}
+
 .what,.how,.about {
     color: #895221 !important;
     text-shadow: none;
     padding-top: 40px;
 }
+
 #package-demo {
     margin: 30px auto;
 }
