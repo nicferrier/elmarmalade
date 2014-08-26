@@ -1,6 +1,7 @@
 ;; Setup marmalade and install the package
 (customize-set-variable 'lisp-indent-function 'common-lisp-indent-function)
 (customize-set-variable 'revert-without-query '(".*"))
+(customize-set-variable 'elnode-log-files-directory (expand-file-name "~/marmalade/elnode-log-files"))
 (customize-set-variable 'elnode-error-log-to-messages nil)
 ;(customize-set-variable 'debug-on-error 'always) ; FIXME probably not?
 (customize-set-variable 'marmalade-server-port 8005)
