@@ -4,3 +4,4 @@
 /marmalade-repo-test/archives/
 /marmalade-service-*.tar
 /.deploy
+/builds
