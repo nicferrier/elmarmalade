@@ -4,7 +4,7 @@
 
 ;; Author: Nic Ferrier <nferrier@ferrier.me.uk>
 ;; Keywords: lisp
-;; Version: 0.0.4
+;; Version: 0.0.6
 ;; Package-requires: ((timeclock "2.6.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
