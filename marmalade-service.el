@@ -545,17 +545,14 @@ debugging the problem."
        :log-name "marmalade"
        :auth-scheme 'marmalade-auth)
     ;; And handle the error by sending an error page otherwise
-    (elnode-http-start httpcon 400 '(Content-type "text/html"))
-    (elnode-http-return
-     httpcon
-     (format "<h1>Error!</h1><p>the backtrace was</p><pre>%s</pre>"
-             (s-join
-              "\n"
-              (-take
-               10
-               (split-string 
-                (with-output-to-string (backtrace))
-                "\n")))))))
+    (let ((bt (with-output-to-string (backtrace))))
+      (elnode-http-start httpcon 400 '(Content-type "text/html"))
+      (elnode-http-return
+       httpcon
+       (format
+        "<h1>Error!</h1><p>the backtrace was</p><pre>%s</pre>"
+        (xml-escape-string
+         (s-join "\n" (-drop 15 (-take 10 (split-string bt "\n"))))))))))
 
 (provide 'marmalade-service)
 
