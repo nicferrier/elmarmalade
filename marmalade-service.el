@@ -99,7 +99,15 @@ the package repository."
     ((string-match-p "\\.el$" package-file)
      (with-temp-buffer
        (insert-file-contents package-file)
-       (package-buffer-info)))
+       ;; Hack to fix broken packages
+       (noflet ((lm-section-end (hdr)
+                  (if (equal hdr lm-commentary-header)
+                      (save-match-data
+                        (save-excursion
+                          (when (re-search-forward "\\(^;;; Code:\\|^(require .*)\\)")
+                            (line-beginning-position))))
+                      (funcall this-fn hdr))))
+         (package-buffer-info))))
     ((string-match-p "\\.tar$" package-file)
      (if (version< emacs-version "24.3.90")
          (package-tar-file-info package-file)
@@ -325,13 +333,12 @@ The full path including the package root is returned."
 
 (defun marmalade/uncomment (str)
   "Remove comments from lines in STR."
-  (mapconcat
-   (lambda (line)
-     (if (string-match "^;* \\(.*\\)" line)
-         (match-string 1 line)
-         line))
-   (split-string str "\n")
-   "\n"))
+  (s-join "\n"
+          (--map
+           (if (string-match "^;*[ ]*\\(.*\\)" it)
+               (match-string 1 it)
+               it)
+           (split-string str "\n"))))
 
 (defun marmalade/commentary-grab (buffer)
   "Grab commentary from BUFFER."
@@ -349,7 +356,8 @@ The full path including the package root is returned."
                       (or
                        (re-search-forward "^;+ Code:" nil t)
                        ;; if we don't have code we should look for the start of the code
-                       (re-search-forward "^(" nil t))
+                       (re-search-forward "^(" nil t)
+                       (goto-char (point-max)))
                       (line-beginning-position)))
                    (str (buffer-substring-no-properties
                          start-pos end-pos))
@@ -368,7 +376,7 @@ is grabbed."
         (with-temp-buffer
           (insert commentary)
           (marmalade/commentary-grab (current-buffer))))
-      ""))
+      "This package has provided no commentary."))
 
 (defun marmalade/package-blurb (httpcon)
   "Provide an informative description of the package."

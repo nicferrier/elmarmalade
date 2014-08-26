@@ -2,6 +2,13 @@ html,body {
     color: #895221;
     padding-bottom: 0 !important;
     height: 100%;
+    min-height: 100%;
+    margin: 0em 0em -40px 0em;
+}
+
+.container:after {
+    display: block;
+    height: 100px;
 }
 
 footer {
@@ -67,7 +74,7 @@ h5 {
     padding-bottom: 20px;  
 }
 
-.what,.how {
+.what,.how,.about {
     color: #895221 !important;
     text-shadow: none;
     padding-top: 40px;
