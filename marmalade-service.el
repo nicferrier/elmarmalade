@@ -98,8 +98,7 @@ the package repository."
   (cond
     ((string-match-p "\\.el$" package-file)
      (with-temp-buffer
-       (insert-file-contents-literally package-file)
-       (buffer-string) ; leave it in so it's easy to debug
+       (insert-file-contents package-file)
        (package-buffer-info)))
     ((string-match-p "\\.tar$" package-file)
      (if (version< emacs-version "24.3.90")
