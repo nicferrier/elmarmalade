@@ -550,7 +550,13 @@ debugging the problem."
     (elnode-http-return
      httpcon
      (format "<h1>Error!</h1><p>the backtrace was</p><pre>%s</pre>"
-             (with-output-to-string (backtrace))))))
+             (s-join
+              "\n"
+              (-take
+               10
+               (split-string 
+                (with-output-to-string (backtrace))
+                "\n")))))))
 
 (provide 'marmalade-service)
 
