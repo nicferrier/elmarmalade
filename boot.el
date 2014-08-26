@@ -13,6 +13,7 @@
           (symbol-value 'marmalade-server-port)
           8010)
    :host "0.0.0.0")
+  (marmalade-archive-make-cache)
   (setq marmalade/inited t))
 
 (marmalade-init)
