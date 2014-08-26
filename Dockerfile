@@ -6,7 +6,7 @@ ADD Dockerfile-marmalade-deploy.el /tmp/Dockerfile-marmalade-deploy.el
 ADD builds/ /home/emacs/builds
 ADD boot.el /home/emacs/boot.el
 RUN chown -R emacs /home/emacs/builds
-RUN chown emacs /tmp/Dockerfile-deploy.el
+RUN chown emacs /tmp/Dockerfile-marmalade-deploy.el
 RUN chown emacs /home/emacs/boot.el
 USER emacs
 WORKDIR /home/emacs
