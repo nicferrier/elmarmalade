@@ -11,7 +11,7 @@ build: test
 	$(docker) build --no-cache -t nicferrier/elmarmalade .
 
 test:
-	[ -x $(emacs) ] || exit 1 # missing emacs?
-	$(docker) --help 2> /dev/null || exit 1 # missing docker?
+	[ -x $(emacs) ] # missing emacs?
+	$(docker) help 2> /dev/null # missing docker?
 
 # End
