@@ -149,6 +149,7 @@ the package repository."
        :package-path package-path))))
 
 (defun marmalade/package-meta (package-file)
+  "Returns a list: author, maintainer, url, keywords."
   (with-transient-file package-file
     (list
      (lm-header "Author")
@@ -468,6 +469,8 @@ is grabbed."
                         ("author" . ,(if (or (not author) (equal author "")) "Unknown" author))
                         ("package-download" . ,package-download)
                         ("description" . ,description)
+                        ("url" . ,(or url "#blurb"))
+                        ("url-text" . ,(or url ""))
                         ("about" . ,about-text)
                         ;; Replace safely later
                         ("header" . ,(propertize 
