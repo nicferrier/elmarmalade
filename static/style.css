@@ -76,6 +76,25 @@ h5 {
     padding-bottom: 20px;  
 }
 
+#donate {
+    padding-top: 40px;
+    width: 45%;
+}
+
+#donate-msg {
+    margin-bottom: 1em;
+}
+
+#pp_donate {
+    margin-top: 0.5em;
+}
+
+#gittip {
+    float: right;
+    width: 40%;
+}
+
+
 #index-links {
     list-style-type: none;
     margin-top: 1em;
@@ -85,9 +104,8 @@ h5 {
     margin-top: 1em;
 }
 
-
-#news + p {
-    padding-bottom: 30px;
+#news + ul li {
+    margin-bottom: 20px;
 }
 
 .docheader {
