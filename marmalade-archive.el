@@ -113,7 +113,7 @@ This does a substitute."
       (if commentary-pos
           (buffer-substring-no-properties
            (+ commentary-pos 3)
-           (- (re-search-forward "^;+ .*\n[ \n]+(" nil t) 2))
+           (- (re-search-forward "^;+.*\n(" nil t) 2))
           "No commentary."))))
 
 (defun marmalade/package-buffer-info (buffer)

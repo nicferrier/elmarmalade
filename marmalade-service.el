@@ -104,7 +104,8 @@ the package repository."
                   (if (equal hdr lm-commentary-header)
                       (save-match-data
                         (save-excursion
-                          (when (re-search-forward "\\(^;;; Code:\\|^(require .*)\\)")
+                          (when (re-search-forward
+                                 "\\(^;+[ ]*Code:\\|^(\\)" nil t)
                             (line-beginning-position))))
                       (funcall this-fn hdr))))
          (package-buffer-info))))
