@@ -10,13 +10,13 @@
   (elnode-start
    'marmalade-router
    :port (or
-          (and (fboundp 'marmalade-server-port)
+          (and (boundp 'marmalade-server-port)
                (symbol-value 'marmalade-server-port))
           8010)
    :host "0.0.0.0")
   (marmalade-archive-make-cache)
   (setq marmalade/inited t))
 
-(add-hook 'after-init-hook 'marmalade-init)
+(marmalade-init)
 
 ;;; boot.el ends here
