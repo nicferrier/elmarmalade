@@ -17,6 +17,6 @@
   (marmalade-archive-make-cache)
   (setq marmalade/inited t))
 
-(add-hook 'after-init-hook 'marmalade-init)
+(marmalade-init)
 
 ;;; boot.el ends here
