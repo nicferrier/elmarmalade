@@ -24,7 +24,7 @@
             <div class=\"navbar-inner\">
                 <ul class=\"nav pull-right\">
                     <li class=\"active\"><a href=\"/\">marmalade-repo</a></li>
-                    <li><a href=\"/profile/${username}/\">${username}</a></li>
+                    <li><a href=\"/profiles/${username}/\">${username}</a></li>
                 </ul>
             </div>
         </div>

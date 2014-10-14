@@ -632,7 +632,7 @@ debugging the problem."
          ("^[^/]+//v1/users/login/*$" .  marmalade-api/user-login)
 
          ;; The profile
-         ("^[^/]+//profile/\\([^/]+\\)/*" . marmalade-user-profile)
+         ("^[^/]+//profiles/\\([^/]+\\)/*" . marmalade-user-profile)
 
          ("^[^/]+//$" . marmalade/packages-index))
        :log-name "marmalade"
