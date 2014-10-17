@@ -136,6 +136,13 @@ Default their PACKAGES to the list."
                  ("token" . ,token)))
              marmalade/users))))
 
+(defun marmalade-set-auth (username password)
+  "Set the authentication tokens for USERNAME based on PASSWORD."
+  (let* ((user (db-get username marmalade/users))
+         (salt (kva "salt" user)))
+    (setf (cdr (assoc "digest" user)) (marmalade/user-hash password salt))
+    (db-hash/save marmalade/users)))
+
 (defun marmalade-add-packages (username &rest packages)
   "Add PACKAGES to USERNAME in the user database."
   (let* ((record (db-get username marmalade/users))
