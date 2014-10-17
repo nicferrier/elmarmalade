@@ -673,6 +673,7 @@ debugging the problem."
 
          ("^[^/]+//v1/packages$" .  marmalade-api/upload)
          ("^[^/]+//v1/package/\\(.*\\)$" .  marmalade-api/package)
+         ("^[^/]+//v1/users/add/\\(.*\\)$" .  marmalade-api/add-user)
          ("^[^/]+//v1/users/login/*$" .  marmalade-api/user-login)
 
          ;; The profile
