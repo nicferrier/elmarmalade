@@ -28,6 +28,45 @@
 (require 'kv)
 (require 'base64)
 (require 'file-format)
+(require 'dash)
+
+;;; UnVerifieds - stuff about users who haven't verified a password yet
+
+(defvar marmalade/unverifieds
+  (db-make `(db-hash
+             :filename
+             ,(expand-file-name
+               "marmalade-verifies-db"
+               (or marmalade-db-dir marmalade-dir))))
+  "The database of verifications.
+
+Actually there should only be one key in this but we persist it
+over and over.")
+
+(defun marmalade/list-unverifieds ()
+  (db-get "unverified" marmalade/unverifieds))
+
+(defun marmalade/add-unverified (username)
+  (let ((code (format "%X" (random)))
+        (existing (db-get "unverified" marmalade/unverifieds)))
+    (db-put
+     "unverified"
+     (cons (cons code username) existing)
+     marmalade/unverifieds)
+    code))
+
+(defun marmalade/remove-verified (verified)
+  "Remove the specified VERIFIED code from the database."
+  (db-put
+   "unverified"
+   (--filter
+    (not (equal verified (car it)))
+    (db-get "unverified" marmalade/unverifieds))
+   marmalade/unverifieds)
+  (db-hash/save marmalade/unverifieds))
+
+
+;;; Users proper
 
 (defvar marmalade/users
   (db-make `(db-hash
