@@ -177,8 +177,8 @@ because of recursion."
                          :username username)
                         ;; ... send the content of the package as json
                         (let ((json-to-send
-                               (append (list (cons "message" "done"))
-                                       (list (cons "package" package-name)))))
+                               `(("message" . "done")
+                                 ("package" . ,package-name))))
                           (elnode-send-json httpcon json-to-send))
                         ;; ... and send the request to update the cache
                         (elnode-proxy-post
