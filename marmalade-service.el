@@ -589,6 +589,49 @@ things like terms and conditions and documentation.")
                                  :file-format-html-safe t))))))
     (elnode-send-html httpcon text)))
 
+(defun marmalade-unverified (httpcon)
+  "Handle verification of users.
+
+The verified codes are stored in a db (for now).  Users with
+verified codes can visit this page and get a form to set their
+password.  The form posts back to the same URL.
+
+On completion the verified code is removed from the list and the
+list is put back."
+  (elnode-method httpcon
+    (POST
+     (let* ((password (elnode-http-param httpcon "new-password"))
+            (confirm (elnode-http-param httpcon "confirm-password"))
+            (verify-code (elnode-http-mapping httpcon 1))
+            (unverifieds (marmalade/list-unverifieds))
+            (found-user (kva verify-code unverifieds)))
+       (cond
+         ((or (not (equal password confirm))
+              (< (length password) 6))
+          (elnode-send-400 httpcon "Sorry. The passwords didn't match."))
+         ((or (not verify-code)(equal verify-code ""))
+          (elnode-send-400 httpcon "Illegal verify code."))
+         (t ; Else we're good ...
+          (marmalade-set-auth found-user password)
+          (marmalade/remove-verified verify-code)
+          (elnode-send-redirect httpcon "/login/")))))
+    (GET
+     (let* ((unverifieds (marmalade/list-unverifieds))
+            (requested (elnode-http-mapping httpcon 1))
+            (found-user (kva requested unverifieds)))
+       (if (not found-user)
+           (elnode-send-400 httpcon "We could't find that code. Sorry.")
+           ;; Else
+           (elnode-send-html
+            httpcon
+            (file-format-html
+             "verify.html" marmalade-dir 'aget
+             `(("verify-id" . ,requested)
+               ("username" . ,found-user)
+               ("header" . ,(propertize
+                             (marmalade/page-header httpcon)
+                             :file-format-html-safe t))))))))))
+
 (defmacro try (form &rest body)
   "Try FORM and eval BODY if it fails.
 
@@ -634,6 +677,7 @@ debugging the problem."
 
          ;; The profile
          ("^[^/]+//profile/\\([^/]+\\)/*" . marmalade-user-profile)
+         ("^[^/]+//verify/\\([^/]+\\)/*" . marmalade-unverified)
 
          ("^[^/]+//$" . marmalade/packages-index))
        :log-name "marmalade"
