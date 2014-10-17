@@ -201,7 +201,7 @@ If the package already exists then `file-error' is signalled."
   (intern
    (concat
     ":"
-    (replace-regexp-in-string " " "-" (elt err 2) ))))
+    (replace-regexp-in-string " " "-" (downcase (elt err 1))))))
 
 (defun marmalade/upload (httpcon)
   "Handle uploaded packages."
