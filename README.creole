@@ -6,6 +6,12 @@ Weizenbaum wrote the
 original [[http://marmalade-repo.org|marmalade-repo]] with node.js and
 mongodb.
 
+=== How to ===
+
+* Need an account? - make an issue on the [[http://github.com/nicferrier/elmarmalade|Github]] and Nic will send you a mail with a confirmation link
+* Need to delete a package? - it's possible through the API with the marmalade-client package
+* Need to upload a package? - use the API throught the marmalade-client package
+
 
 === About ===
 
