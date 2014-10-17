@@ -192,6 +192,32 @@ because of recursion."
                    (:existing-package
                     (elnode-send-400 httpcon (format "%S already exists" (elt err 2))))))))))))))
 
+(defun marmalade-api/add-user (httpcon)
+  "Allow users to be added to Marmalade.
+
+You have to be an administrator to do it."
+  (marmalade/api httpcon
+    (let ((new-username (elnode-http-param httpcon "new-username"))
+          (new-email (elnode-http-params httpcon "new-password")))
+      (elnode/err-cond httpcon
+          (((or (not new-email)
+                (not (string-match-p "[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+" new-email)))
+            "the email must match \"[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\"")
+           ((member 'marmalade-upload (marmalade-get-packages username))
+            "you are not an administrator"))
+        ;; Add a user with a random password
+        (marmalade-add-user
+         new-username
+         (format "%X%X" (random)(random))
+         new-email)
+        ;; Make a verification code and return it
+        (let ((unverified-id 
+               (marmalade/add-unverified new-username)))
+          (elnode-send-json
+           httpcon `(("message" . ,(format "added %s" new-username))
+                     ("email" . ,new-email)
+                     ("verified-code" . ,(unverified-id)))))))))
+
 (provide 'marmalade-api)
 
 ;;; marmalade-api.el ends here
