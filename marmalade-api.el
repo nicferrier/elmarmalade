@@ -116,7 +116,11 @@ because of recursion."
       (elnode/err-cond httpcon
           (((not action) "you must specify delete to delete the package")
            ((or (not package-name)(equal package-name "")) "no package-name")
-           ((not (file-exists-p filename)) "package does not exist"))
+           ((not (file-exists-p filename)) "package does not exist")
+           ((not (member
+                  package-name
+                  (marmalade-get-packages username)))
+            "you are not authorized to remove the package"))
         ;; Make the archive dir if it doesn't exist
         (unless (file-exists-p marmalade-package-archive-dir)
           (make-directory (expand-file-name marmalade-package-archive-dir) t))
