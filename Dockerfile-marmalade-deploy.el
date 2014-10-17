@@ -7,6 +7,7 @@
 (customize-set-variable 'marmalade-server-port 8005)
 (customize-set-variable 'marmalade-db-dir (expand-file-name "~/marmalade/db"))
 (customize-set-variable 'marmalade-package-store-dir (expand-file-name "~/marmalade/packages"))
+(customize-set-variable 'marmalade-package-archive-dir (expand-file-name "~/marmalade/old-packages"))
 (customize-set-variable 'marmalade-archive-dir (expand-file-name "~/marmalade/archives"))
 (customize-set-variable 'marmalade-archive-port 8006)
 (customize-set-variable 'marmalade-boot-onload t)

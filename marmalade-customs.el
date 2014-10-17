@@ -11,6 +11,13 @@
           (const :tag "Default" nil)
           (directory "~/marmalade/packages")))
 
+(defcustom marmalade-package-archive-dir nil
+  "The location of old (removed) package files."
+  :group 'marmalade-archive
+  :type '(choice
+          (const :tag "Default" nil)
+          (directory "~/marmalade/old-packages")))
+
 (defcustom marmalade-archive-dir nil
   "The location of the archive-contents files.
 

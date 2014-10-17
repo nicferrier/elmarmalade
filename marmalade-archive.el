@@ -364,6 +364,7 @@ Sends HTTP 202 on success and 500 on error."
             (POST
              (puthash package-name (cons type info)
                       marmalade/archive-cache))
+            ;; Should we take the delete out? -  this is purge now
             (DELETE
              (remhash package-name marmalade/archive-cache)
              ;; Now find the previous version
@@ -376,21 +377,24 @@ Sends HTTP 202 on success and 500 on error."
       (error (elnode-send-500
               httpcon "failed to update the archive")))))
 
+(defun marmalade-archive-purge (httpcon)
+  "Purge the named \"package\" from the archive.
 
-(defun marmalade-archive-router (httpcon)
-  "Route package archive requests.
+The archive hash is saved to a new version of the cache file.
 
-We deliver the most recent \"archive-contents\" by storing them
-by date stamp and selecting the lexicographical top."
-  (elnode-hostpath-dispatcher
-   httpcon
-   `(("^[^/]*//packages/archive-contents$"
-      . marmalade-archive-contents-handler)
-     ("^[^/]*//packages/archive-contents/\\([0-9]+\\)"
-      . ,marmalade-archive-cache-webserver)
-     ("^[^/]*//packages/archive-contents/update$"
-      . marmalade-archive-update))))
-
+Sends HTTP 202 on success and 500 on error."
+  (let* ((package-name (elnode-http-param httpcon "package"))
+         (package-file (expand-file-name
+                        package-name marmalade-package-store-dir)))
+    (condition-case err
+        (elnode-method httpcon
+          (POST
+           (remhash package-name marmalade/archive-cache)
+           ;; Now regenerate the hash
+           (marmalade/archive-hash->cache)
+           (elnode-send-status httpcon 202)))
+      (error (elnode-send-500
+              httpcon "failed to update the archive")))))
 
 (provide 'marmalade-archive)
 

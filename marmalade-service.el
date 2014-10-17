@@ -619,6 +619,7 @@ debugging the problem."
          ("^[^/]*//packages/archive-contents$" . marmalade-archive-contents-handler)
          ("^[^/]*//packages/archive-contents/\\([0-9]+\\)" . ,marmalade-archive-cache-webserver)
          ("^[^/]*//packages/archive-contents/update$" . marmalade-archive-update)
+         ("^[^/]*//packages/archive-contents/purge$" . marmalade-archive-purge)
 
          ;; We don't really want to send 404's for these if we have them
          ("^[^/]+//packages/.*-readme.txt" . elnode-send-404)
