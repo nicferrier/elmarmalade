@@ -1,5 +1,5 @@
 (marmalade-service
- :version "2.0.18"
+ :version "2.0.19"
  :doc "The Marmalade package store service."
  :requires 
  ((dash "2.9.0")
@@ -22,6 +22,7 @@
   "login-page.html"
   "package-page.html"
   "profile-page.html"
+  "verify.html"
   "upload-page.html"
   "specialpages/terms.html"
   "specialpages/docs.html"
