@@ -1,8 +1,8 @@
 (marmalade-service
- :version "2.0.17"
+ :version "2.0.18"
  :doc "The Marmalade package store service."
  :requires 
- ((dash "1.1.0")
+ ((dash "2.9.0")
   (s "1.6.0")
   (kv "0.0.16")
   (noflet "0.0.7")
