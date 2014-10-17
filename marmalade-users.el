@@ -35,7 +35,18 @@
              ,(expand-file-name
                "marmalade-user-db"
                (or marmalade-db-dir marmalade-dir))))
-  "The user database.")
+  "The user database.
+
+Keys in the records are:
+
+  \"digest\"
+  \"email\"
+  \"name\"
+  \"salt\"
+  \"package-list\"
+  \"token\"
+
+And they are stored in an alist.")
 
 (defun marmalade/user-hash (password salt)
   "Make the hash for the user.
