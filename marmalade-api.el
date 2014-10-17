@@ -198,7 +198,7 @@ because of recursion."
 You have to be an administrator to do it."
   (marmalade/api httpcon
     (let ((new-username (elnode-http-param httpcon "new-username"))
-          (new-email (elnode-http-params httpcon "new-password")))
+          (new-email (elnode-http-params httpcon "new-email")))
       (elnode/err-cond httpcon
           (((or (not new-email)
                 (not (string-match-p "[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+" new-email)))
