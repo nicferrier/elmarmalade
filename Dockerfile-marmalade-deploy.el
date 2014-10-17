@@ -16,4 +16,8 @@
 (package-initialize)
 (package-refresh-contents)
 (package-install-file
- (car (directory-files (expand-file-name "~/builds") t ".*\\.tar$")))
+ (car
+  (reverse
+   (directory-files
+    (expand-file-name "~/builds") 
+    t ".*\\.tar$"))))
