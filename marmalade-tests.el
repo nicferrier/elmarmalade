@@ -5,6 +5,7 @@
 (require 'fakir)
 (require 's)
 (require 'noflet)
+(require 'elnode-testsupport)
 
 (ert-deftest marmalade-package-explode ()
   "Make sure the regex works."
@@ -629,6 +630,7 @@ test."
             :make-hash 'marmalade/auth-make-hash)
            nil)
        (elnode-auth-credentials t)))))
+
 
 (ert-deftest marmalade-api/upload ()
   "Tests the basics of the API."
