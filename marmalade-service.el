@@ -628,8 +628,8 @@ debugging the problem."
          ;; we have GET /packages/ and / be the same right now - probably not right
          ("^[^/]+//packages/$" . marmalade/packages-index)
 
-
          ("^[^/]+//v1/packages$" .  marmalade-api/upload)
+         ("^[^/]+//v1/package/\\(.*\\)$" .  marmalade-api/package)
          ("^[^/]+//v1/users/login/*$" .  marmalade-api/user-login)
 
          ;; The profile
