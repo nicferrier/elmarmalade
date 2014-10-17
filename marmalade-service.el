@@ -187,7 +187,7 @@ name is computed."
 If the package already exists then `file-error' is signalled."
   ;; Try to move the file to the target path
   (when (file-exists-p package-path)
-    (signal 'file-error (list (file-name-base package-path) "existing package")))
+    (signal 'file-error (list "existing package" (file-name-base package-path))))
   ;; Really creates a directory for now. Not ideal.
   (make-directory (file-name-directory package-path) t)
   (rename-file temp-package package-path)
