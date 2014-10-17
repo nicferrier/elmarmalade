@@ -63,7 +63,7 @@ and password to be authenticated."
             httpcon
             `((token . ,(kva "token" (db-get username marmalade/users))))))))))
 
-(defmacro elnode/api (httpcon &rest body)
+(defmacro marmalade/api (httpcon &rest body)
   "Abstract the common API tests."
   (declare (debug (sexp &rest form))
            (indent 1))
@@ -108,7 +108,7 @@ because of recursion."
 
 (defun marmalade-api/package (httpcon)
   "Manage a package, mainly removal."
-  (elnode/api httpcon
+  (marmalade/api httpcon
     (let* ((package-name (elnode-http-mapping httpcon 1)) ; where to get the package-name
            (filename (expand-file-name package-name marmalade-package-store-dir))
            ;; We can upgrade the actions with an OR - we could also do method for this as well
@@ -137,7 +137,7 @@ because of recursion."
 
 (defun marmalade-api/upload (httpcon)
   "Upload a package."
-  (elnode/api httpcon
+  (marmalade/api httpcon
     ;; Check auth
     (elnode/err-cond httpcon
         (((let ((user-record (db-get username marmalade/users)))
