@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="/-/bootstrap/css/bootstrap.css" type="text/css"></link>
+<link rel="stylesheet" href="/-/style.css" type="text/css"></link>
+<title>marmalade-repo - for all your EmacsLisp needs</title>
+</head>
+<body>
+<div class="navbar">
+    <div class="navbar-inner">
+        <ul class="nav pull-right">
+            <li class="active"><a href="/">marmalade-repo</a></li>
+        </ul>
+    </div>
+</div>
+<div id="blurb">
+<div class="container">
+<div class="row">
+    <h1>marmalade-repo</h1>
+    <div id="verify-user">
+        <form class="form-horizontal" method="POST"
+              name="verify" action="/verify/${verify-id}" >
+            <legend>please verify your user ${username}</legend>
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="username">new password:</label>
+                    <input id="new-password" type="password" name="new-password"
+                           maxlength="30"
+                           placeholder="password, 6 letters min, 25 max"></input>
+                    <br></br>
+                </div>
+                <div class="control-group">
+                    <label class="control-label" for="password">confirm:</label>
+                    <input id="confirm-password" type="password" name="confirm-password"
+                           maxlength="30"
+                           placeholder="type your password again"></input><br></br>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <input class="btn btn-large" 
+                               type="submit" name="verify" value="verify"></input>
+                    </div>
+                </div>
+            </fieldset>
+            <p>
+                when marmalade has confirmed your password change you'll
+                be redirected to login, so please try and remember it for at 
+                least 5 seconds.
+            </p>
+        </form>
+    </div>
+</div>
+</div>
+</div>
+<footer>
+    <div>
+         <ul class="inline">
+             <li><a href="/terms">terms</a></li>
+             <li><a href="/docs">docs</a></li>
+             <li><a href="https://github.com/nicferrier/elmarmalade/issues">issues</a></li>
+             <li><a href="http://nic.ferrier.me.uk">(C) Nic Ferrier 2013</a></li>
+         </ul>
+     </div>
+</footer>
+</body>
+</html>
