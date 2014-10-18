@@ -12,18 +12,17 @@ ${header}
 <div class="row">
 <h1>docs</h1>
 
-<p>
-    marmalade-repo provides an API. It was designed by Nex, the original author of
-    marmalade-repo.
-</p>
-
 <h3 class="docheader">v1 API</h3>
 
 <p>
     The current API supported by the Elnode service is massively cut
     down from the original API supported by the nodejs service. The
-    current API supports only the functions needed to upload packages.
+    current API supports only a few functions.
 </p>
+
+<p>I have retained the marker <code>/v1</code> because it seemed
+easier to do than invent a lot more stuff. But mostly this is very
+different from the original <code>nex3</code> API.</p>
 
 <h4 class="what">token acquire</h4>
 <p>
@@ -33,6 +32,7 @@ ${header}
         the cookie and then present it to all the subsequent requests.<br></br>
         marmalade-repo API does not work without an authentication token.
     </span>
+    <br></br>
     <i>parameters:</i>
     <ul>
         <li><i>name</i> - a valid marmalade-repo username</li>
@@ -49,9 +49,10 @@ ${header}
     <code>http://marmalade-repo.org/v1/packages</code><br></br>
     <span>
         Upload a package file to marmalade-repo. Either an ELPA
-        package format //tar// file or an ELPA marked-up //.el// file
+        package format <i>tar</i> file or an ELPA marked-up <i>.el</i> file
         may be specified.
     </span>
+    <br></br>
     <i>parameters:</i>
     <ul>
         <li><i>name</i> - the username of the owner of the package</li>
@@ -61,6 +62,47 @@ ${header}
     <i>
         Returns a JSON structure with a <code>message</code> key for
         any informational or error message.
+    </i>
+</p>
+
+<h4 class="what">owner add</h4>
+<p>
+    <code>http://marmalade-repo.org/v1/package/<i>package-name</i></code>
+    <span>
+        Add an owner to the specified <i>package-name</i>.
+    </span>
+    <br></br>
+    <i>parameters:</i>
+    <ul>
+        <li><i>name</i> - the username of you, a current owner</li>
+        <li><i>token</i> - the auth token of the you, a current owner</li>
+        <li><i>addowner</i> - must be <code>addowner</code></li>
+        <li><i>new-owner</i> - the name of another marmalade user to add as an owner</li>
+    </ul>
+    <i>
+        Returns a JSON structure with a <code>message</code> key for
+        any informational or error message.<br></br>
+        <code>400</code> response on error.
+    </i>
+</p>
+
+<h4 class="what">package remove</h4>
+<p>
+    <code>http://marmalade-repo.org/v1/package/<i>package-name</i></code>
+    <span>
+        Remove the specified package.
+    </span>
+    <br></br>
+    <i>parameters:</i>
+    <ul>
+        <li><i>name</i> - the username of you, a current owner</li>
+        <li><i>token</i> - the auth token of the you, a current owner</li>
+        <li><i>delete</i> - must be <code>delete</code></li>
+    </ul>
+    <i>
+        Returns a JSON structure with a <code>message</code> key for
+        any informational or error message.<br></br>
+        <code>400</code> response on error.
     </i>
 </p>
 
