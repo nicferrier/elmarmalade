@@ -107,33 +107,50 @@ because of recursion."
         (rename-file src dest))))
 
 (defun marmalade-api/package (httpcon)
-  "Manage a package, mainly removal."
+  "Manage a package.
+
+Either remove the package or add an owner to it."
   (marmalade/api httpcon
-    (let* ((package-name (elnode-http-mapping httpcon 1)) ; where to get the package-name
-           (filename (expand-file-name package-name marmalade-package-store-dir))
-           ;; We can upgrade the actions with an OR - we could also do method for this as well
-           (action (elnode-http-param httpcon "delete")))
+    (let ((package-name (elnode-http-mapping httpcon 1))
+          (action (or (elnode-http-param httpcon "delete")
+                      (elnode-http-param httpcon "addowner"))))
       (elnode/err-cond httpcon
-          (((not action) "you must specify delete to delete the package")
-           ((or (not package-name)(equal package-name "")) "no package-name")
-           ((not (file-exists-p filename)) "package does not exist")
-           ((not (member
-                  package-name
-                  (marmalade-get-packages username)))
-            "you are not authorized to remove the package"))
-        ;; Make the archive dir if it doesn't exist
-        (unless (file-exists-p marmalade-package-archive-dir)
-          (make-directory (expand-file-name marmalade-package-archive-dir) t))
-        (condition-case err
-            (progn
-              (marmalade-api/merge-mv filename marmalade-package-archive-dir)
-              (elnode-send-json httpcon (list (cons "removed" package-name)))
-              (elnode-proxy-post
-               httpcon "/packages/archive-contents/purge"
-               :data (list (cons "package" package-name))))
-          (error (elnode-send-400
-                  httpcon
-                  (format "failed because %S" err))))))))
+          (((or (not package-name) (equal package-name ""))
+            "you must specify a package-name to change")
+           ((not action)
+            "specify 'delete' to rm a package or 'addowner' to add an owner"))
+        (cond
+          ((equal action "delete")
+           (let* ((filename (expand-file-name package-name marmalade-package-store-dir)))
+             (elnode/err-cond httpcon
+                 (((not (file-exists-p filename))
+                   "package does not exist")
+                  ((not (member package-name (marmalade-get-packages username)))
+                   "you are not authorized to remove the package"))
+               ;; Make the archive dir if it doesn't exist
+               (unless (file-exists-p marmalade-package-archive-dir)
+                 (make-directory (expand-file-name marmalade-package-archive-dir) t))
+               (condition-case err
+                   (progn
+                     (marmalade-api/merge-mv filename marmalade-package-archive-dir)
+                     (elnode-send-json httpcon (list (cons "removed" package-name)))
+                     (elnode-proxy-post
+                      httpcon "/packages/archive-contents/purge"
+                      :data (list (cons "package" package-name))))
+                 (error (elnode-send-400
+                         httpcon
+                         (format "failed because %S" err)))))))
+          ((equal action "addowner")
+           (let ((new-owner (elnode-http-param httpcon "new-owner"))
+                 (my-packages (marmalade-get-packages username)))
+             (elnode/err-cond httpcon
+                 (((not (db-get new-owner marmalade/users))
+                   "adding an owner requires a new-owner already on marmalade")
+                  ((not (or (member package-name my-packages)
+                            (member 'marmalade-upload my-packages)))
+                   "you must be the owner of the package to add an owner"))
+               (marmalade-add-packages new-owner package-name)
+               (elnode-send-json httpcon `(("new-owner" . ,new-owner)))))))))))
 
 (defun marmalade-api/upload (httpcon)
   "Upload a package."
