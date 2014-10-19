@@ -116,14 +116,6 @@ This does a substitute."
            (- (re-search-forward "^;+.*\n(" nil t) 2))
           "No commentary."))))
 
-(defun marmalade/package-buffer-info (buffer)
-  "Do `package-buffer-info' but with fixes."
-  (with-current-buffer buffer
-    (let ((pkg-info (package-buffer-info)))
-      (unless (save-excursion (re-search-forward "^;;; Code:"  nil t))
-        (aset pkg-info 4 (marmalade/commentary-handle (current-buffer))))
-      pkg-info)))
-
 (defun marmalade/package-file-info (filename)
   "Wraps `marmalade/package-buffer-info' with FILENAME getting."
   (with-temp-buffer
@@ -204,9 +196,10 @@ description parsed from the file."
 
 Optionally take a PACKAGE-NAMES-LIST which limits the fill to
 just that package."
-  (let ((typed-package-list (marmalade/root->archive
-                             root
-                             :package-names-list package-names-list)))
+  (let ((typed-package-list
+         (marmalade/root->archive
+          root
+          :package-names-list package-names-list)))
     (loop
        for (type . package) in typed-package-list
        do (let* ((package-name (elt package 0))

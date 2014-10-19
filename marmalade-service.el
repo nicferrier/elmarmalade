@@ -90,6 +90,19 @@ transformation of the filename."
      version
      name version type)))
 
+(defun marmalade/package-buffer-info (&optional buffer)
+  "Do `package-buffer-info' but with fixes."
+  (let ((buf (if (bufferp buffer) buffer (current-buffer))))
+    (noflet ((lm-section-end (hdr)
+               (if (equal hdr lm-commentary-header)
+                   (save-match-data
+                     (save-excursion
+                       (when (re-search-forward
+                              "\\(^;+[ ]*Code:\\|^(\\)" nil t)
+                         (line-beginning-position))))
+                   (funcall this-fn hdr))))
+         (package-buffer-info))))
+
 (defun marmalade/package-info (package-file)
   "Return the package-info on the PACKAGE-FILE.
 
@@ -100,15 +113,7 @@ the package repository."
      (with-temp-buffer
        (insert-file-contents package-file)
        ;; Hack to fix broken packages
-       (noflet ((lm-section-end (hdr)
-                  (if (equal hdr lm-commentary-header)
-                      (save-match-data
-                        (save-excursion
-                          (when (re-search-forward
-                                 "\\(^;+[ ]*Code:\\|^(\\)" nil t)
-                            (line-beginning-position))))
-                      (funcall this-fn hdr))))
-         (package-buffer-info))))
+       (marmalade/package-buffer-info)))
     ((string-match-p "\\.tar$" package-file)
      (if (version< emacs-version "24.3.90")
          (package-tar-file-info package-file)
