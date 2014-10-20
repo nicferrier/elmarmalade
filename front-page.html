@@ -62,12 +62,15 @@
                     <h3 id="download">how to use it</h3>
                     <p>before you can use marmalade-repo you must add it to your list of Emacs <em>packages-archives</em>:</p>
                     <pre>
+M-x: package-refresh-contents [RET]
 M-: (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+M-x: package-refresh-contents [RET]
 M-x package-install [RET] marmalade-demo
                     </pre>
                 
                     <p>Alternatively you can use Emacs' <em>customize</em> system to permanently alter your package archives:</p>
                     <pre>
+M-x: package-refresh-contents [RET]
 M-x customize-variable [RET] package-archives
 
   Archive name: gnu
