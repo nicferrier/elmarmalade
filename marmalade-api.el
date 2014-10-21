@@ -147,7 +147,7 @@ Either remove the package or add an owner to it."
                  (((not (db-get new-owner marmalade/users))
                    "adding an owner requires a new-owner already on marmalade")
                   ((not (or (member package-name my-packages)
-                            (member "marmalade-upload" my-packages)))
+                            (member "marmalade-client" my-packages)))
                    "you must be the owner of the package to add an owner"))
                (marmalade-add-packages new-owner package-name)
                (elnode-send-json httpcon `(("new-owner" . ,new-owner)))))))))))
@@ -220,7 +220,7 @@ You have to be an administrator to do it."
           (((or (not new-email)
                 (not (string-match-p "[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+" new-email)))
             "the email must match \"[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\"")
-           ((not (member "marmalade-upload" (marmalade-get-packages username)))
+           ((not (member "marmalade-client" (marmalade-get-packages username)))
             "you are not an administrator"))
         ;; Add a user with a random password
         (marmalade-add-user
