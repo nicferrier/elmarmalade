@@ -78,7 +78,6 @@ h5 {
 
 #donate {
     padding-top: 40px;
-    width: 45%;
 }
 
 #donate-msg {
@@ -95,14 +94,14 @@ h5 {
 }
 
 
-#index-links {
-    list-style-type: none;
+.packageoftheweek {
     margin-top: 1em;
 }
 
-#index-links li {
+#index-links {
     margin-top: 1em;
 }
+
 
 #news + ul li {
     margin-bottom: 20px;
