@@ -309,6 +309,8 @@ If the package already exists then `file-error' is signalled."
            (case (marmalade/err->sym err)
              (:tar-is-in-wrong-format
               (elnode-send-400 httpcon "badly formed multifile/tar package"))
+             (:package-lacks-a-\"version\"-or-\"package-version\"-header
+              (elnode-send-400 httpcon "no version or package-version header"))
              (:existing-package
               (elnode-send-400
                httpcon (concat (cadr err) " already exists"))))))))))
