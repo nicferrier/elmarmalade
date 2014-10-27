@@ -175,7 +175,7 @@ the package repository."
        ;; Hack to fix broken packages
        (marmalade/package-buffer-info)))
     ((string-match-p "\\.tar$" package-file)
-     (if (version< emacs-version "24.3.90")
+     (if (version< emacs-version "24.4")
          (package-tar-file-info package-file)
          ;; Else requires a different API
          (let (tar-buf)
