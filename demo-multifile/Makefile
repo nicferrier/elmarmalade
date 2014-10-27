@@ -8,7 +8,7 @@ package: $(PACKAGE_DIR)
 $(PACKAGE_DIR):
 	mkdir $@
 	cp -r ../demo-multifile/* $@
-	sed -re "s/VERSION/$(VERSION)/" $@/demo-multifile-package-template.el > $@/demo-multi-file-pkg.el
+	sed -re "s/VERSION/$(VERSION)/" $@/demo-multifile-package-template.el > $@/demo-multifile-pkg.el
 
 clean:
 	rm -f ../$(PACKAGE_NAME).tar
