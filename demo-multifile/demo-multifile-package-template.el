@@ -1,4 +1,4 @@
 (define-package
     "demo-multifile"
-    "0.0.1"
+    "VERSION"
   "a demo multifile package.")
