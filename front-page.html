@@ -71,7 +71,63 @@
                             alt="easy intro to adding marmalade-repo to your emacs"
                             frameborder="0" allowfullscreen></iframe>
                     <h3 id="download">how to use it</h3>
-                    <p>before you can get access to all the packages that people put in marmalade-repo you must add it to your list of Emacs <em>packages-archives</em>:</p>
+                    <p>
+                        Before you can get access to all the packages that people put in marmalade-repo you must add it to your list of Emacs <em>packages-archives</em>.
+                    </p>
+
+                    <h4>Not using latest Emacs? 24.4?</h4>
+                    <p>
+                        <a href="#httpsinstructions">click here for instructions</a>.
+                    </p>
+
+                    <h4>If you are using Emacs on Windows?</h4>
+                    <p>
+                        There's <em>another bug</em> with GNU TLS on Windows.
+                        <a href="#windowsinstructions">Click here for instructions.</a>
+                    </p>
+
+                    <h4>If you <em>are</em> using 24.4 on anything but Windows?</h4>
+                    <p>
+                        There's a <a
+                        href="http://lists.gnu.org/archive/html/bug-gnu-emacs/2014-10/msg01223.html">bug
+                        in Emacs 24.4</a> that prevents
+                        <code>HTTPS</code> downloads.
+                    </p>
+
+                    <p>
+                        Please use <code>HTTP</code> for now. Be
+                        assured that marmalade is just sending a
+                        redirect to the <code>HTTPS</code>
+                        repository. This doesn't make you that much
+                        more secure though. We're going to try to fix
+                        the bug in Emacs as soon as we can.
+                    </p>
+
+                    <pre style="clear: both">
+M-x package-refresh-contents [RET]
+M-: (add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+M-x package-refresh-contents [RET]
+M-x package-install [RET] marmalade-demo
+                    </pre>
+                
+                    <p>Alternatively you can use Emacs' <em>customize</em> system to permanently alter your package archives:</p>
+                    <pre>
+M-x package-refresh-contents [RET]
+M-x customize-variable [RET] package-archives
+
+  Archive name: gnu
+  URL or directory name: http://elpa.gnu.org/packages/
+  Archive name: marmalade
+  URL or directory name: http://marmalade-repo.org/packages/
+                    </pre>
+                    <p>you can use the customize system to save the values you have here for when Emacs restarts.</p>
+                    <p>After adding Marmalade to your package-archives, you'll need to refresh the package contents:</p>
+                    <pre>
+M-x package-refresh-contents [RET]
+                    </pre>
+
+                    <hr></hr>
+                    <a id="httpsinstructions"></a><h4>Not using 24.4? Please use HTTPS for added security!</h4>
                     <pre style="clear: both">
 M-x package-refresh-contents [RET]
 M-: (add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/"))
@@ -94,6 +150,38 @@ M-x customize-variable [RET] package-archives
                     <pre>
 M-x package-refresh-contents [RET]
                     </pre>
+
+                    <hr></hr>
+                    <a id="windowsinstructions"></a><h4>Installing with Windows</h4>
+                    <ul>
+                        <li>Download Eli Zaretskii gnutls build from <a href="http://sourceforge.net/projects/ezwinports/files/">sourceforge</a></li>
+                        <li>Copy all .dll from the bin to your Emacs installation bin/ folder. See <a href="http://pastebin.com/p0T8XWru">this pastebin</a></li>
+                        <li>the instructions for adding marmalade below now apply
+                    </ul>
+                    <pre style="clear: both">
+M-x package-refresh-contents [RET]
+M-: (add-to-list 'package-archives '("marmalade" . "https://marmalade-repo.org/packages/"))
+M-x package-refresh-contents [RET]
+M-x package-install [RET] marmalade-demo
+                    </pre>
+                
+                    <p>Alternatively you can use Emacs' <em>customize</em> system to permanently alter your package archives:</p>
+                    <pre>
+M-x package-refresh-contents [RET]
+M-x customize-variable [RET] package-archives
+
+  Archive name: gnu
+  URL or directory name: http://elpa.gnu.org/packages/
+  Archive name: marmalade
+  URL or directory name: https://marmalade-repo.org/packages/
+                    </pre>
+                    <p>you can use the customize system to save the values you have here for when Emacs restarts.</p>
+                    <p>After adding Marmalade to your package-archives, you'll need to refresh the package contents:</p>
+                    <pre>
+M-x package-refresh-contents [RET]
+                    </pre>
+
+                    </p>
                 </div>
             </div>
         </div>
