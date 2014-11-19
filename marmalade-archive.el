@@ -67,7 +67,7 @@ files."
          collect (directory-files p t "^[^.].*"))))))
 
 (defun* marmalade/list-files (root &key package-names-list)
-  "Turn ROOT into a list of maramalade meta data.
+  "Turn ROOT into a list of marmalade meta data.
 
 Optionally take a PACKAGE-NAMES-LIST and only produce results
 for those packages.
