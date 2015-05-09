@@ -18,7 +18,7 @@
 ;;; Commentary:
 
 ;; marmalade-repo.org is an Emacs package repository originally by
-;; Nathan Wiezenbaum in node.js.
+;; Natalie Weizenbaum in node.js.
 
 ;; This is a rewrite of marmalade-repo in Emacs-Lisp using Elnode.
 
