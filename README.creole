@@ -1,7 +1,7 @@
 = The Marmalade Service - A package repository in EmacsLisp =
 
 This is an EmacsLisp package to reimplement
-the [[http://marmalade-repo.org|marmalade-repo]] with Elnode. Nathan
+the [[http://marmalade-repo.org|marmalade-repo]] with Elnode. Natalie
 Weizenbaum wrote the
 original [[http://marmalade-repo.org|marmalade-repo]] with node.js and
 mongodb.
